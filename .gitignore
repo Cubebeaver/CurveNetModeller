@@ -1,0 +1,21 @@
+# Build directories
+build/
+out/
+bin/
+
+# IDE files
+.vscode/
+.vs/
+.idea/
+*.user
+*.sln
+*.cbp
+*.depend
+*.layout
+*.vcxproj
+
+# Package manager
+vcpkg_installed/
+
+# ImGUI
+imgui.ini
