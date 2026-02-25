@@ -14,12 +14,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+// GlEngine
+#include <gl_engine/shader.h>
+#include <gl_engine/mesh.hpp>
+
+
+
 // Ablak átméretezésekor lefutó függvény (OpenGL viewport frissítése)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-int main() {
+int GLFW_INIT(GLFWwindow** window) {
     // ------------------------------------------------------------------
     // 1. GLFW inicializálása és ablak létrehozása
     // ------------------------------------------------------------------
@@ -34,16 +40,20 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Ablak létrehozása
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "CurveNetModeller - Teszt", NULL, NULL);
+    *window = glfwCreateWindow(1280, 720, "CurveNetModeller - Teszt", NULL, NULL);
     if (window == NULL) {
         std::cerr << "Hiba: GLFW ablak letrehozasa sikertelen!" << std::endl;
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwMakeContextCurrent(*window);
+    glfwSetFramebufferSizeCallback(*window, framebuffer_size_callback);
     glfwSwapInterval(1); // V-Sync bekapcsolása
 
+    return 0;
+}
+
+int OPENGL_INIT(GLFWwindow* window) {
     // ------------------------------------------------------------------
     // 2. GLAD inicializálása (OpenGL függvények betöltése)
     // ------------------------------------------------------------------
@@ -52,6 +62,17 @@ int main() {
         return -1;
     }
 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+
+    return 0;
+}
+
+int IMGUI_INNIT(GLFWwindow* window) {
     // ------------------------------------------------------------------
     // 3. ImGui inicializálása
     // ------------------------------------------------------------------
@@ -65,60 +86,91 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
-    // ------------------------------------------------------------------
-    // 4. GLM Teszt (Egyszerű matematika)
-    // ------------------------------------------------------------------
-    // Létrehozunk egy vektort, amit majd kiíratunk az ImGui felületre, 
-    // bizonyítva, hogy a GLM is működik.
-    glm::vec3 testVector(1.0f, 2.5f, -3.0f);
+    return 0;
+}
 
-    // ------------------------------------------------------------------
-    // 5. Fő renderelő ciklus
-    // ------------------------------------------------------------------
-    while (!glfwWindowShouldClose(window)) {
-        // Események feldolgozása (billentyűzet, egér)
+void UI() {
+    // ImGui új képkocka indítása
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // --- ImGui UI definíció kezdete ---
+    ImGui::Begin("Konyvtar Tesztelo Ablak");
+    ImGui::Text("Hello CurveNetModeller!");
+    ImGui::Separator();
+    ImGui::Text("A konyvtarak allapota:");
+    ImGui::BulletText("GLFW: MUKODIK (Ablak megnyilt)");
+    ImGui::BulletText("GLAD: MUKODIK (OpenGL kontextus el: %s)", glGetString(GL_VERSION));
+    ImGui::BulletText("ImGui: MUKODIK (Ezt a szoveget latod)");
+    
+    // Egy kis interakció
+    if (ImGui::Button("Nyomj meg!")) {
+        std::cout << "Hello World" << std::endl;
+    }
+    ImGui::End();
+    // --- ImGui UI definíció vége ---
+
+    // ImGui renderelés előkészítése
+    ImGui::Render();
+}
+
+int main() {
+    GLFWwindow* mainWindow;
+
+    if (GLFW_INIT(&mainWindow) || mainWindow == nullptr) {
+        std::cout << "Failed to initialize GLFW" << std::endl;
+        return -1;
+    }
+    if (OPENGL_INIT(mainWindow)) {
+        std::cout << "Failed to initialize OpenGL/GLAD" << std::endl;
+        return -2;
+    }
+    if (IMGUI_INNIT(mainWindow)) {
+        std::cout << "Failed to initialize IMGUI" << std::endl;
+        return -3;
+    }
+
+    
+    Shader shader("src/shader/screen.vert", "src/shader/screen.frag");
+    shader.Use();
+
+    const std::vector<float> vertexBuffer {
+//       posx   posy   posz     norx  nory  norz     r  g  b  a     u  v
+        -0.5f, -0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    1, 0, 0, 1,    0, 0,
+        -0.5f,  0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    0, 1, 0, 1,    0, 1,
+         0.5f, -0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    0, 0, 1, 1,    1, 0,
+         0.5f,  0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    1, 1, 0, 1,    1, 1
+    };
+
+    const std::vector<GLuint> indexBuffer {
+        0, 2, 1,
+        2, 3, 1
+    };
+
+    Mesh mesh(vertexBuffer, indexBuffer, 12);
+
+    mesh.AddAttribPointer(VertexArrtribListElement(3, GL_FLOAT, false));
+    mesh.AddAttribPointer(VertexArrtribListElement(3, GL_FLOAT, false));
+    mesh.AddAttribPointer(VertexArrtribListElement(4, GL_FLOAT, false));
+    mesh.AddAttribPointer(VertexArrtribListElement(2, GL_FLOAT, false));
+
+    mesh.Bind();
+
+    // MAIN LOOP
+    while (!glfwWindowShouldClose(mainWindow)) {
         glfwPollEvents();
-
-        // ImGui új képkocka indítása
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        // --- ImGui UI definíció kezdete ---
-        ImGui::Begin("Konyvtar Tesztelo Ablak");
-        ImGui::Text("Hello CurveNetModeller!");
-        ImGui::Separator();
-        ImGui::Text("A konyvtarak allapota:");
-        ImGui::BulletText("GLFW: MUKODIK (Ablak megnyilt)");
-        ImGui::BulletText("GLAD: MUKODIK (OpenGL kontextus el: %s)", glGetString(GL_VERSION));
-        ImGui::BulletText("ImGui: MUKODIK (Ezt a szoveget latod)");
         
-        // GLM érték kiíratása
-        ImGui::BulletText("GLM: MUKODIK (Teszt vektor: X=%.1f, Y=%.1f, Z=%.1f)", 
-                          testVector.x, testVector.y, testVector.z);
-        
-        // Egy kis interakció
-        if (ImGui::Button("Nyomj meg!")) {
-            testVector.x += 1.0f; // Gombnyomásra módosítjuk a vektort
-        }
-        ImGui::End();
-        // --- ImGui UI definíció vége ---
-
-        // ImGui renderelés előkészítése
-        ImGui::Render();
-
-        // OpenGL háttér törlése egy szép sötétkék/szürke színnel
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
         glClearColor(0.15f, 0.15f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // Scene
+        mesh.Draw();
 
-        // ImGui rárajzolása a képernyőre
+        UI();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        // Bufferek cseréje (képkocka megjelenítése)
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(mainWindow);
     }
 
     // ------------------------------------------------------------------
@@ -128,7 +180,7 @@ int main() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(mainWindow);
     glfwTerminate();
 
     return 0;
