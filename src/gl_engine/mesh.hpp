@@ -29,11 +29,10 @@ class Mesh {
     std::vector<VertexArrtribListElement> VertexAttribList;
 
 public:
-    Mesh(const std::vector<VertexType>& vertexBuffer, const std::vector<GLuint>& indexBuffer, int stride, GLenum drawMode = GL_STATIC_DRAW) {
-        this->VertexBuffer = vertexBuffer;
-        this->IndexBuffer = indexBuffer;
-        this->Stride = stride;
+    Mesh(const Mesh&) = delete;
 
+    Mesh(const std::vector<VertexType>& vertexBuffer, const std::vector<GLuint>& indexBuffer, GLenum drawMode = GL_STATIC_DRAW)
+        : VertexBuffer(vertexBuffer), IndexBuffer(indexBuffer), Stride(0) {
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
 
@@ -46,23 +45,43 @@ public:
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexBuffer.size() * sizeof(GLuint), IndexBuffer.data(), drawMode);
     }
 
-    void AddAttribPointer(const VertexArrtribListElement& record) {
-        glBindVertexArray(VAO);
+    ~Mesh() {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &EBO);
+    }
+
+    Mesh& AddAttribPointer(int number, unsigned int type ,bool normalized) {
+        Bind();
+        VertexAttribList.push_back(VertexArrtribListElement(number, type, normalized));
+        return *this;
+    }
+    
+    Mesh& FinishVertexAttribs() {
+        Bind();
+
+        int stride = 0;
+        for (const auto& record : VertexAttribList) {
+            stride += record.Number * sizeof(VertexType); 
+        }
+        this->Stride = stride;
 
         int offset = 0;
         for (int i = 0; i < VertexAttribList.size(); i++) {
-            offset += VertexAttribList[i].Number * sizeof(VertexType);
+            VertexArrtribListElement& record = VertexAttribList[i];
+
+            glVertexAttribPointer(i, record.Number, record.DataType, record.Normalized ? GL_TRUE : GL_FALSE, Stride, (void*)offset);
+            glEnableVertexAttribArray(i);
+
+            offset += record.Number * sizeof(VertexType);
         }
 
-        glVertexAttribPointer(VertexAttribList.size(), record.Number, record.DataType, record.Normalized ? GL_TRUE : GL_FALSE, Stride * sizeof(float), (void*)offset);
-        glEnableVertexAttribArray(VertexAttribList.size());
-
-        VertexAttribList.push_back(record);
+        return *this;
     }
 
-    void Bind() { glBindVertexArray(VAO); }
+    void Bind() const { glBindVertexArray(VAO); }
 
-    void Draw() {
+    void Draw() const {
         glBindVertexArray(VAO);
 
         glDrawElements(GL_TRIANGLES, IndexBuffer.size(), GL_UNSIGNED_INT, 0);

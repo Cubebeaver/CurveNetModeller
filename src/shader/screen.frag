@@ -5,6 +5,9 @@ in vec3 vertNor;
 in vec4 vertCol;
 in vec2 vertTex;
 
+uniform sampler2D albedo;
+uniform vec4 color;
+
 void main() {
-    gl_FragColor = vertCol;
+    gl_FragColor = texture(albedo, vertTex) * vertCol + color;
 }

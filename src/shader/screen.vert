@@ -3,7 +3,7 @@
 layout (location = 0) in vec3 pos;
 layout (location = 1) in vec3 nor;
 layout (location = 2) in vec4 col;
-layout (location = 1) in vec2 tex;
+layout (location = 3) in vec2 tex;
 
 out vec3 vertPos;
 out vec3 vertNor;

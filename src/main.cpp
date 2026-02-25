@@ -15,13 +15,18 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // GlEngine
-#include <gl_engine/shader.h>
-#include <gl_engine/mesh.hpp>
+#include "gl_engine/shader.hpp"
+#include "gl_engine/mesh.hpp"
+#include "gl_engine/texture.hpp"
+#include "gl_engine/framebuffer.hpp"
 
 
-
+static int Width = 1280, Height = 720;
 // Ablak átméretezésekor lefutó függvény (OpenGL viewport frissítése)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    Width = width;
+    Height = height;
+    
     glViewport(0, 0, width, height);
 }
 
@@ -40,7 +45,7 @@ int GLFW_INIT(GLFWwindow** window) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Ablak létrehozása
-    *window = glfwCreateWindow(1280, 720, "CurveNetModeller - Teszt", NULL, NULL);
+    *window = glfwCreateWindow(Width, Height, "CurveNetModeller - Teszt", NULL, NULL);
     if (window == NULL) {
         std::cerr << "Hiba: GLFW ablak letrehozasa sikertelen!" << std::endl;
         glfwTerminate();
@@ -79,7 +84,7 @@ int IMGUI_INNIT(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = nullptr;
+    //io.IniFilename = nullptr;
     ImGui::StyleColorsDark(); // Sötét téma beállítása
 
     // Backendek inicializálása
@@ -89,7 +94,7 @@ int IMGUI_INNIT(GLFWwindow* window) {
     return 0;
 }
 
-void UI() {
+void UI(FrameBuffer& viewport) {
     // ImGui új képkocka indítása
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -110,6 +115,15 @@ void UI() {
     }
     ImGui::End();
     // --- ImGui UI definíció vége ---
+
+    ImGui::Begin("Viewport");
+    
+    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    viewport.UpdateSize(viewportPanelSize.x, viewportPanelSize.y);
+    ImGui::Image((ImTextureID)viewport.colorBuffer, ImVec2(viewportPanelSize.x, viewportPanelSize.y), ImVec2(0, 1), ImVec2(1, 0));
+    
+    ImGui::End();
+
 
     // ImGui renderelés előkészítése
     ImGui::Render();
@@ -132,8 +146,6 @@ int main() {
     }
 
     
-    Shader shader("src/shader/screen.vert", "src/shader/screen.frag");
-    shader.Use();
 
     const std::vector<float> vertexBuffer {
 //       posx   posy   posz     norx  nory  norz     r  g  b  a     u  v
@@ -142,20 +154,31 @@ int main() {
          0.5f, -0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    0, 0, 1, 1,    1, 0,
          0.5f,  0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    1, 1, 0, 1,    1, 1
     };
-
     const std::vector<GLuint> indexBuffer {
         0, 2, 1,
         2, 3, 1
     };
 
-    Mesh mesh(vertexBuffer, indexBuffer, 12);
+    Mesh<float> mesh(vertexBuffer, indexBuffer);
+    mesh.AddAttribPointer(3, GL_FLOAT, false)
+        .AddAttribPointer(3, GL_FLOAT, false)
+        .AddAttribPointer(4, GL_FLOAT, false)
+        .AddAttribPointer(2, GL_FLOAT, false)
+        .FinishVertexAttribs();
 
-    mesh.AddAttribPointer(VertexArrtribListElement(3, GL_FLOAT, false));
-    mesh.AddAttribPointer(VertexArrtribListElement(3, GL_FLOAT, false));
-    mesh.AddAttribPointer(VertexArrtribListElement(4, GL_FLOAT, false));
-    mesh.AddAttribPointer(VertexArrtribListElement(2, GL_FLOAT, false));
+    Shader shader("src/shader/screen.vert", "src/shader/screen.frag");
+    shader.Use();
+    glUniform1i(glGetUniformLocation(shader.program, "albedo"), 0);
+    glUniform4f(glGetUniformLocation(shader.program, "color"), 0, 0, 0, 0);
 
-    mesh.Bind();
+    Texture texture("resources/Blueprint.png", AlphaMode::AplhaClip);
+    texture.BindToUnit(0);
+
+    FrameBuffer framebuffer(256, 256);
+
+
+
+
 
     // MAIN LOOP
     while (!glfwWindowShouldClose(mainWindow)) {
@@ -165,9 +188,14 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // Scene
+        framebuffer.Bind();
+        shader.Use();
+        texture.BindToUnit(0);
         mesh.Draw();
+        framebuffer.Unbind();
+        glViewport(0, 0, Width, Height);
 
-        UI();
+        UI(framebuffer);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(mainWindow);

@@ -23,8 +23,8 @@ set(SOURCES
     src/model/bezier_node.cpp
     
     src/gl_engine/mesh.hpp
-    src/gl_engine/shader.cpp
-    src/gl_engine/util.cpp
+    src/gl_engine/shader.hpp
+    src/gl_engine/texture.hpp
     
     # src/view/MainWindow.cpp
 )
