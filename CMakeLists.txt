@@ -102,3 +102,18 @@ target_link_libraries(CurveNetModellerTests PRIVATE
 # Regisztráljuk a teszteket a CTest (a futtató környezet) számára
 include(GoogleTest)
 gtest_discover_tests(CurveNetModellerTests)
+
+
+# ==========================================
+# 6. ERŐFORRÁSOK (RESOURCES) AUTOMATIKUS MÁSOLÁSA
+# ==========================================
+
+# Létrehozunk egy fordítás utáni (POST_BUILD) parancsot a főprogramhoz
+add_custom_command(TARGET CurveNetModeller POST_BUILD
+    # A CMake beépített, operációs rendszer független másoló parancsát használjuk
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    # HONNAN: A projekt gyökerében lévő 'resources' mappa
+    "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+    # HOVÁ: Oda, ahová a CurveNetModeller.exe éppen legenerálódott, egy 'resources' almappába
+    "$<TARGET_FILE_DIR:CurveNetModeller>/resources"
+)

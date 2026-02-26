@@ -22,38 +22,58 @@ Used packages:
 
 For every command, be in the project root directory (where the CMakeLists.txt file is)
 
-### Initial setup for cmake and vcpkg
+#### Initial setup for cmake and vcpkg
 
 ```
 cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="[vcpkg root directory]/scripts/buildsystems/vcpkg.cmake"
 ```
 
-### Normal build
+### Debug
+
+#### Build program
 
 ```
 cmake --build build
 ```
 
-### Run program
+#### Run program
 
 ```
 .\build\Debug\CurveNetModeller.exe
 ```
 
-### Run tests
+#### Run tests
 
 ```
 .\build\Debug\CurveNetModellerTests.exe
 ```
 
-### Build and run program (for Windows PowerShell)
+#### Build and run program (for Windows PowerShell)
 
 ```
 cmake --build build ; if ($?) { .\build\Debug\CurveNetModeller.exe }
 ```
 
-### Build and run tests (for Windows PowerShell)
+#### Build and run tests (for Windows PowerShell)
 
 ```
 cmake --build build ; if ($?) { .\build\Debug\CurveNetModellerTests.exe }
 ```
+
+### Release
+
+#### Build program
+
+```
+cmake --build build --config Release
+```
+
+#### Run program
+
+```
+.\build\Release\CurveNetModeller.exe
+```
+
+#### Build and run program (for Windows PowerShell)
+
+cmake --build build --config Release ; if ($?) { .\build\Release\CurveNetModeller.exe }

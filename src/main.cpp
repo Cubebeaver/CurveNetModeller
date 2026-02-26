@@ -179,12 +179,12 @@ int main() {
         .AddAttribPointer(2, GL_FLOAT, false)
         .FinishVertexAttribs();
 
-    Shader shader("src/shader/screen.vert", "src/shader/screen.frag");
+    Shader shader("resources/shaders/screen.vert", "resources/shaders/screen.frag");
     shader.Use();
     glUniform1i(glGetUniformLocation(shader.program, "albedo"), 0);
     glUniform4f(glGetUniformLocation(shader.program, "color"), 0, 0, 0, 0);
 
-    Texture texture("resources/Blueprint.png", AlphaMode::AplhaClip);
+    Texture texture("resources/images/Blueprint.png", AlphaMode::AplhaClip);
     texture.BindToUnit(0);
 
     FrameBuffer framebuffer(256, 256);
