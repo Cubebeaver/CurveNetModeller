@@ -84,6 +84,8 @@ int IMGUI_INNIT(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Tobb ablakos varazslat
     //io.IniFilename = nullptr;
     ImGui::StyleColorsDark(); // Sötét téma beállítása
 
@@ -99,6 +101,8 @@ void UI(FrameBuffer& viewport) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    ImGui::DockSpaceOverViewport();
 
     // --- ImGui UI definíció kezdete ---
     ImGui::Begin("Konyvtar Tesztelo Ablak");
@@ -124,9 +128,18 @@ void UI(FrameBuffer& viewport) {
     
     ImGui::End();
 
-
+    
     // ImGui renderelés előkészítése
     ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    
+    // Ha kéne a tobb ablakos varazslat
+    // if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    //     GLFWwindow* backup_current_context = glfwGetCurrentContext();
+    //     ImGui::UpdatePlatformWindows();
+    //     ImGui::RenderPlatformWindowsDefault();
+    //     glfwMakeContextCurrent(backup_current_context);
+    // }
 }
 
 int main() {
@@ -196,7 +209,6 @@ int main() {
         glViewport(0, 0, Width, Height);
 
         UI(framebuffer);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(mainWindow);
     }
