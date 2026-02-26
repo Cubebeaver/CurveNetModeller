@@ -49,6 +49,7 @@ set(GL_ENGINE_SOURCES
     src/gl_engine/shader.hpp
     src/gl_engine/texture.hpp
     src/gl_engine/transform.hpp
+    src/gl_engine/material.hpp
 )
 
 # Csak a tesztekhez tartozó fájlok

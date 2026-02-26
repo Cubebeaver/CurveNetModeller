@@ -16,6 +16,7 @@
 
 // GlEngine
 #include "gl_engine/shader.hpp"
+#include "gl_engine/material.hpp"
 #include "gl_engine/mesh.hpp"
 #include "gl_engine/texture.hpp"
 #include "gl_engine/framebuffer.hpp"
@@ -96,6 +97,9 @@ int IMGUI_INNIT(GLFWwindow* window) {
     return 0;
 }
 
+
+bool checked = false;
+glm::vec3 vec(1, 2, 3);
 void UI(FrameBuffer& viewport) {
     // ImGui új képkocka indítása
     ImGui_ImplOpenGL3_NewFrame();
@@ -105,21 +109,7 @@ void UI(FrameBuffer& viewport) {
     ImGui::DockSpaceOverViewport();
 
     // --- ImGui UI definíció kezdete ---
-    ImGui::Begin("Konyvtar Tesztelo Ablak");
-    ImGui::Text("Hello CurveNetModeller!");
-    ImGui::Separator();
-    ImGui::Text("A konyvtarak allapota:");
-    ImGui::BulletText("GLFW: MUKODIK (Ablak megnyilt)");
-    ImGui::BulletText("GLAD: MUKODIK (OpenGL kontextus el: %s)", glGetString(GL_VERSION));
-    ImGui::BulletText("ImGui: MUKODIK (Ezt a szoveget latod)");
-    
-    // Egy kis interakció
-    if (ImGui::Button("Nyomj meg!")) {
-        std::cout << "Hello World" << std::endl;
-    }
-    ImGui::End();
-    // --- ImGui UI definíció vége ---
-
+    ImGui::SetNextWindowSize(ImVec2(720, 720), ImGuiCond_FirstUseEver);
     ImGui::Begin("Viewport");
     
     ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -127,7 +117,28 @@ void UI(FrameBuffer& viewport) {
     ImGui::Image((ImTextureID)viewport.colorBuffer, ImVec2(viewportPanelSize.x, viewportPanelSize.y), ImVec2(0, 1), ImVec2(1, 0));
     
     ImGui::End();
-
+    
+    
+    ImGui::SetNextWindowSize(ImVec2(560, 720), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Properties");
+    ImGui::Text("Hello CurveNetModeller!");
+    ImGui::Separator();
+    ImGui::Text("A konyvtarak allapota:");
+    ImGui::BulletText("GLFW: MUKODIK (Ablak megnyilt)");
+    ImGui::BulletText("GLAD: MUKODIK (OpenGL kontextus el: %s)", glGetString(GL_VERSION));
+    ImGui::BulletText("ImGui: MUKODIK (Ezt a szoveget latod)");
+    ImGui::BulletText("GLM: MUKODIK (glm::vec3(%f, %f, %f))", vec.x, vec.y, vec.z);
+    
+    // Egy kis interakció
+    if (ImGui::Button("Hello World!")) {
+        std::cout << "Hello World!" << std::endl;
+    }
+    if (ImGui::Button("Increment glm::vec3")) {
+        vec += glm::vec3(1, 1, 1);
+    }
+    ImGui::Checkbox("Switch color", &checked);
+    ImGui::End();
+    // --- ImGui UI definíció vége ---
     
     // ImGui renderelés előkészítése
     ImGui::Render();
@@ -180,12 +191,17 @@ int main() {
         .FinishVertexAttribs();
 
     Shader shader("resources/shaders/screen.vert", "resources/shaders/screen.frag");
-    shader.Use();
-    glUniform1i(glGetUniformLocation(shader.program, "albedo"), 0);
-    glUniform4f(glGetUniformLocation(shader.program, "color"), 0, 0, 0, 0);
 
     Texture texture("resources/images/Blueprint.png", AlphaMode::AplhaClip);
-    texture.BindToUnit(0);
+
+    Material red(&shader);
+    red.AddTexture("albedo", &texture);
+    red.SetVec4("color", glm::vec4(1, 0, 0, 1));
+    red.SetVec4("tint", glm::vec4(1, 0, 0, 1));
+
+    Material blue(&shader);
+    blue.SetVec4("color", glm::vec4(0, 0, 1, 1));
+    blue.SetVec4("tint", glm::vec4(0, 0, 1, 1));
 
     FrameBuffer framebuffer(256, 256);
 
@@ -202,8 +218,8 @@ int main() {
         
         // Scene
         framebuffer.Bind();
-        shader.Use();
-        texture.BindToUnit(0);
+        if (checked) red.Bind();
+        else         blue.Bind();
         mesh.Draw();
         framebuffer.Unbind();
         glViewport(0, 0, Width, Height);
