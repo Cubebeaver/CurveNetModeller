@@ -11,12 +11,12 @@ enum class HandleMode {
 };
 
 class BezierNode {
+public:
     glm::vec3 Position;
     glm::vec3 LeftHandle;
     glm::vec3 RightHandle;
     HandleMode Mode;
     
-public:
     BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode = HandleMode::Aligned);
     BezierNode(HandleMode mode = HandleMode::Aligned);
     BezierNode(glm::vec3 position, HandleMode mode = HandleMode::Aligned);

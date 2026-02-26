@@ -9,9 +9,9 @@
 
 
 class BezierCurve {
+public:
     std::vector<BezierNode> Nodes;
     
-public:
     int GetSegmentCount() const;
 
     void AddNode(const BezierNode& node);

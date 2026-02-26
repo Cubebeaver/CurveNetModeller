@@ -71,16 +71,16 @@ void Object::GetUniformLocations(const char* transformName, const char* viewName
 
 Transform::Transform()
 {
-    position     = glm::vec3(0.0f, 0.0f, 0.0f);
-    rotation     = glm::vec3(0.0f, 0.0f, 0.0f);
-    scale        = glm::vec3(1.0f, 1.0f, 1.0f);
-    matTransform = glm::mat4(1.0f);
+    LocalPosition     = glm::vec3(0.0f, 0.0f, 0.0f);
+    LocalRotation     = glm::vec3(0.0f, 0.0f, 0.0f);
+    LocalScale        = glm::vec3(1.0f, 1.0f, 1.0f);
+    LocalMatrix = glm::mat4(1.0f);
 }
 Transform::Transform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale_)
 {
-    position = pos;
-    rotation = rot;
-    scale    = scale_;
+    LocalPosition = pos;
+    LocalRotation = rot;
+    LocalScale    = scale_;
 
     UpdateMatrix();
 }
@@ -94,60 +94,60 @@ Transform::~Transform()
 
 
 void Transform::UpdateMatrix() {
-    matTransform = glm::mat4(1.0f);
-    matTransform = glm::translate(matTransform, position);
-    matTransform = glm::rotate   (matTransform, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    matTransform = glm::rotate   (matTransform, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    matTransform = glm::rotate   (matTransform, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-    matTransform = glm::scale    (matTransform, scale);
+    LocalMatrix = glm::mat4(1.0f);
+    LocalMatrix = glm::translate(LocalMatrix, LocalPosition);
+    LocalMatrix = glm::rotate   (LocalMatrix, LocalRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    LocalMatrix = glm::rotate   (LocalMatrix, LocalRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    LocalMatrix = glm::rotate   (LocalMatrix, LocalRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+    LocalMatrix = glm::scale    (LocalMatrix, LocalScale);
 }
 
 
 void Transform::SetTransform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale_) {
-    position = pos;
-    rotation = rot;
-    scale    = scale_;
+    LocalPosition = pos;
+    LocalRotation = rot;
+    LocalScale    = scale_;
 
     UpdateMatrix();
 }
 
 
 void Transform::SetPosition(glm::vec3 pos) {
-    position = pos;
+    LocalPosition = pos;
 
     UpdateMatrix();
 }
 
 void Transform::SetRotation(glm::vec3 rot) {
-    rotation = rot;
+    LocalRotation = rot;
 
     UpdateMatrix();
 }
 
 void Transform::SetScale(glm::vec3 scale_) {
-    scale = scale_;
+    LocalScale = scale_;
 
     UpdateMatrix();
 }
 
 
 void Transform::Translate(glm::vec3 offset) {
-    matTransform = glm::translate(matTransform, offset);
-    position += offset;
+    LocalMatrix = glm::translate(LocalMatrix, offset);
+    LocalPosition += offset;
 }
 
 void Transform::Rotate(glm::vec3 rotate) {
-    matTransform = glm::rotate(matTransform, rotate.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    matTransform = glm::rotate(matTransform, rotate.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    matTransform = glm::rotate(matTransform, rotate.z, glm::vec3(0.0f, 0.0f, 1.0f));
-    rotation += rotate;
+    LocalMatrix = glm::rotate(LocalMatrix, rotate.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    LocalMatrix = glm::rotate(LocalMatrix, rotate.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    LocalMatrix = glm::rotate(LocalMatrix, rotate.z, glm::vec3(0.0f, 0.0f, 1.0f));
+    LocalRotation += rotate;
 }
 
 void Transform::Scale(glm::vec3 scale_) {
-    matTransform = glm::scale(matTransform, scale_);
-    scale.x *= scale_.x;
-    scale.y *= scale_.y;
-    scale.z *= scale_.z;
+    LocalMatrix = glm::scale(LocalMatrix, scale_);
+    LocalScale.x *= scale_.x;
+    LocalScale.y *= scale_.y;
+    LocalScale.z *= scale_.z;
 }
 
 

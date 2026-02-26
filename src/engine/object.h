@@ -35,16 +35,16 @@ class Transform
 private:
 
 public:
-    Transform* parent = NULL;
+    Transform* Parent = NULL;
 
-    glm::vec3 position;
-    glm::vec3 rotation;
-    glm::vec3 scale;
+    glm::vec3 LocalPosition;
+    glm::vec3 LocalRotation;
+    glm::vec3 LocalScale;
 
-    glm::mat4 matTransform;
+    glm::mat4 LocalMatrix;
 
     void UpdateMatrix();
-    float* GetMatricPtr() { return glm::value_ptr(matTransform); }
+    float* GetMatricPtr() { return glm::value_ptr(LocalMatrix); }
 
     Transform();
     Transform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale_);
