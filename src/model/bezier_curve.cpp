@@ -1,6 +1,7 @@
 #include "model/bezier_curve.h"
 
-
+#include <algorithm>
+#include <vector>
 
 int BezierCurve::GetSegmentCount() const {
     if (Nodes.size() < 2) return 0;
@@ -12,7 +13,21 @@ void BezierCurve::AddNode(const BezierNode& node) {
 }
 
 void BezierCurve::AddNode(const glm::vec3& position) {
-    Nodes.emplace_back(position); 
+    Nodes.emplace_back(position);
+}
+
+void BezierCurve::RemoveNode(const BezierNode& node) {
+    //TODO Ez így nem feltétlen a legjobb
+    int idx = -1;
+    for (int i = 0; i < Nodes.size(); i++) {
+        if (&Nodes[i] == &node) {
+            idx = i;
+            break;
+        }
+    }
+    if (idx >= 0) {
+        Nodes.erase(Nodes.begin() + idx);
+    }
 }
 
 glm::vec3 BezierCurve::EvaluateSegment(int segmentIndex, float t) const {

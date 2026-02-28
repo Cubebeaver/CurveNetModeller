@@ -4,6 +4,13 @@
 
 
 
+enum class HandleType {
+    Center,
+    Left,
+    Right,
+    None
+};
+
 enum class HandleMode {
     Free,
     Aligned,

@@ -18,51 +18,85 @@ typedef struct VertexArrtribListElement {
 
 
 
-template<typename VertexType = float>
-class Mesh {
+template<typename VertexType = float, typename VertexElementType = float>
+class MeshBase {
     GLuint VBO, EBO, VAO;
-
-    std::vector<VertexType> VertexBuffer;
-    std::vector<GLuint> IndexBuffer;
     
+    int VertexBufferBytes;
+    int IndexBufferBytes;
+
     int Stride;
     std::vector<VertexArrtribListElement> VertexAttribList;
 
 public:
-    Mesh(const Mesh&) = delete;
+    MeshBase(const MeshBase&) = delete;
 
-    Mesh(const std::vector<VertexType>& vertexBuffer, const std::vector<GLuint>& indexBuffer, GLenum drawMode = GL_STATIC_DRAW)
-        : VertexBuffer(vertexBuffer), IndexBuffer(indexBuffer), Stride(0) {
+    MeshBase(const std::vector<VertexType>& vertexBuffer, const std::vector<GLuint>& indexBuffer, GLenum drawMode = GL_STATIC_DRAW)
+        : Stride(0) {
+        VertexBufferBytes = vertexBuffer.size() * sizeof(VertexType);
+        IndexBufferBytes = indexBuffer.size() * sizeof(GLuint);
+        
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
 
         glGenBuffers(1, &VBO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, VertexBuffer.size() * sizeof(VertexType), VertexBuffer.data(), drawMode);
+        glBufferData(GL_ARRAY_BUFFER, VertexBufferBytes, vertexBuffer.data(), drawMode);
 
         glGenBuffers(1, &EBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexBuffer.size() * sizeof(GLuint), IndexBuffer.data(), drawMode);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexBufferBytes, indexBuffer.data(), drawMode);
     }
 
-    ~Mesh() {
+    ~MeshBase() {
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &EBO);
     }
 
-    Mesh& AddAttribPointer(int number, unsigned int type ,bool normalized) {
+    void ReplaceVertices(const std::vector<VertexType>& newVertices) {
+        VertexBufferBytes = newVertices.size() * sizeof(VertexType);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, VertexBufferBytes, newVertices.data(), GL_STATIC_DRAW);
+    }
+    void ReplaceIndices(const std::vector<GLuint>& newIndices) {
+        IndexBufferBytes = newIndices.size() * sizeof(GLuint);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexBufferBytes, newIndices.data(), GL_STATIC_DRAW);
+    }
+    void Replace(const std::vector<VertexType>& newVertices, const std::vector<GLuint>& newIndices) {
+        ReplaceVertices(newVertices);
+        ReplaceIndices(newIndices);
+    }
+
+    void UpdateVertices(const std::vector<VertexType>& newVertices, int offset = 0) {
+        int newVerticesBytes = newVertices.size() * sizeof(VertexType);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(VertexType), newVerticesBytes, newVertices.data());
+    }
+    void UpdateIndices(const std::vector<GLuint>& newIndices, int offset = 0) {
+        int newIndicesBytes = newIndices.size() * sizeof(GLuint);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLuint), newIndicesBytes, newIndices.data());
+    }
+    void Update(const std::vector<VertexType>& newVertices, const std::vector<GLuint>& newIndices,
+                int vertex_offset = 0, int index_offset = 0) {
+        UpdateVertices(newVertices, vertex_offset);
+        UpdateIndices (newIndices,  index_offset);
+    }
+
+    MeshBase& AddAttribPointer(int number, unsigned int type ,bool normalized) {
         Bind();
         VertexAttribList.push_back(VertexArrtribListElement(number, type, normalized));
         return *this;
     }
     
-    Mesh& FinishVertexAttribs() {
+    MeshBase& FinishVertexAttribs() {
         Bind();
 
         int stride = 0;
         for (const auto& record : VertexAttribList) {
-            stride += record.Number * sizeof(VertexType); 
+            stride += record.Number * sizeof(VertexElementType); 
         }
         this->Stride = stride;
 
@@ -73,7 +107,7 @@ public:
             glVertexAttribPointer(i, record.Number, record.DataType, record.Normalized ? GL_TRUE : GL_FALSE, Stride, (void*)offset);
             glEnableVertexAttribArray(i);
 
-            offset += record.Number * sizeof(VertexType);
+            offset += record.Number * sizeof(VertexElementType);
         }
 
         return *this;
@@ -81,9 +115,15 @@ public:
 
     void Bind() const { glBindVertexArray(VAO); }
 
-    void Draw() const {
+    virtual void Draw(GLenum mode = GL_TRIANGLES) const {
         glBindVertexArray(VAO);
 
-        glDrawElements(GL_TRIANGLES, IndexBuffer.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(mode, IndexBufferBytes / sizeof(GLuint), GL_UNSIGNED_INT, 0);
     }
+};
+
+class Mesh : public MeshBase<float, float> {
+public:
+    Mesh(const std::vector<float>& vertexBuffer, const std::vector<GLuint>& indexBuffer, GLenum drawMode = GL_STATIC_DRAW)
+        : MeshBase<float, float>(vertexBuffer, indexBuffer, drawMode) { }
 };

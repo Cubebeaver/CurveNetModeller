@@ -58,7 +58,7 @@ public:
     Transform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float scale_)
         : Transform(glm::vec3(posX, posY, posZ), glm::vec3(rotX, rotY, rotZ), glm::vec3(scale_, scale_, scale_)) { }
     ~Transform() {
-        std::cout << "[?] Transform::~Transform() not implemented" << std::endl;
+        
     }
 
     void SetTransform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale_) {

@@ -21,7 +21,7 @@ public:
         std::string fragmentSource = ReadAllText(fragmentShaderSourcePath);
 
         if (vertexSource.empty() || fragmentSource.empty()) {
-            std::cout << "vertexSource or fragmentSource is empty" << std::endl;
+            std::cout << "[!] VertexSource or FragmentSource is empty" << std::endl;
             return;
         }
 

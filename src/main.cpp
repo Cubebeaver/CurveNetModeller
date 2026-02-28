@@ -19,7 +19,23 @@
 #include "gl_engine/material.hpp"
 #include "gl_engine/mesh.hpp"
 #include "gl_engine/texture.hpp"
+#include "gl_engine/object.hpp"
 #include "gl_engine/framebuffer.hpp"
+
+// Model
+#include "model/bezier_node.h"
+#include "model/bezier_curve.h"
+
+// Views
+#include "view/bezier_node_view.hpp"
+#include "view/bezier_curve_view.hpp"
+#include "workspace/viewport.hpp"
+
+// Controller
+#include "controller/bezier_curve_controller.hpp"
+
+// Util
+#include "util/screenshot.hpp"
 
 
 static int Width = 1280, Height = 720;
@@ -46,7 +62,7 @@ int GLFW_INIT(GLFWwindow** window) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Ablak létrehozása
-    *window = glfwCreateWindow(Width, Height, "CurveNetModeller - Teszt", NULL, NULL);
+    *window = glfwCreateWindow(Width, Height, "CurveNetModeller", NULL, NULL);
     if (window == NULL) {
         std::cerr << "Hiba: GLFW ablak letrehozasa sikertelen!" << std::endl;
         glfwTerminate();
@@ -55,6 +71,11 @@ int GLFW_INIT(GLFWwindow** window) {
     glfwMakeContextCurrent(*window);
     glfwSetFramebufferSizeCallback(*window, framebuffer_size_callback);
     glfwSwapInterval(1); // V-Sync bekapcsolása
+
+    GLFWimage ico[1];
+    ico[0].pixels = stbi_load("resources/icons/icon.png",  &ico[0].width, &ico[0].height, 0, 4);
+    glfwSetWindowIcon(*window, 1, ico);
+    stbi_image_free(ico[0].pixels);
 
     return 0;
 }
@@ -99,8 +120,8 @@ int IMGUI_INNIT(GLFWwindow* window) {
 
 
 bool checked = false;
-glm::vec3 vec(1, 2, 3);
-void UI(FrameBuffer& viewport) {
+BezierCurveController* c;
+void UI(const Viewport& viewport) {
     // ImGui új képkocka indítása
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -110,33 +131,48 @@ void UI(FrameBuffer& viewport) {
 
     // --- ImGui UI definíció kezdete ---
     ImGui::SetNextWindowSize(ImVec2(720, 720), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Viewport");
     
-    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    viewport.UpdateSize(viewportPanelSize.x, viewportPanelSize.y);
-    ImGui::Image((ImTextureID)viewport.colorBuffer, ImVec2(viewportPanelSize.x, viewportPanelSize.y), ImVec2(0, 1), ImVec2(1, 0));
-    
-    ImGui::End();
+    viewport.Draw();
     
     
     ImGui::SetNextWindowSize(ImVec2(560, 720), ImGuiCond_FirstUseEver);
     ImGui::Begin("Properties");
-    ImGui::Text("Hello CurveNetModeller!");
-    ImGui::Separator();
-    ImGui::Text("A konyvtarak allapota:");
-    ImGui::BulletText("GLFW: MUKODIK (Ablak megnyilt)");
-    ImGui::BulletText("GLAD: MUKODIK (OpenGL kontextus el: %s)", glGetString(GL_VERSION));
-    ImGui::BulletText("ImGui: MUKODIK (Ezt a szoveget latod)");
-    ImGui::BulletText("GLM: MUKODIK (glm::vec3(%f, %f, %f))", vec.x, vec.y, vec.z);
     
-    // Egy kis interakció
-    if (ImGui::Button("Hello World!")) {
-        std::cout << "Hello World!" << std::endl;
-    }
-    if (ImGui::Button("Increment glm::vec3")) {
-        vec += glm::vec3(1, 1, 1);
-    }
-    ImGui::Checkbox("Switch color", &checked);
+        ImGui::SeparatorText("Curve");
+        if (ImGui::Button("Add control pont")) {
+            c->AddNode();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Remove control point")) {
+            c->RemoveNode();
+        }
+
+        ImGui::SeparatorText("Node");
+        ImGui::Text("Set mode: ");
+        ImGui::SameLine();
+        if (ImGui::Button("Symmetric")) {
+            c->SetNodeMode(HandleMode::Symmetric);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Aligned")) {
+            c->SetNodeMode(HandleMode::Aligned);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Free")) {
+            c->SetNodeMode(HandleMode::Free);
+        }
+
+        ImGui::Spacing();ImGui::Spacing();ImGui::Spacing();
+        ImGui::SeparatorText("Tests");
+        if (ImGui::Button("Hello World!")) {
+            std::cout << "Hello World!" << std::endl;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Save viewport screenshot")) {
+            CaptureScreenshot(viewport.viewportBuffer->fbo, viewport.viewportBuffer->Width, viewport.viewportBuffer->Height);
+        }
+        ImGui::Checkbox("Switch color", &checked);
+
     ImGui::End();
     // --- ImGui UI definíció vége ---
     
@@ -157,33 +193,32 @@ int main() {
     GLFWwindow* mainWindow;
 
     if (GLFW_INIT(&mainWindow) || mainWindow == nullptr) {
-        std::cout << "Failed to initialize GLFW" << std::endl;
+        std::cout << "[-] Failed to initialize GLFW" << std::endl;
         return -1;
     }
     if (OPENGL_INIT(mainWindow)) {
-        std::cout << "Failed to initialize OpenGL/GLAD" << std::endl;
+        std::cout << "[-] Failed to initialize OpenGL/GLAD" << std::endl;
         return -2;
     }
     if (IMGUI_INNIT(mainWindow)) {
-        std::cout << "Failed to initialize IMGUI" << std::endl;
+        std::cout << "[-] Failed to initialize IMGUI" << std::endl;
         return -3;
     }
 
-    
-
     const std::vector<float> vertexBuffer {
 //       posx   posy   posz     norx  nory  norz     r  g  b  a     u  v
-        -0.5f, -0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    1, 0, 0, 1,    0, 0,
-        -0.5f,  0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    0, 1, 0, 1,    0, 1,
-         0.5f, -0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    0, 0, 1, 1,    1, 0,
-         0.5f,  0.5f,  0.0f,    0.0f, 0.0f, 1.0f,    1, 1, 0, 1,    1, 1
+        -1.0f, -1.0f,  0.0f,    0.0f, 0.0f, 1.0f,    1, 0, 0, 1,    0, 0,
+        -1.0f,  1.0f,  0.0f,    0.0f, 0.0f, 1.0f,    0, 1, 0, 1,    0, 1,
+         1.0f, -1.0f,  0.0f,    0.0f, 0.0f, 1.0f,    0, 0, 1, 1,    1, 0,
+         1.0f,  1.0f,  0.0f,    0.0f, 0.0f, 1.0f,    1, 1, 0, 1,    1, 1
     };
     const std::vector<GLuint> indexBuffer {
         0, 2, 1,
         2, 3, 1
     };
 
-    Mesh<float> mesh(vertexBuffer, indexBuffer);
+    
+    Mesh mesh(vertexBuffer, indexBuffer);
     mesh.AddAttribPointer(3, GL_FLOAT, false)
         .AddAttribPointer(3, GL_FLOAT, false)
         .AddAttribPointer(4, GL_FLOAT, false)
@@ -194,20 +229,22 @@ int main() {
 
     Texture texture("resources/images/Blueprint.png", AlphaMode::AplhaClip);
 
-    Material red(&shader);
-    red.AddTexture("albedo", &texture);
-    red.SetVec4("color", glm::vec4(1, 0, 0, 1));
-    red.SetVec4("tint", glm::vec4(1, 0, 0, 1));
-
+    Material orange(&shader);
+    orange.SetVec4("color", glm::vec4(1, 0.5f, 0, 1));
+    orange.SetVec4("tint", glm::vec4(1, 0, 0, 1));
+    
     Material blue(&shader);
+    blue.AddTexture("albedo", &texture);
     blue.SetVec4("color", glm::vec4(0, 0, 1, 1));
     blue.SetVec4("tint", glm::vec4(0, 0, 1, 1));
 
-    FrameBuffer framebuffer(256, 256);
+    Transform trafo;
 
+    Object obj1(&trafo, &mesh, &orange);
+    Object obj2(&trafo, &mesh, &blue);
 
-
-
+    Viewport vp;
+    c = new BezierCurveController(&vp);
 
     // MAIN LOOP
     while (!glfwWindowShouldClose(mainWindow)) {
@@ -217,14 +254,14 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // Scene
-        framebuffer.Bind();
-        if (checked) red.Bind();
-        else         blue.Bind();
-        mesh.Draw();
-        framebuffer.Unbind();
+        vp.BindFrameBuffer();
+        if (checked) obj1.Draw();
+        else         obj2.Draw();
+        c->Present();
+        vp.UnbindFrameBuffer();
         glViewport(0, 0, Width, Height);
 
-        UI(framebuffer);
+        UI(vp);
 
         glfwSwapBuffers(mainWindow);
     }

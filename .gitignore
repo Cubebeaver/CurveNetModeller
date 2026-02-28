@@ -1,7 +1,11 @@
 # Build directories
-build/
-out/
-bin/
+[Bb]uild/
+[Oo]ut/
+[Bb]in/
+
+# Program outputs except examples
+[Oo]utput/[Ss]creenshots/*
+![Oo]utput/[Ss]creenshots/example.png
 
 # IDE files
 .vscode/
