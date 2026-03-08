@@ -18,7 +18,7 @@ typedef struct VertexArrtribListElement {
 
 
 
-template<typename VertexType = float, typename VertexElementType = float>
+template<typename VertexType, typename VertexElementType>
 class MeshBase {
     GLuint VBO, EBO, VAO;
     
@@ -104,7 +104,7 @@ public:
         for (int i = 0; i < VertexAttribList.size(); i++) {
             VertexArrtribListElement& record = VertexAttribList[i];
 
-            glVertexAttribPointer(i, record.Number, record.DataType, record.Normalized ? GL_TRUE : GL_FALSE, Stride, (void*)offset);
+            glVertexAttribPointer(i, record.Number, record.DataType, record.Normalized ? GL_TRUE : GL_FALSE, Stride, (void*)(uintptr_t)offset);
             glEnableVertexAttribArray(i);
 
             offset += record.Number * sizeof(VertexElementType);
@@ -115,10 +115,16 @@ public:
 
     void Bind() const { glBindVertexArray(VAO); }
 
-    virtual void Draw(GLenum mode = GL_TRIANGLES) const {
+    void Draw(GLenum mode = GL_TRIANGLES) const {
         glBindVertexArray(VAO);
 
         glDrawElements(mode, IndexBufferBytes / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+    }
+
+    void DrawPartial(int start, int end, GLenum mode = GL_TRIANGLES) const {
+        glBindVertexArray(VAO);
+
+        glDrawElements(mode, end - start, GL_UNSIGNED_INT, (void*)(uintptr_t)(start * sizeof(GLuint)));
     }
 };
 

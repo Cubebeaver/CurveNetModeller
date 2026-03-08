@@ -64,7 +64,31 @@ public:
 
                 OnDrag.Invoke(glm::vec2(totalDelta.x, totalDelta.y), glm::vec2(delta.x, delta.y), glm::vec2(relativeX, relativeY), ImGuiMouseButton_Right);
 
-                Camera::activeCamera->Translate(Camera::activeCamera->fieldOfView * -delta.x / viewportBuffer->Height, Camera::activeCamera->fieldOfView * delta.y / viewportBuffer->Height, 0);
+                // Camera controls
+                ImGui::SetMouseCursor(ImGuiMouseCursor_::ImGuiMouseCursor_None);
+
+                Camera::activeCamera->Rotate(Camera::activeCamera->fieldOfView * -delta.y / viewportBuffer->Height, delta.x / viewportBuffer->Height, 0);
+                
+                if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_W)) {
+                    Camera::activeCamera->Translate(Camera::activeCamera->direction * 0.1f);
+                }
+                if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_S)) {
+                    Camera::activeCamera->Translate(Camera::activeCamera->direction * -0.1f);
+                }
+                if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_A)) {
+                    Camera::activeCamera->Translate(glm::cross(Camera::activeCamera->direction, glm::vec3(0, 1, 0)) * -0.1f);
+                }
+                if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_D)) {
+                    Camera::activeCamera->Translate(glm::cross(Camera::activeCamera->direction, glm::vec3(0, 1, 0)) * 0.1f);
+                }
+                if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_Q)) {
+                    Camera::activeCamera->Translate(glm::vec3(0, 1, 0) * -0.1f);
+                }
+                if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_E)) {
+                    Camera::activeCamera->Translate(glm::vec3(0, 1, 0) * 0.1f);
+                }
+            } else {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_::ImGuiMouseCursor_Arrow);
             }
 
             

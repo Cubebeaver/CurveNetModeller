@@ -250,7 +250,7 @@ int main() {
     c = new BezierCurveController(&vp);
 
 
-    OrthoCamera cam(glm::vec3(0, 0, 1), glm::vec3(std::numbers::pi_v<float>, std::numbers::pi_v<float>, 0), 1, 0.1f, 100.0f);
+    PerspectiveCamera cam(glm::vec3(0, 0, 1), glm::vec3(std::numbers::pi_v<float>, std::numbers::pi_v<float>, 0), 1, 0.1f, 100.0f);
     cam.Init();
 
     // MAIN LOOP

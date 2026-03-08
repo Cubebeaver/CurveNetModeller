@@ -5,10 +5,10 @@
 
 
 enum class HandleType {
-    Center,
-    Left,
-    Right,
-    None
+    None = 0b0,
+    Center = 0b1,
+    Left = 0b10,
+    Right = 0b100,
 };
 
 enum class HandleMode {

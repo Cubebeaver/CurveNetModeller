@@ -11,6 +11,7 @@ private:
     std::unique_ptr<Mesh> mesh;
     std::unique_ptr<Material> lineMat;
     std::unique_ptr<Material> pointMat;
+    std::unique_ptr<Material> selectedMat;
 
 public:
     BezierNodeView(Shader* sharedShader) {
@@ -24,6 +25,9 @@ public:
         
         pointMat = std::make_unique<Material>(sharedShader);
         pointMat->SetVec4("color", glm::vec4(1, 0, 0, 1));
+
+        selectedMat = std::make_unique<Material>(sharedShader);
+        selectedMat->SetVec4("color", glm::vec4(1, 0, 1, 1));
     }
 
     void Update(const BezierNode& nodeModel) {
@@ -37,23 +41,35 @@ public:
         mesh->Replace(vertices, indices);
     }
 
-    void Draw() {
+    void Draw(HandleType selected = HandleType::None) {
         glLineWidth(1);
         lineMat->Bind();
         lineMat->SetMat4("Model", glm::mat4(1.0f));
         lineMat->SetMat4("View", Camera::activeCamera->matView);
-        //lineMat->SetMat4("View", glm::mat4(1.0f));
         lineMat->SetMat4("Projection", Camera::activeCamera->matProjection);
-        //lineMat->SetMat4("Projection", glm::mat4(1.0f));
         mesh->Draw(GL_LINE_STRIP);
         
         glPointSize(8);
         pointMat->Bind();
         pointMat->SetMat4("Model", glm::mat4(1.0f));
         pointMat->SetMat4("View", Camera::activeCamera->matView);
-        //pointMat->SetMat4("View", glm::mat4(1.0f));
         pointMat->SetMat4("Projection", Camera::activeCamera->matProjection);
-        //pointMat->SetMat4("Projection", glm::mat4(1.0f));
-        mesh->Draw(GL_POINTS);
+
+        selectedMat->Bind();
+        selectedMat->SetMat4("Model", glm::mat4(1.0f));
+        selectedMat->SetMat4("View", Camera::activeCamera->matView);
+        selectedMat->SetMat4("Projection", Camera::activeCamera->matProjection);
+        
+        if ((int)selected & (int)HandleType::Left) selectedMat->Bind();
+        else /* Left not selected */               pointMat->Bind();
+        mesh->DrawPartial(0, 1, GL_POINTS);
+        
+        if ((int)selected & (int)HandleType::Center) selectedMat->Bind();
+        else /* Center not selected */               pointMat->Bind();
+        mesh->DrawPartial(1, 2, GL_POINTS);
+        
+        if ((int)selected & (int)HandleType::Right) selectedMat->Bind();
+        else /* Right not selected */               pointMat->Bind();
+        mesh->DrawPartial(2, 3, GL_POINTS);
     }
 };

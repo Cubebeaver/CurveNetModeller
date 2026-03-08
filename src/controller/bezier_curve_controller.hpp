@@ -24,7 +24,7 @@ private:
     std::unique_ptr<BezierCurveView> viewCurve;
     std::vector<std::unique_ptr<BezierNodeView>> viewNodes;
     
-    BezierNode* selected = nullptr;
+    int selected = -1;
     HandleType selectedPartType = HandleType::None;
 public:
 
@@ -69,30 +69,22 @@ public:
     }
 
     void SetNodeMode(HandleMode newMode) {
-        if (!selected) return;
+        if (selected == -1) return;
 
-        selected->SetMode(newMode);
+        modelCurve->Nodes[selected].SetMode(newMode);
         SyncViews();
     }
 
     void Present() {
         viewCurve->Draw();
-        for (auto& nodeView : viewNodes) {
-            nodeView->Draw();
+        for (int i = 0; i < viewNodes.size(); i++) {
+            if (i == selected) viewNodes[i]->Draw(selectedPartType);
+            else               viewNodes[i]->Draw();
         }
     }
 
     // $
 private:
-    glm::vec2 CursorToScreen(glm::vec2 cursor) {
-        const auto& flipped = glm::vec2(cursor.x, vp->viewportBuffer->Height - cursor.y);
-        const auto& size = glm::vec2(vp->viewportBuffer->Width, vp->viewportBuffer->Height);
-        const auto& ndc = 2.0f * (flipped / size) - glm::vec2(1, 1);
-        const auto& zoomCorrected = Camera::activeCamera->fieldOfView * glm::vec2(ndc.x * Camera::activeCamera->aspect / 2, ndc.y / 2);
-        const auto& positionCorrected = zoomCorrected + glm::vec2(Camera::activeCamera->position);
-        return positionCorrected;
-    }
-
     void SyncViews() {
         viewCurve->Update(*modelCurve);
 
@@ -105,63 +97,100 @@ private:
     }
 
     void OnClick(const glm::vec2& position, ImGuiMouseButton_ button) {
-        if (modelCurve.get()->Nodes.empty()) return;
+        if (modelCurve->Nodes.empty()) return;
         if (button != ImGuiMouseButton_Left) return;
-
-        glm::vec2 screen = CursorToScreen(position);
         
         float closestDistance = std::numeric_limits<float>::max();
-        for (auto& node : modelCurve.get()->Nodes) {
-            glm::vec3& center = node.GetPosition();
-            glm::vec3& left = node.GetLeftHandle();
-            glm::vec3& right = node.GetRightHandle();
+        for (int i = 0; i < modelCurve->Nodes.size(); i++) {
+            const BezierNode& node = modelCurve->Nodes[i];
 
-            float centerDistance = glm::length(center - glm::vec3(screen, 0));
-            float leftDistance = glm::length(left - glm::vec3(screen, 0));
-            float rightDistance = glm::length(right - glm::vec3(screen, 0));
+            const glm::vec3& center = node.GetPosition();
+            const glm::vec3& left = node.GetLeftHandle();
+            const glm::vec3& right = node.GetRightHandle();
+
+            float centerDistance = Camera::activeCamera->DistanceToRay(center, position);
+            float leftDistance = Camera::activeCamera->DistanceToRay(left, position);
+            float rightDistance = Camera::activeCamera->DistanceToRay(right, position);
 
             if (centerDistance < closestDistance) {
-                selected = &node;
+                selected = i;
                 selectedPartType = HandleType::Center;
                 closestDistance = centerDistance;
             }
             if (leftDistance < closestDistance) {
-                selected = &node;
+                selected = i;
                 selectedPartType = HandleType::Left;
                 closestDistance = leftDistance;
             }
             if (rightDistance < closestDistance) {
-                selected = &node;
+                selected = i;
                 selectedPartType = HandleType::Right;
                 closestDistance = rightDistance;
             }
         }
 
         if (closestDistance >= 0.1f) {
-            selected = nullptr;
+            selected = -1;
             selectedPartType = HandleType::None;
         }
     }
 
     void OnDrag(const glm::vec2& totalDelta, const glm::vec2& delta, const glm::vec2& position, ImGuiMouseButton_ button) {
-        if (button != ImGuiMouseButton_Left) return;
-        if (!selected) return;
+        if (button != ImGuiMouseButton_Left || selected == -1) return;
 
-        const glm::vec3& newPos = glm::vec3(CursorToScreen(position), 0);
+        // 1. Lekérjük a jelenleg kiválasztott pont/handle 3D-s pozícióját
+        BezierNode& node = modelCurve->Nodes[selected];
+        glm::vec3 currentPos3D;
+        
         switch(selectedPartType) {
-            case HandleType::Center:
-                selected->SetPosition(newPos);
-            break;
-            case HandleType::Left:
-                selected->SetLeftHandle(newPos);
-            break;
-            case HandleType::Right:
-                selected->SetRightHandle(newPos);
-            break;
-            
+            case HandleType::Center: currentPos3D = node.GetPosition(); break;
+            case HandleType::Left:   currentPos3D = node.GetLeftHandle(); break;
+            case HandleType::Right:  currentPos3D = node.GetRightHandle(); break;
+            default: return;
+        }
+
+        // --- EZEKET A VÁLTOZÓKAT A KAMERÁBÓL/VIEWPORTBÓL KELL LEKÉRNED ---
+        glm::vec3 cameraPos = Camera::activeCamera->position;
+        glm::vec3 cameraFront = Camera::activeCamera->direction; // A kamera előre mutató vektora
+        glm::mat4 view = Camera::activeCamera->matView;
+        glm::mat4 proj = Camera::activeCamera->matProjection;
+        // -----------------------------------------------------------------
+
+        // 2. A "Munkasík" definiálása
+        // A sík normálvektora a kamera iránya (így a sík párhuzamos a képernyővel)
+        glm::vec3 planeNormal = cameraFront; 
+
+        // 3. A jelenlegi és az előző egérpozícióhoz tartozó 3D-s sugarak (Rays)
+        glm::vec3 currentRayDir = Camera::activeCamera->GetRayDirectionFromScreen(position.x, position.y);
+        glm::vec3 prevRayDir = Camera::activeCamera->GetRayDirectionFromScreen(position.x - delta.x, position.y - delta.y);
+
+        // 4. Egy kis lambda függvény, ami kiszámolja a sugár és a munkasík metszéspontját
+        auto intersectPlane = [&](glm::vec3 rayDir) -> glm::vec3 {
+            float denom = glm::dot(planeNormal, rayDir);
+            if (std::abs(denom) > 0.0001f) {
+                // A sík távolsága a kamerától a pont irányában
+                float t = glm::dot(currentPos3D - cameraPos, planeNormal) / denom;
+                return cameraPos + rayDir * t;
+            }
+            return currentPos3D; // Fallback
+        };
+
+        // 5. A 3D-s elmozdulás kiszámítása
+        glm::vec3 hitCurrent = intersectPlane(currentRayDir);
+        glm::vec3 hitPrev = intersectPlane(prevRayDir);
+        
+        glm::vec3 translation3D = hitCurrent - hitPrev;
+        glm::vec3 newPos3D = currentPos3D + translation3D;
+
+        // 6. Az új pozíció beállítása a modellben
+        switch(selectedPartType) {
+            case HandleType::Center: node.SetPosition(newPos3D); break;
+            case HandleType::Left:   node.SetLeftHandle(newPos3D); break;
+            case HandleType::Right:  node.SetRightHandle(newPos3D); break;
             default: break;
         }
         
+        // (Ha már bekerült az OnCurveChanged esemény a Modellbe, ezt a sort törölheted!)
         SyncViews();
     }
 };

@@ -160,6 +160,43 @@ public:
         UpdateProjection();
     }
 
+
+    glm::vec3 GetRayDirectionFromScreen(float mouseX, float mouseY) const {
+        float ndcX = (2.0f * mouseX) / screenWidth - 1.0f;
+        float ndcY = 1.0f - (2.0f * mouseY) / screenHeight; 
+        
+        // NDC -> Clip Space
+        glm::vec4 ray_clip = glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
+
+        // Clip Space -> Eye Space
+        glm::vec4 ray_eye = glm::inverse(matProjection) * ray_clip;
+        ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
+
+        // Eye Space -> World Space
+        glm::vec3 ray_world = glm::vec3(glm::inverse(matView) * ray_eye);
+        
+        return glm::normalize(ray_world);
+    }
+
+    glm::vec3 GetRayDirectionFromScreen(const glm::vec2& mousePos) const {
+        return GetRayDirectionFromScreen(mousePos.x, mousePos.y);
+    }
+
+    float DistanceToRay(const glm::vec3& pointPosition, const glm::vec3& rayDirection) const {
+        glm::vec3 camToNode = pointPosition - position;
+        float distanceToRay = glm::length(glm::cross(camToNode, rayDirection));
+        return distanceToRay;
+    }
+
+    float DistanceToRay(const glm::vec3& pointPosition, float mouseX, float mouseY) const {
+        return DistanceToRay(pointPosition, GetRayDirectionFromScreen(mouseX, mouseY));
+    }
+
+    float DistanceToRay(const glm::vec3& pointPosition, const glm::vec2& mousePos) const {
+        return DistanceToRay(pointPosition, GetRayDirectionFromScreen(mousePos));
+    }
+
+
     void SetCamera(glm::vec3 pos, glm::vec3 rot, float fov, float zNear, float zFar) { SetTransform(pos, rot); SetFrustum(fov, zNear, zFar); }
     void SetCamera(float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float fov, float zNear, float zFar) { SetTransform(glm::vec3(posX, posY, posZ), glm::vec3(rotX, rotY, rotZ)); SetFrustum(fov, zNear, zFar); }
 
