@@ -3,7 +3,9 @@
 #include <glm/glm.hpp>
 #include "model/bezier_curve.h"
 
-#include "gl_engine/gl_engine.h"
+#include "gl_engine/mesh.hpp"
+#include "gl_engine/material.hpp"
+#include "gl_engine/camera.hpp"
 
 class BezierCurveView {
 private:
@@ -42,6 +44,11 @@ public:
     void Draw() {
         glLineWidth(2);
         material->Bind();
+        material->SetMat4("Model", glm::mat4(1.0f));
+        material->SetMat4("View", Camera::activeCamera->matView);
+        //material->SetMat4("View", glm::mat4(1.0f));
+        material->SetMat4("Projection", Camera::activeCamera->matProjection);
+        //material->SetMat4("Projection", glm::mat4(1.0f));
         mesh->Draw(GL_LINE_STRIP);
     }
 };

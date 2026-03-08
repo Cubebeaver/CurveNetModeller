@@ -37,7 +37,7 @@ public:
         modelCurve->AddNode(BezierNode(glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec3( 0.3f, -0.7f, 0.0f), glm::vec3( 0.7f, -0.3f, 0.0f)));
         
         //TODO ezt flyweight-el vagy valamivel megoldani
-        sharedShader = std::make_unique<Shader>("resources/shaders/color.vert", "resources/shaders/color.frag");
+        sharedShader = std::make_unique<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag");
         viewCurve = std::make_unique<BezierCurveView>(sharedShader.get());
         
         SyncViews();
@@ -82,11 +82,15 @@ public:
         }
     }
 
+    // $
 private:
     glm::vec2 CursorToScreen(glm::vec2 cursor) {
         const auto& flipped = glm::vec2(cursor.x, vp->viewportBuffer->Height - cursor.y);
         const auto& size = glm::vec2(vp->viewportBuffer->Width, vp->viewportBuffer->Height);
-        return flipped / size * glm::vec2(2, 2) - glm::vec2(1, 1);
+        const auto& ndc = 2.0f * (flipped / size) - glm::vec2(1, 1);
+        const auto& zoomCorrected = Camera::activeCamera->fieldOfView * glm::vec2(ndc.x * Camera::activeCamera->aspect / 2, ndc.y / 2);
+        const auto& positionCorrected = zoomCorrected + glm::vec2(Camera::activeCamera->position);
+        return positionCorrected;
     }
 
     void SyncViews() {
@@ -140,6 +144,7 @@ private:
     }
 
     void OnDrag(const glm::vec2& totalDelta, const glm::vec2& delta, const glm::vec2& position, ImGuiMouseButton_ button) {
+        if (button != ImGuiMouseButton_Left) return;
         if (!selected) return;
 
         const glm::vec3& newPos = glm::vec3(CursorToScreen(position), 0);

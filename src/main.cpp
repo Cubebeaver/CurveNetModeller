@@ -1,4 +1,5 @@
 #include <iostream>
+#include <numbers>
 
 // Fontos: A glad.h-t MINDIG a glfw3.h előtt kell include-olni!
 #include <glad/glad.h>
@@ -21,6 +22,7 @@
 #include "gl_engine/texture.hpp"
 #include "gl_engine/object.hpp"
 #include "gl_engine/framebuffer.hpp"
+#include "gl_engine/camera.hpp"
 
 // Model
 #include "model/bezier_node.h"
@@ -130,7 +132,7 @@ void UI(const Viewport& viewport) {
     ImGui::DockSpaceOverViewport();
 
     // --- ImGui UI definíció kezdete ---
-    ImGui::SetNextWindowSize(ImVec2(720, 720), ImGuiCond_FirstUseEver);
+    
     
     viewport.Draw();
     
@@ -243,8 +245,13 @@ int main() {
     Object obj1(&trafo, &mesh, &orange);
     Object obj2(&trafo, &mesh, &blue);
 
+
     Viewport vp;
     c = new BezierCurveController(&vp);
+
+
+    OrthoCamera cam(glm::vec3(0, 0, 1), glm::vec3(std::numbers::pi_v<float>, std::numbers::pi_v<float>, 0), 1, 0.1f, 100.0f);
+    cam.Init();
 
     // MAIN LOOP
     while (!glfwWindowShouldClose(mainWindow)) {
@@ -252,9 +259,12 @@ int main() {
         
         glClearColor(0.15f, 0.15f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
         // Scene
         vp.BindFrameBuffer();
+
+        Camera::activeCamera->UpdateFrameSize(vp.viewportBuffer->Width, vp.viewportBuffer->Height);
+
         if (checked) obj1.Draw();
         else         obj2.Draw();
         c->Present();
@@ -278,3 +288,15 @@ int main() {
 
     return 0;
 }
+
+// float* proj = cam.GetActiveProjectionMatrix();
+// std::cout << proj[0] << " " << proj[1] << " " << proj[2] << " " << proj[3] << std::endl;
+// std::cout << proj[4] << " " << proj[5] << " " << proj[6] << " " << proj[7] << std::endl;
+// std::cout << proj[8] << " " << proj[9] << " " << proj[10] << " " << proj[11] << std::endl;
+// std::cout << proj[12] << " " << proj[13] << " " << proj[14] << " " << proj[15] << std::endl;
+
+// float* view = cam.GetActiveViewMatrix();
+// std::cout << view[0] << " " << view[1] << " " << view[2] << " " << view[3] << std::endl;
+// std::cout << view[4] << " " << view[5] << " " << view[6] << " " << view[7] << std::endl;
+// std::cout << view[8] << " " << view[9] << " " << view[10] << " " << view[11] << std::endl;
+// std::cout << view[12] << " " << view[13] << " " << view[14] << " " << view[15] << std::endl;

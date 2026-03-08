@@ -33,6 +33,7 @@ public:
     }
 
     void Draw() const {
+        ImGui::SetNextWindowSize(ImVec2(720, 720), ImGuiCond_FirstUseEver);
         ImGui::Begin("Viewport");
         
         bool hovered = ImGui::IsWindowHovered();
@@ -62,6 +63,8 @@ public:
                 ImVec2 totalDelta = ImGui::GetMouseDragDelta();
 
                 OnDrag.Invoke(glm::vec2(totalDelta.x, totalDelta.y), glm::vec2(delta.x, delta.y), glm::vec2(relativeX, relativeY), ImGuiMouseButton_Right);
+
+                Camera::activeCamera->Translate(Camera::activeCamera->fieldOfView * -delta.x / viewportBuffer->Height, Camera::activeCamera->fieldOfView * delta.y / viewportBuffer->Height, 0);
             }
 
             
@@ -70,6 +73,9 @@ public:
             
             if (wheel != 0 || wheelH != 0) {
                 OnScroll.Invoke(glm::vec2(wheelH, wheel), glm::vec2(relativeX, relativeY));
+
+                Camera::activeCamera->fieldOfView *= 1 + 0.1f * -wheel;
+                Camera::activeCamera->UpdateProjection();
             }
         }
 

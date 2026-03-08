@@ -9,7 +9,7 @@ BezierNode::BezierNode(HandleMode mode)
     : BezierNode(glm::vec3(0, 0, 0), glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), mode) { }
 
 BezierNode::BezierNode(glm::vec3 position, HandleMode mode)
-    : BezierNode(position, glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), mode) { }
+    : BezierNode(position, position + glm::vec3(-1, 0, 0), position + glm::vec3(1, 0, 0), mode) { }
 
 void BezierNode::SetPosition(const glm::vec3& newPos) {
     glm::vec3 delta = newPos - Position;
