@@ -24,7 +24,7 @@ public:
     glm::vec3 RightHandle;
     HandleMode Mode;
     
-    BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode = HandleMode::Aligned);
+    BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode = HandleMode::Symmetric);
     BezierNode(HandleMode mode = HandleMode::Aligned);
     BezierNode(glm::vec3 position, HandleMode mode = HandleMode::Aligned);
 

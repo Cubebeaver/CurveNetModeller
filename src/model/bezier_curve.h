@@ -20,5 +20,6 @@ public:
     void RemoveNode(const BezierNode& node);
 
     glm::vec3 EvaluateSegment(int segmentIndex, float t) const;
+    glm::vec3 EvaluateCurve(float t) const;
     std::vector<glm::vec3> GenerateRenderPoints(int resolution = 50) const;
 };

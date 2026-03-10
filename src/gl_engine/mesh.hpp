@@ -55,11 +55,13 @@ public:
     }
 
     void ReplaceVertices(const std::vector<VertexType>& newVertices) {
+        Bind();
         VertexBufferBytes = newVertices.size() * sizeof(VertexType);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, VertexBufferBytes, newVertices.data(), GL_STATIC_DRAW);
     }
     void ReplaceIndices(const std::vector<GLuint>& newIndices) {
+        Bind();
         IndexBufferBytes = newIndices.size() * sizeof(GLuint);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexBufferBytes, newIndices.data(), GL_STATIC_DRAW);
@@ -70,11 +72,13 @@ public:
     }
 
     void UpdateVertices(const std::vector<VertexType>& newVertices, int offset = 0) {
+        Bind();
         int newVerticesBytes = newVertices.size() * sizeof(VertexType);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(VertexType), newVerticesBytes, newVertices.data());
     }
     void UpdateIndices(const std::vector<GLuint>& newIndices, int offset = 0) {
+        Bind();
         int newIndicesBytes = newIndices.size() * sizeof(GLuint);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLuint), newIndicesBytes, newIndices.data());
@@ -102,7 +106,7 @@ public:
 
         int offset = 0;
         for (int i = 0; i < VertexAttribList.size(); i++) {
-            VertexArrtribListElement& record = VertexAttribList[i];
+            const VertexArrtribListElement& record = VertexAttribList[i];
 
             glVertexAttribPointer(i, record.Number, record.DataType, record.Normalized ? GL_TRUE : GL_FALSE, Stride, (void*)(uintptr_t)offset);
             glEnableVertexAttribArray(i);
@@ -116,13 +120,13 @@ public:
     void Bind() const { glBindVertexArray(VAO); }
 
     void Draw(GLenum mode = GL_TRIANGLES) const {
-        glBindVertexArray(VAO);
+        Bind();
 
         glDrawElements(mode, IndexBufferBytes / sizeof(GLuint), GL_UNSIGNED_INT, 0);
     }
 
     void DrawPartial(int start, int end, GLenum mode = GL_TRIANGLES) const {
-        glBindVertexArray(VAO);
+        Bind();
 
         glDrawElements(mode, end - start, GL_UNSIGNED_INT, (void*)(uintptr_t)(start * sizeof(GLuint)));
     }

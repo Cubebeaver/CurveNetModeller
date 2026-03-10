@@ -40,7 +40,6 @@ set(MODEL_SOURCES
 # Csak a főprogramhoz tartozó fájlok (Ablakkezelés, UI)
 set(APP_SOURCES
     src/main.cpp
-    # src/view/MainWindow.cpp
 )
 
 # Az OpenGL motorhoz tartozó fáljok (Shaderek, Objectek)
@@ -118,21 +117,3 @@ add_custom_command(TARGET CurveNetModeller POST_BUILD
     # HOVÁ: Oda, ahová a CurveNetModeller.exe éppen legenerálódott, egy 'resources' almappába
     "$<TARGET_FILE_DIR:CurveNetModeller>/resources"
 )
-
-
-# ==========================================
-# 7. AddressSanitizer bekapcsolása
-# ==========================================
-
-# Engedélyezzük a leak analizátort
-if(MSVC)
-    # ASan aktiválása MSVC fordító esetén
-    add_compile_options(/fsanitize=address)
-    add_link_options(/fsanitize=address)
-
-    string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    string(REPLACE "/ZI" "/Zi" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    
-    string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-    string(REPLACE "/ZI" "/Zi" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-endif()

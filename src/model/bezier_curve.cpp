@@ -57,6 +57,13 @@ glm::vec3 BezierCurve::EvaluateSegment(int segmentIndex, float t) const {
     return point;
 }
 
+glm::vec3 BezierCurve::EvaluateCurve(float t) const {
+    int segmentIdx = t >= 1.0f ? GetSegmentCount() - 1 : (int)(GetSegmentCount() * t);
+    float localT = t * GetSegmentCount() - segmentIdx;
+
+    return EvaluateSegment(segmentIdx, localT);
+}
+
 std::vector<glm::vec3> BezierCurve::GenerateRenderPoints(int resolution) const {
     std::vector<glm::vec3> renderPoints;
     
@@ -70,7 +77,7 @@ std::vector<glm::vec3> BezierCurve::GenerateRenderPoints(int resolution) const {
 
     for (int i = 0; i < segments; ++i) {
         int steps = (i == segments - 1) ? resolution : resolution - 1;
-        
+
         for (int step = 0; step <= steps; ++step) {
             float t = static_cast<float>(step) / static_cast<float>(resolution);
             renderPoints.push_back(EvaluateSegment(i, t));

@@ -37,7 +37,9 @@
 #include "controller/bezier_curve_controller.hpp"
 
 // Util
+#include "model/coons_surface.hpp"
 #include "util/screenshot.hpp"
+#include "view/coons_surface_view.hpp"
 
 
 static int Width = 1280, Height = 720;
@@ -45,7 +47,7 @@ static int Width = 1280, Height = 720;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     Width = width;
     Height = height;
-    
+
     glViewport(0, 0, width, height);
 }
 
@@ -62,6 +64,7 @@ int GLFW_INIT(GLFWwindow** window) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
     // Ablak létrehozása
     *window = glfwCreateWindow(Width, Height, "CurveNetModeller", NULL, NULL);
@@ -92,7 +95,7 @@ int OPENGL_INIT(GLFWwindow* window) {
     }
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
 
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -132,14 +135,14 @@ void UI(const Viewport& viewport) {
     ImGui::DockSpaceOverViewport();
 
     // --- ImGui UI definíció kezdete ---
-    
-    
+
+
     viewport.Draw();
-    
-    
+
+
     ImGui::SetNextWindowSize(ImVec2(560, 720), ImGuiCond_FirstUseEver);
     ImGui::Begin("Properties");
-    
+
         ImGui::SeparatorText("Curve");
         if (ImGui::Button("Add control pont")) {
             c->AddNode();
@@ -177,11 +180,11 @@ void UI(const Viewport& viewport) {
 
     ImGui::End();
     // --- ImGui UI definíció vége ---
-    
+
     // ImGui renderelés előkészítése
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    
+
     // Ha kéne a tobb ablakos varazslat
     // if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     //     GLFWwindow* backup_current_context = glfwGetCurrentContext();
@@ -219,7 +222,7 @@ int main() {
         2, 3, 1
     };
 
-    
+
     Mesh mesh(vertexBuffer, indexBuffer);
     mesh.AddAttribPointer(3, GL_FLOAT, false)
         .AddAttribPointer(3, GL_FLOAT, false)
@@ -234,7 +237,7 @@ int main() {
     Material orange(&shader);
     orange.SetVec4("color", glm::vec4(1, 0.5f, 0, 1));
     orange.SetVec4("tint", glm::vec4(1, 0, 0, 1));
-    
+
     Material blue(&shader);
     blue.AddTexture("albedo", &texture);
     blue.SetVec4("color", glm::vec4(0, 0, 1, 1));
@@ -250,28 +253,59 @@ int main() {
     c = new BezierCurveController(&vp);
 
 
-    PerspectiveCamera cam(glm::vec3(0, 0, 1), glm::vec3(std::numbers::pi_v<float>, std::numbers::pi_v<float>, 0), 1, 0.1f, 100.0f);
+    Shader coonsMat("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag");
+
+    BezierCurve c1;
+    c1.AddNode(BezierNode(glm::vec3(-2,  0, -2), glm::vec3(-3, -1, -2), glm::vec3(-1,  1, -2)));
+    c1.AddNode(BezierNode(glm::vec3( 2,  0, -2), glm::vec3( 1,  1, -2), glm::vec3( 3, -1, -2)));
+    BezierCurve c2;
+    c2.AddNode(BezierNode(glm::vec3(-2,  0,  2), glm::vec3(-3, -1,  2), glm::vec3(-1,  1,  2)));
+    c2.AddNode(BezierNode(glm::vec3( 2,  0,  2), glm::vec3( 1,  1,  2), glm::vec3( 3, -1,  2)));
+    BezierCurve d1;
+    d1.AddNode(BezierNode(glm::vec3(-2,  0, -2), glm::vec3(-2,  1, -3), glm::vec3(-2, -1, -1)));
+    d1.AddNode(BezierNode(glm::vec3(-2,  0,  2), glm::vec3(-2, -1,  1), glm::vec3(-2,  1,  3)));
+    BezierCurve d2;
+    d2.AddNode(BezierNode(glm::vec3( 2,  0, -2), glm::vec3( 2,  1, -3), glm::vec3( 2, -1, -1)));
+    d2.AddNode(BezierNode(glm::vec3( 2,  0,  2), glm::vec3( 2, -1,  1), glm::vec3( 2,  1,  3)));
+
+    CoonsSurface coons(c1, c2, d1, d2);
+    CoonsSurfaceView coonsView(&coonsMat);
+    coonsView.Update(coons);
+
+
+    PerspectiveCamera cam(
+        glm::vec3(0, 0, 5),
+        glm::vec3(std::numbers::pi_v<float>, std::numbers::pi_v<float>, 0),
+        1,
+        0.1f,
+        100.0f
+    );
     cam.Init();
 
     // MAIN LOOP
     while (!glfwWindowShouldClose(mainWindow)) {
         glfwPollEvents();
-        
+
         glClearColor(0.15f, 0.15f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Scene
         vp.BindFrameBuffer();
+            glEnable(GL_DEPTH_TEST);
+            vp.viewportBuffer->Clear();
 
-        Camera::activeCamera->UpdateFrameSize(vp.viewportBuffer->Width, vp.viewportBuffer->Height);
+                Camera::activeCamera->UpdateFrameSize(vp.viewportBuffer->Width, vp.viewportBuffer->Height);
 
-        if (checked) obj1.Draw();
-        else         obj2.Draw();
-        c->Present();
+                //if (checked) obj1.Draw();
+                //else         obj2.Draw();
+                c->Present();
+                coonsView.Draw();
+
+            glDisable(GL_DEPTH_TEST);
         vp.UnbindFrameBuffer();
         glViewport(0, 0, Width, Height);
 
-        UI(vp);
+            UI(vp);
 
         glfwSwapBuffers(mainWindow);
     }
