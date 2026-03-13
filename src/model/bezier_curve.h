@@ -11,6 +11,8 @@
 class BezierCurve {
 public:
     std::vector<BezierNode> Nodes;
+
+    Event<> BezierCurveChanged;
     
     int GetSegmentCount() const;
 

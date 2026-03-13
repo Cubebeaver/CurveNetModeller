@@ -10,10 +10,14 @@ int BezierCurve::GetSegmentCount() const {
 
 void BezierCurve::AddNode(const BezierNode& node) {
     Nodes.push_back(node);
+    Nodes.back().BezierNodeChanged += [&](){ BezierCurveChanged.Invoke(); };
+    BezierCurveChanged.Invoke();
 }
 
 void BezierCurve::AddNode(const glm::vec3& position) {
     Nodes.emplace_back(position);
+    Nodes.back().BezierNodeChanged += [&](){ BezierCurveChanged.Invoke(); };
+    BezierCurveChanged.Invoke();
 }
 
 void BezierCurve::RemoveNode(const BezierNode& node) {
@@ -28,6 +32,8 @@ void BezierCurve::RemoveNode(const BezierNode& node) {
     if (idx >= 0) {
         Nodes.erase(Nodes.begin() + idx);
     }
+
+    BezierCurveChanged.Invoke();
 }
 
 glm::vec3 BezierCurve::EvaluateSegment(int segmentIndex, float t) const {

@@ -27,12 +27,10 @@ public:
         material->SetVec4("color", glm::vec4(0, 1, 1, 1));
     }
 
-    void Update(const CoonsSurface& curveModel) {
-        std::cout << "UPDATE!!!!" << std::endl;
-
-        int res = 20;
-        const std::vector<glm::vec3>& points = curveModel.GetRenderPoints(res);
-        const std::vector<glm::vec3>& normals = curveModel.GetRenderNormals(res);
+    void Update(const CoonsSurface& surfaceModel) {
+        int res = 10;
+        const std::vector<glm::vec3>& points = surfaceModel.GetRenderPoints(res);
+        const std::vector<glm::vec3>& normals = surfaceModel.GetRenderNormals(res);
 
         if (points.size() != normals.size()) std::cout << "[-] Na itt valami nagyon félrement ¯\\_(ツ)_/¯" << std::endl;
 

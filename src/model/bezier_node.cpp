@@ -3,7 +3,10 @@
 
 
 BezierNode::BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode) 
-    : Position(position), LeftHandle(leftHandle), RightHandle(rightHandle), Mode(mode) { }
+    : Position(position), LeftHandle(leftHandle), RightHandle(rightHandle), Mode(mode) {
+    EnforceMode(true);
+    BezierNodeChanged.Invoke();
+}
 
 BezierNode::BezierNode(HandleMode mode) 
     : BezierNode(glm::vec3(0, 0, 0), glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), mode) { }
@@ -16,22 +19,29 @@ void BezierNode::SetPosition(const glm::vec3& newPos) {
     Position = newPos;
     LeftHandle += delta;
     RightHandle += delta;
+
+    BezierNodeChanged.Invoke();
 }
 
 void BezierNode::SetLeftHandle(const glm::vec3& newPos) {
     LeftHandle = newPos;
     EnforceMode(true);
+
+    BezierNodeChanged.Invoke();
 }
 
 void BezierNode::SetRightHandle(const glm::vec3& newPos) {
     RightHandle = newPos;
     EnforceMode(false);
+
+    BezierNodeChanged.Invoke();
 }
 
 void BezierNode::SetMode(HandleMode newMode) {
     Mode = newMode;
     if (Mode != HandleMode::Free) {
         EnforceMode(true);
+        BezierNodeChanged.Invoke();
     }
 }
 

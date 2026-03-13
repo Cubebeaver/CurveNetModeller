@@ -12,6 +12,7 @@ class BezierCurveCurvatureCombView {
 private:
     std::unique_ptr<Mesh> mesh;
     std::unique_ptr<Material> material;
+    bool normalType = false;
 
 public:
     BezierCurveCurvatureCombView(Shader* sharedShader) {
@@ -24,10 +25,19 @@ public:
         material->SetVec4("color", glm::vec4(0, 1, 0.5f, 1));
     }
 
+    void SetNormalType(bool normalType) {
+        this->normalType = normalType;
+    }
+
     void Update(const BezierCurve& curveModel, int resolution = 50) {
         const std::vector<glm::vec3>& points =  curveModel.GenerateRenderPoints(resolution);
         const std::vector<float>& curvatures = curveModel.GenerateRenderCurvatures(resolution);
-        const std::vector<glm::vec3>& normals = curveModel.GenerateRenderCameraNormals(resolution, Camera::activeCamera->direction);
+        std::vector<glm::vec3> normals;
+        if (normalType) {
+            normals = curveModel.GenerateRenderCameraNormals(resolution, Camera::activeCamera->direction);
+        } else {
+            normals = curveModel.GenerateRenderNormals(resolution);
+        }
 
         std::vector<float> verts;
         verts.reserve(points.size() * 3 * 2);

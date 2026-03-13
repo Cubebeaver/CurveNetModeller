@@ -13,7 +13,14 @@ public:
     BezierCurve& d1;
     BezierCurve& d2;
 
-    CoonsSurface(BezierCurve& c1, BezierCurve& c2, BezierCurve& d1, BezierCurve& d2) : c1(c1), c2(c2), d1(d1), d2(d2) {}
+    Event<> CoonsSurfaceChanged;
+
+    CoonsSurface(BezierCurve& c1, BezierCurve& c2, BezierCurve& d1, BezierCurve& d2) : c1(c1), c2(c2), d1(d1), d2(d2) {
+        c1.BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+        c2.BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+        d1.BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+        d2.BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    }
 
     glm::vec3 Evaluate(float u, float v) const {
         const auto& S_u0 = c1.EvaluateCurve(u);

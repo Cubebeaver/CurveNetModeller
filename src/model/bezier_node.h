@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 
+#include "util/event.hpp"
 
 
 enum class HandleType {
@@ -23,6 +24,8 @@ public:
     glm::vec3 LeftHandle;
     glm::vec3 RightHandle;
     HandleMode Mode;
+
+    Event<> BezierNodeChanged;
     
     BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode = HandleMode::Symmetric);
     BezierNode(HandleMode mode = HandleMode::Aligned);

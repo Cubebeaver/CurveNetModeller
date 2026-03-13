@@ -14,7 +14,8 @@
 
 class BezierCurveController {
 private:
-    int resolution = 100;
+    int resolution = 20;
+    bool showCurvature = true;
 
     Viewport* vp;
 
@@ -32,25 +33,24 @@ public:
     BezierCurveController(Viewport* viewport) : vp(viewport) {
         modelCurve = std::make_unique<BezierCurve>();
         
-        //DEBUG
-        modelCurve->AddNode(BezierNode(glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec3(-0.7f,  0.3f, 0.0f), glm::vec3(-0.3f,  0.7f, 0.0f)));
-        modelCurve->AddNode(BezierNode(glm::vec3( 0.0f,  0.0f, 0.0f), glm::vec3(-0.2f, -0.2f, 0.0f), glm::vec3( 0.2f,  0.2f, 0.0f)));
-        modelCurve->AddNode(BezierNode(glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec3( 0.3f, -0.7f, 0.0f), glm::vec3( 0.7f, -0.3f, 0.0f)));
-        
         //TODO ezt flyweight-el vagy valamivel megoldani
         sharedShader = std::make_unique<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag");
         viewCurve = std::make_unique<BezierCurveView>(sharedShader.get());
         curvatureView = std::make_unique<BezierCurveCurvatureCombView>(sharedShader.get());
-        
-        SyncViews();
+
+        modelCurve->BezierCurveChanged += [&](){ SyncViews(); };
 
         vp->OnClick += [this] (const glm::vec2& position, ImGuiMouseButton_ button) { this->OnClick(position, button); };
         vp->OnDrag += [this] (const glm::vec2& totalDelta, const glm::vec2& delta, const glm::vec2& position, ImGuiMouseButton_ button) { this->OnDrag(totalDelta, delta, position, button); };
     }
 
+    BezierCurve& GetModel() { return *modelCurve; }
+
+    void AddNode(const BezierNode& node) {
+        modelCurve->AddNode(node);
+    }
     void AddNode(glm::vec3 position) {
         modelCurve->AddNode(BezierNode(position));
-        SyncViews();
     }
     void AddNode() {
         if (modelCurve->Nodes.empty()) {
@@ -60,26 +60,36 @@ public:
 
         const auto& last = modelCurve->Nodes.back();
         modelCurve->AddNode(BezierNode(last.GetPosition() + glm::vec3(0.1, 0, 0), last.GetLeftHandle() + glm::vec3(0.1, 0, 0), last.GetRightHandle() + glm::vec3(0.1, 0, 0), last.GetMode()));
-        SyncViews();
     }
 
     void RemoveNode() {
         if (modelCurve->Nodes.empty()) return;
         
         modelCurve->RemoveNode(modelCurve->Nodes.back());
-        SyncViews();
     }
 
     void SetNodeMode(HandleMode newMode) {
         if (selected == -1) return;
 
         modelCurve->Nodes[selected].SetMode(newMode);
+    }
+
+    void SetNormalType(bool normalType) {
+        curvatureView->SetNormalType(normalType);
+        SyncViews();
+    }
+    void SetCurvatureVisibility(bool visible) {
+        showCurvature = visible;
+    }
+    void SetResolution(int newResolution) {
+        if (resolution == newResolution) return;
+        resolution = newResolution;
         SyncViews();
     }
 
     void Present() {
         viewCurve->Draw();
-        curvatureView->Draw();
+        if (showCurvature) curvatureView->Draw();
         for (int i = 0; i < viewNodes.size(); i++) {
             if (i == selected) viewNodes[i]->Draw(selectedPartType);
             else               viewNodes[i]->Draw();
@@ -89,7 +99,7 @@ public:
     // $
     void SyncViews() {
         viewCurve->Update(*modelCurve, resolution);
-        curvatureView->Update(*modelCurve, resolution);
+        if (showCurvature) curvatureView->Update(*modelCurve, resolution);
 
         viewNodes.clear();
         for (const auto& node : modelCurve->Nodes) {
@@ -193,8 +203,5 @@ private:
             case HandleType::Right:  node.SetRightHandle(newPos3D); break;
             default: break;
         }
-        
-        // (Ha már bekerült az OnCurveChanged esemény a Modellbe, ezt a sort törölheted!)
-        SyncViews();
     }
 };
