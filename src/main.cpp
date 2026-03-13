@@ -210,43 +210,15 @@ int main() {
         return -3;
     }
 
-    const std::vector<float> vertexBuffer {
-//       posx   posy   posz     norx  nory  norz     r  g  b  a     u  v
-        -1.0f, -1.0f,  0.0f,    0.0f, 0.0f, 1.0f,    1, 0, 0, 1,    0, 0,
-        -1.0f,  1.0f,  0.0f,    0.0f, 0.0f, 1.0f,    0, 1, 0, 1,    0, 1,
-         1.0f, -1.0f,  0.0f,    0.0f, 0.0f, 1.0f,    0, 0, 1, 1,    1, 0,
-         1.0f,  1.0f,  0.0f,    0.0f, 0.0f, 1.0f,    1, 1, 0, 1,    1, 1
-    };
-    const std::vector<GLuint> indexBuffer {
-        0, 2, 1,
-        2, 3, 1
-    };
 
-
-    Mesh mesh(vertexBuffer, indexBuffer);
-    mesh.AddAttribPointer(3, GL_FLOAT, false)
-        .AddAttribPointer(3, GL_FLOAT, false)
-        .AddAttribPointer(4, GL_FLOAT, false)
-        .AddAttribPointer(2, GL_FLOAT, false)
-        .FinishVertexAttribs();
-
-    Shader shader("resources/shaders/screen.vert", "resources/shaders/screen.frag");
-
-    Texture texture("resources/images/Blueprint.png", AlphaMode::AplhaClip);
-
-    Material orange(&shader);
-    orange.SetVec4("color", glm::vec4(1, 0.5f, 0, 1));
-    orange.SetVec4("tint", glm::vec4(1, 0, 0, 1));
-
-    Material blue(&shader);
-    blue.AddTexture("albedo", &texture);
-    blue.SetVec4("color", glm::vec4(0, 0, 1, 1));
-    blue.SetVec4("tint", glm::vec4(0, 0, 1, 1));
-
-    Transform trafo;
-
-    Object obj1(&trafo, &mesh, &orange);
-    Object obj2(&trafo, &mesh, &blue);
+    PerspectiveCamera cam(
+        glm::vec3(0, 0, 5),
+        glm::vec3(std::numbers::pi_v<float>, std::numbers::pi_v<float>, 0),
+        1,
+        0.1f,
+        100.0f
+    );
+    cam.Init();
 
 
     Viewport vp;
@@ -272,16 +244,6 @@ int main() {
     CoonsSurfaceView coonsView(&coonsMat);
     coonsView.Update(coons);
 
-
-    PerspectiveCamera cam(
-        glm::vec3(0, 0, 5),
-        glm::vec3(std::numbers::pi_v<float>, std::numbers::pi_v<float>, 0),
-        1,
-        0.1f,
-        100.0f
-    );
-    cam.Init();
-
     // MAIN LOOP
     while (!glfwWindowShouldClose(mainWindow)) {
         glfwPollEvents();
@@ -296,8 +258,8 @@ int main() {
 
                 Camera::activeCamera->UpdateFrameSize(vp.viewportBuffer->Width, vp.viewportBuffer->Height);
 
-                //if (checked) obj1.Draw();
-                //else         obj2.Draw();
+                c->SyncViews();
+
                 c->Present();
                 coonsView.Draw();
 

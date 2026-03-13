@@ -7,21 +7,22 @@
 #include <view/bezier_node_view.hpp>
 #include <view/bezier_curve_view.hpp>
 
+#include "view/bezier_curve_curvature_comb_view.hpp"
 #include "workspace/viewport.hpp"
-
-
-
 
 
 
 class BezierCurveController {
 private:
+    int resolution = 100;
+
     Viewport* vp;
 
     std::unique_ptr<BezierCurve> modelCurve;
     
     std::unique_ptr<Shader> sharedShader;
     std::unique_ptr<BezierCurveView> viewCurve;
+    std::unique_ptr<BezierCurveCurvatureCombView> curvatureView;
     std::vector<std::unique_ptr<BezierNodeView>> viewNodes;
     
     int selected = -1;
@@ -39,6 +40,7 @@ public:
         //TODO ezt flyweight-el vagy valamivel megoldani
         sharedShader = std::make_unique<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag");
         viewCurve = std::make_unique<BezierCurveView>(sharedShader.get());
+        curvatureView = std::make_unique<BezierCurveCurvatureCombView>(sharedShader.get());
         
         SyncViews();
 
@@ -77,6 +79,7 @@ public:
 
     void Present() {
         viewCurve->Draw();
+        curvatureView->Draw();
         for (int i = 0; i < viewNodes.size(); i++) {
             if (i == selected) viewNodes[i]->Draw(selectedPartType);
             else               viewNodes[i]->Draw();
@@ -84,9 +87,9 @@ public:
     }
 
     // $
-private:
     void SyncViews() {
-        viewCurve->Update(*modelCurve);
+        viewCurve->Update(*modelCurve, resolution);
+        curvatureView->Update(*modelCurve, resolution);
 
         viewNodes.clear();
         for (const auto& node : modelCurve->Nodes) {
@@ -95,6 +98,7 @@ private:
             viewNodes.push_back(std::move(nodeView));
         }
     }
+private:
 
     void OnClick(const glm::vec2& position, ImGuiMouseButton_ button) {
         if (modelCurve->Nodes.empty()) return;

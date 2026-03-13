@@ -23,8 +23,8 @@ public:
         material->SetVec4("color", glm::vec4(0, 1, 1, 1));
     }
 
-    void Update(const BezierCurve& curveModel) {
-        const std::vector<glm::vec3>& points = curveModel.GenerateRenderPoints(20);
+    void Update(const BezierCurve& curveModel, int resolution = 50) {
+        const std::vector<glm::vec3>& points = curveModel.GenerateRenderPoints(resolution);
 
         std::vector<float> verts; 
         verts.reserve(points.size() * 3);
