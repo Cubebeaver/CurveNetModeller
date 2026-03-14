@@ -15,7 +15,8 @@
 class BezierCurveController {
 private:
     int resolution = 20;
-    bool showCurvature = true;
+    float length = 1.0f;
+    bool showCurvature = false;
 
     Viewport* vp;
 
@@ -99,7 +100,7 @@ public:
     // $
     void SyncViews() {
         viewCurve->Update(*modelCurve, resolution);
-        if (showCurvature) curvatureView->Update(*modelCurve, resolution);
+        if (showCurvature) curvatureView->Update(*modelCurve, resolution, length);
 
         viewNodes.clear();
         for (const auto& node : modelCurve->Nodes) {
@@ -108,6 +109,12 @@ public:
             viewNodes.push_back(std::move(nodeView));
         }
     }
+
+    void SetCombLength(float length) {
+        this->length = length;
+        curvatureView->Update(*modelCurve, resolution, length);
+    }
+
 private:
 
     void OnClick(const glm::vec2& position, ImGuiMouseButton_ button) {

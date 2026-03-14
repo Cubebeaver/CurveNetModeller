@@ -18,19 +18,14 @@
 // GlEngine
 #include "gl_engine/shader.hpp"
 #include "gl_engine/material.hpp"
-#include "gl_engine/mesh.hpp"
 #include "gl_engine/texture.hpp"
-#include "gl_engine/object.hpp"
 #include "gl_engine/framebuffer.hpp"
 #include "gl_engine/camera.hpp"
 
 // Model
 #include "model/bezier_node.h"
-#include "model/bezier_curve.h"
 
 // Views
-#include "view/bezier_node_view.hpp"
-#include "view/bezier_curve_view.hpp"
 #include "workspace/viewport.hpp"
 
 // Controller
@@ -40,6 +35,7 @@
 #include "model/coons_surface.hpp"
 #include "util/screenshot.hpp"
 #include "view/coons_surface_view.hpp"
+#include "view/floor_grid.hpp"
 
 
 static int Width = 1280, Height = 720;
@@ -126,6 +122,7 @@ int IMGUI_INNIT(GLFWwindow* window) {
 
 bool checked = false;
 int res = 20;
+float length = 1.0f;
 bool show = true, type = false;
 BezierCurveController* c;
 void UI(const Viewport& viewport) {
@@ -145,7 +142,7 @@ void UI(const Viewport& viewport) {
     ImGui::SetNextWindowSize(ImVec2(560, 720), ImGuiCond_FirstUseEver);
     ImGui::Begin("Properties");
 
-        ImGui::SeparatorText("Curve");
+        ImGui::SeparatorText("Control points");
         if (ImGui::Button("Add control pont")) {
             c->AddNode();
         }
@@ -154,7 +151,6 @@ void UI(const Viewport& viewport) {
             c->RemoveNode();
         }
 
-        ImGui::SeparatorText("Node");
         ImGui::Text("Set mode: ");
         ImGui::SameLine();
         if (ImGui::Button("Symmetric")) {
@@ -168,22 +164,25 @@ void UI(const Viewport& viewport) {
         if (ImGui::Button("Free")) {
             c->SetNodeMode(HandleMode::Free);
         }
-
         ImGui::Spacing();ImGui::Spacing();ImGui::Spacing();
-        ImGui::SeparatorText("Viewport Display");
 
+        ImGui::SeparatorText("Viewport display");
         ImGui::SliderInt("Resolution", &res, 2, 100);
         ImGui::Checkbox("Show Curvature", &show);
         if (show) {
-            ImGui::SameLine();
+            ImGui::Indent();
+            ImGui::SliderFloat("Length", &length, 0.01f, 4);
             ImGui::Checkbox("Face Camera", &type);
+            ImGui::Unindent();
         }
 
         c->SetNormalType(type);
         c->SetCurvatureVisibility(show);
+        c->SetCombLength(length);
         c->SetResolution(res);
 
         ImGui::Spacing();ImGui::Spacing();ImGui::Spacing();
+
         ImGui::SeparatorText("Tests");
         if (ImGui::Button("Hello World!")) {
             std::cout << "Hello World!" << std::endl;
@@ -193,6 +192,7 @@ void UI(const Viewport& viewport) {
             CaptureScreenshot(viewport.viewportBuffer->fbo, viewport.viewportBuffer->Width, viewport.viewportBuffer->Height);
         }
         ImGui::Checkbox("Switch color", &checked);
+        ImGui::Spacing();ImGui::Spacing();ImGui::Spacing();
 
     ImGui::End();
     // --- ImGui UI definíció vége ---
@@ -244,7 +244,6 @@ int main() {
     c->AddNode(BezierNode(glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec3( 0.3f, -0.7f, 0.0f), glm::vec3( 0.7f, -0.3f, 0.0f)));
     c->SyncViews();
 
-
     Shader coonsMat("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag");
 
     BezierCurveController c1(&vp);
@@ -266,6 +265,9 @@ int main() {
 
     coons.CoonsSurfaceChanged += [&](){ coonsView.Update(coons); };
 
+    Shader solid("resources/shaders/trafo.vert", "resources/shaders/color.frag");
+    FloorGrid floor(&solid);
+
     // MAIN LOOP
     while (!glfwWindowShouldClose(mainWindow)) {
         glfwPollEvents();
@@ -279,6 +281,7 @@ int main() {
             vp.viewportBuffer->Clear();
 
                 Camera::activeCamera->UpdateFrameSize(vp.viewportBuffer->Width, vp.viewportBuffer->Height);
+                floor.Draw();
                 c->Present();
                 coonsView.Draw();
                 c1.Present();

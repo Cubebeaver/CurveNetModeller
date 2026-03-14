@@ -24,7 +24,7 @@ public:
              .FinishVertexAttribs();
 
         material = std::make_unique<Material>(sharedShader);
-        material->SetVec4("color", glm::vec4(0, 1, 1, 1));
+        material->SetVec4("color", glm::vec4(.1f, .2f, .3f, 1));
     }
 
     void Update(const CoonsSurface& surfaceModel) {
@@ -76,7 +76,6 @@ public:
         material->SetMat4("Model", glm::mat4(1.0f));
         material->SetMat4("View", Camera::activeCamera->matView);
         material->SetMat4("Projection", Camera::activeCamera->matProjection);
-        material->SetVec3("color", glm::vec3(0.5, 0.6, 0.7));
         mesh->Draw(GL_TRIANGLES);
     }
 

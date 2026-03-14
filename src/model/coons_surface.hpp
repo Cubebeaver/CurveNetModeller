@@ -67,7 +67,7 @@ public:
                 glm::vec3 du_dx = u - c;
                 glm::vec3 dv_dx = v - c;
 
-                glm::vec3 normal = glm::normalize(glm::cross(du_dx, dv_dx));
+                glm::vec3 normal = glm::normalize(glm::cross(dv_dx, du_dx));
                 surfaceNormals.push_back(normal);
             }
         }

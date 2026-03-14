@@ -29,7 +29,7 @@ public:
         this->normalType = normalType;
     }
 
-    void Update(const BezierCurve& curveModel, int resolution = 50) {
+    void Update(const BezierCurve& curveModel, int resolution = 50, float length = 1.0f) {
         const std::vector<glm::vec3>& points =  curveModel.GenerateRenderPoints(resolution);
         const std::vector<float>& curvatures = curveModel.GenerateRenderCurvatures(resolution);
         std::vector<glm::vec3> normals;
@@ -50,9 +50,9 @@ public:
             verts.push_back(points[i].z);
         }
         for (int i = 0; i < points.size(); i++) {
-            verts.push_back(points[i].x + normals[i].x * curvatures[i]);
-            verts.push_back(points[i].y + normals[i].y * curvatures[i]);
-            verts.push_back(points[i].z + normals[i].z * curvatures[i]);
+            verts.push_back(points[i].x + -normals[i].x * curvatures[i] * length);
+            verts.push_back(points[i].y + -normals[i].y * curvatures[i] * length);
+            verts.push_back(points[i].z + -normals[i].z * curvatures[i] * length);
         }
 
         for (int i = 0; i < points.size(); i++) {
@@ -68,7 +68,7 @@ public:
     }
 
     void Draw() {
-        glLineWidth(2);
+        glLineWidth(1);
         material->Bind();
         material->SetMat4("Model", glm::mat4(1.0f));
         material->SetMat4("View", Camera::activeCamera->matView);
