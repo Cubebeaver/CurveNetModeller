@@ -14,6 +14,7 @@
         "docking-experimental"
       ]
     },
+    "cereal",
     "gtest"
   ]
 }

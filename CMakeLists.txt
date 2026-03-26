@@ -22,6 +22,7 @@ find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(cereal CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
 # Header-only csomagok útvonalának megkeresése
@@ -77,6 +78,7 @@ target_link_libraries(CurveNetModeller PRIVATE
     glm::glm
     imgui::imgui
     OpenGL::GL
+    cereal::cereal
 )
 
 
@@ -97,6 +99,7 @@ target_link_libraries(CurveNetModellerTests PRIVATE
     GTest::gtest 
     GTest::gtest_main
     glm::glm
+    cereal::cereal
 )
 
 # Regisztráljuk a teszteket a CTest (a futtató környezet) számára

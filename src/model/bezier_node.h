@@ -4,6 +4,12 @@
 
 #include "util/event.hpp"
 
+#include <cereal/archives/json.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
+#include <util/glm_serializer.hpp>
+
 
 enum class HandleType {
     None = 0b0,
@@ -46,6 +52,11 @@ public:
     const HandleMode& GetMode() const { return Mode; }
     HandleMode& GetMode() { return Mode; }
     void SetMode(HandleMode newMode);
+
+    template<class Archive>
+    void serialize(Archive& archive) {
+        archive(CEREAL_NVP(Position), CEREAL_NVP(LeftHandle), CEREAL_NVP(RightHandle));
+    }
 
 private:
     void EnforceMode(bool isLeftChanged);

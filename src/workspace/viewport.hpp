@@ -8,7 +8,7 @@
 
 class Viewport {
 public:
-    FrameBuffer* viewportBuffer;
+    std::unique_ptr<FrameBuffer> viewportBuffer;
 
     //    Position          MouseButton
     Event<const glm::vec2&, ImGuiMouseButton_> OnClick;
@@ -18,11 +18,11 @@ public:
     Event<const glm::vec2&, const glm::vec2&> OnScroll;
 
     Viewport() {
-        viewportBuffer = new FrameBuffer(100, 100);
+        viewportBuffer = std::make_unique<FrameBuffer>(100, 100);
     }
 
     ~Viewport() {
-        delete viewportBuffer;
+        //delete viewportBuffer;
     }
 
     void BindFrameBuffer() {

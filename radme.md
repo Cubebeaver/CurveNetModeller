@@ -1,12 +1,31 @@
-# Curve net modeller
+# Curve-net modeller
+
+A magyar válozatért görgess lejjebb... // For the hungarian version scroll down...
 
 ## Introduction
 
 This project is made for the BME Önálló laboratórium (Independent Laboratory) subject.
 
+This program allows you to create and edit curves, and surfaces.
+
 [The feeling when something works on the first try](https://youtube.com/shorts/AiARhlSTAeQ?si=o2nvnzgCfdInX-oA)
 
 
+# For users
+
+## Navigation
+
+Hold right click, and move around with the WASD and QE keys.
+
+Manipulate the objects by left clicking and dragging.
+
+Workspaces can be resized and docked to your heart's content.
+
+Detalied documentation can be found [here](https://cubebeaver.hu/curve-net-modeller/documentation).
+
+**Happy editing!**
+
+# For developers
 
 ## Used tools
 
@@ -17,6 +36,7 @@ Used packages:
  - glad (OpenGL binging)
  - glm (math library for OpenGL)
  - ImGUI (UI framework)
+ - Cereal (serialization)
  - GTest (Unit testing framework)
 
 
@@ -93,13 +113,33 @@ cmake --build build --config Release ; if ($?) { .\build\Release\CurveNetModelle
 
 # ~ Magyar változat ~
 
+# Görbe-háló modellező
+
 ## Bemutatkozás
 
 Ez a projekt a BME Önálló laboratórium tárgy keretein belül készült el.
 
+Ez a program lehetővé teszi görbék és felületek létrehozását és szerkesztését.
+
 [Az érzés amikor valami elsőre működik](https://youtube.com/shorts/AiARhlSTAeQ?si=o2nvnzgCfdInX-oA)
 
+# Felhasználóknak
 
+## Navigáció
+
+Tartsd lenyomva a jobb egérgombot, és mozogj a WASD és QE gombokkal.
+
+Szerkeszd az objektumokat a bal egérgomb nyomvatartásával és húzásával.
+
+A munkaterületeket szabadon méretezheted és dokkolhatod.
+
+A részletes dokumentációt [itt](https://cubebeaver.hu/curve-net-modeller/documentation) találod.
+
+**Boldog szerkesztést!**
+
+
+
+# Fejlesztőknek
 
 ## Felhasznált eszközök
 
@@ -110,6 +150,7 @@ Felhasznált csomagok:
  - glad (OpenGL kötés)
  - glm (matematikai könyvtár OpenGL-hez)
  - ImGUI (kezelőfelület)
+ - Cereal (szerializáció)
  - GTest (egységtesztelő keretrendszer)
 
 

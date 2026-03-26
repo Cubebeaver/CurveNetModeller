@@ -1,5 +1,6 @@
 #include <iostream>
 #include <numbers>
+#include <fstream>
 
 // Fontos: A glad.h-t MINDIG a glfw3.h előtt kell include-olni!
 #include <glad/glad.h>
@@ -24,6 +25,7 @@
 
 // Model
 #include "model/bezier_node.h"
+#include "model/scene.hpp"
 
 // Views
 #include "workspace/viewport.hpp"
@@ -36,6 +38,7 @@
 #include "util/screenshot.hpp"
 #include "view/coons_surface_view.hpp"
 #include "view/floor_grid.hpp"
+
 
 
 static int Width = 1280, Height = 720;
@@ -124,7 +127,7 @@ bool checked = false;
 int res = 20;
 float length = 1.0f;
 bool show = true, type = false;
-BezierCurveController* c;
+std::unique_ptr<BezierCurveController> c;
 void UI(const Viewport& viewport) {
     // ImGui új képkocka indítása
     ImGui_ImplOpenGL3_NewFrame();
@@ -210,6 +213,35 @@ void UI(const Viewport& viewport) {
     // }
 }
 
+void SaveSurface(const CoonsSurface& scene) {
+    std::ofstream fs("output/save.json");
+
+    if (!fs.is_open()) {
+        std::cout << "[-] Failed to open output file" << std::endl;
+        return;
+    }
+
+    {
+        cereal::JSONOutputArchive archive(fs);
+        archive(cereal::make_nvp("SaveData", scene));
+    }
+
+    fs.close();
+    std::cout << "[+] Successfully saved to output/save.json" << std::endl;
+}
+
+CoonsSurface LoadSurface() {
+    std::ifstream fs("output/save.json");
+
+    std::cout << ReadAllText("output/save.json") << std::endl;
+
+    CoonsSurface loaded;
+    cereal::JSONInputArchive archive(fs);
+    archive(cereal::make_nvp("SaveData", loaded)); // A varázslat itt történik!
+
+    return loaded;
+}
+
 int main() {
     GLFWwindow* mainWindow;
 
@@ -237,8 +269,8 @@ int main() {
     cam.Init();
 
 
-    Viewport vp;
-    c = new BezierCurveController(&vp);
+    std::shared_ptr<Viewport> vp = std::make_shared<Viewport>();
+    c = std::make_unique<BezierCurveController>(vp);
     c->AddNode(BezierNode(glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec3(-0.7f,  0.3f, 0.0f), glm::vec3(-0.3f,  0.7f, 0.0f)));
     c->AddNode(BezierNode(glm::vec3( 0.0f,  0.0f, 0.0f), glm::vec3(-0.2f, -0.2f, 0.0f), glm::vec3( 0.2f,  0.2f, 0.0f)));
     c->AddNode(BezierNode(glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec3( 0.3f, -0.7f, 0.0f), glm::vec3( 0.7f, -0.3f, 0.0f)));
@@ -246,16 +278,16 @@ int main() {
 
     Shader coonsMat("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag");
 
-    BezierCurveController c1(&vp);
+    BezierCurveController c1(vp);
     c1.AddNode(BezierNode(glm::vec3(-2,  0, -2), glm::vec3(-3, -1, -2), glm::vec3(-1,  1, -2)));
     c1.AddNode(BezierNode(glm::vec3( 2,  0, -2), glm::vec3( 1,  1, -2), glm::vec3( 3, -1, -2)));
-    BezierCurveController c2(&vp);
+    BezierCurveController c2(vp);
     c2.AddNode(BezierNode(glm::vec3(-2,  0,  2), glm::vec3(-3, -1,  2), glm::vec3(-1,  1,  2)));
     c2.AddNode(BezierNode(glm::vec3( 2,  0,  2), glm::vec3( 1,  1,  2), glm::vec3( 3, -1,  2)));
-    BezierCurveController d1(&vp);
+    BezierCurveController d1(vp);
     d1.AddNode(BezierNode(glm::vec3(-2,  0, -2), glm::vec3(-2,  1, -3), glm::vec3(-2, -1, -1)));
     d1.AddNode(BezierNode(glm::vec3(-2,  0,  2), glm::vec3(-2, -1,  1), glm::vec3(-2,  1,  3)));
-    BezierCurveController d2(&vp);
+    BezierCurveController d2(vp);
     d2.AddNode(BezierNode(glm::vec3( 2,  0, -2), glm::vec3( 2,  1, -3), glm::vec3( 2, -1, -1)));
     d2.AddNode(BezierNode(glm::vec3( 2,  0,  2), glm::vec3( 2, -1,  1), glm::vec3( 2,  1,  3)));
 
@@ -276,11 +308,11 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Scene
-        vp.BindFrameBuffer();
+        vp->BindFrameBuffer();
             glEnable(GL_DEPTH_TEST);
-            vp.viewportBuffer->Clear();
+            vp->viewportBuffer->Clear();
 
-                Camera::activeCamera->UpdateFrameSize(vp.viewportBuffer->Width, vp.viewportBuffer->Height);
+                Camera::activeCamera->UpdateFrameSize(vp->viewportBuffer->Width, vp->viewportBuffer->Height);
                 floor.Draw();
                 c->Present();
                 coonsView.Draw();
@@ -290,13 +322,15 @@ int main() {
                 d2.Present();
 
             glDisable(GL_DEPTH_TEST);
-        vp.UnbindFrameBuffer();
+        vp->UnbindFrameBuffer();
         glViewport(0, 0, Width, Height);
 
-            UI(vp);
+            UI(*vp);
 
         glfwSwapBuffers(mainWindow);
     }
+
+    SaveSurface(coons);
 
     // ------------------------------------------------------------------
     // 6. Takarítás (Erőforrások felszabadítása)

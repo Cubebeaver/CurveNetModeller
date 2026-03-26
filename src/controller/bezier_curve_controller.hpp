@@ -18,9 +18,9 @@ private:
     float length = 1.0f;
     bool showCurvature = false;
 
-    Viewport* vp;
+    std::weak_ptr<Viewport> vp;
 
-    std::unique_ptr<BezierCurve> modelCurve;
+    std::shared_ptr<BezierCurve> modelCurve;
     
     std::unique_ptr<Shader> sharedShader;
     std::unique_ptr<BezierCurveView> viewCurve;
@@ -31,8 +31,8 @@ private:
     HandleType selectedPartType = HandleType::None;
 public:
 
-    BezierCurveController(Viewport* viewport) : vp(viewport) {
-        modelCurve = std::make_unique<BezierCurve>();
+    BezierCurveController(std::shared_ptr<Viewport> viewport) : vp(viewport) {
+        modelCurve = std::make_shared<BezierCurve>();
         
         //TODO ezt flyweight-el vagy valamivel megoldani
         sharedShader = std::make_unique<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag");
@@ -41,11 +41,11 @@ public:
 
         modelCurve->BezierCurveChanged += [&](){ SyncViews(); };
 
-        vp->OnClick += [this] (const glm::vec2& position, ImGuiMouseButton_ button) { this->OnClick(position, button); };
-        vp->OnDrag += [this] (const glm::vec2& totalDelta, const glm::vec2& delta, const glm::vec2& position, ImGuiMouseButton_ button) { this->OnDrag(totalDelta, delta, position, button); };
+        vp.lock()->OnClick += [this] (const glm::vec2& position, ImGuiMouseButton_ button) { this->OnClick(position, button); };
+        vp.lock()->OnDrag += [this] (const glm::vec2& totalDelta, const glm::vec2& delta, const glm::vec2& position, ImGuiMouseButton_ button) { this->OnDrag(totalDelta, delta, position, button); };
     }
 
-    BezierCurve& GetModel() { return *modelCurve; }
+    std::shared_ptr<BezierCurve> GetModel() { return modelCurve; }
 
     void AddNode(const BezierNode& node) {
         modelCurve->AddNode(node);

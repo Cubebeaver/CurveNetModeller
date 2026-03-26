@@ -6,6 +6,11 @@
 
 #include "model/bezier_node.h"
 
+#include <cereal/archives/json.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
+
 
 
 class BezierCurve {
@@ -34,4 +39,9 @@ public:
     std::vector<glm::vec3> GenerateRenderNormals(int resolution = 50) const;
     std::vector<glm::vec3> GenerateRenderCameraNormals(int resolution = 50, glm::vec3 cam = glm::vec3(0, 0, 1)) const;
     std::vector<float> GenerateRenderCurvatures(int resolution = 50) const;
+
+    template<class Archive>
+    void serialize(Archive& archive) {
+        archive(CEREAL_NVP(Nodes));
+    }
 };
