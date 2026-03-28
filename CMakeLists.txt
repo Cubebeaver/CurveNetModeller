@@ -36,6 +36,7 @@ find_path(STB_INCLUDE_DIR "stb_image.h" REQUIRED)
 set(MODEL_SOURCES
     src/model/bezier_curve.cpp
     src/model/bezier_node.cpp
+    src/model/coons_surface.cpp
 )
 
 # Csak a főprogramhoz tartozó fájlok (Ablakkezelés, UI)
@@ -56,6 +57,7 @@ set(GL_ENGINE_SOURCES
 set(TEST_SOURCES
     tests/test_bezier.cpp
     tests/test_transform.cpp
+    tests/test_coons.cpp
 )
 
 

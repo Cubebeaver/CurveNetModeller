@@ -5,6 +5,7 @@
 #include "gl_engine/mesh.hpp"
 #include "gl_engine/material.hpp"
 #include "gl_engine/camera.hpp"
+#include "gl_engine/shader_shaders.hpp"
 
 class BezierNodeView {
 private:
@@ -14,19 +15,19 @@ private:
     std::unique_ptr<Material> selectedMat;
 
 public:
-    BezierNodeView(Shader* sharedShader) {
+    BezierNodeView() {
         std::vector<float> emptyVerts;
         std::vector<GLuint> emptyIdxs;
         mesh = std::make_unique<Mesh>(emptyVerts, emptyIdxs);
         mesh->AddAttribPointer(3, GL_FLOAT, false).FinishVertexAttribs();
         
-        lineMat = std::make_unique<Material>(sharedShader);
+        lineMat = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
         lineMat->SetVec4("color", glm::vec4(1, 1, 0, 1));
         
-        pointMat = std::make_unique<Material>(sharedShader);
+        pointMat = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
         pointMat->SetVec4("color", glm::vec4(1, 0, 0, 1));
 
-        selectedMat = std::make_unique<Material>(sharedShader);
+        selectedMat = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
         selectedMat->SetVec4("color", glm::vec4(1, 0, 1, 1));
     }
 

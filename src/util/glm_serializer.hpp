@@ -1,3 +1,5 @@
+#pragma once
+
 namespace glm {
 
     template<class Archive>

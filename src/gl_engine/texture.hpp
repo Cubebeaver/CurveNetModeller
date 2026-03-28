@@ -23,9 +23,9 @@ public:
 
     Texture(const Texture&) = delete;
 
-    Texture(const char* imagePath, AlphaMode alphaMode = AlphaMode::Opaque, bool genMipMap = true, int wrapMode = GL_REPEAT, int minFilter = GL_LINEAR_MIPMAP_LINEAR, int magFilter = GL_LINEAR, int minLOD = -1000, int maxLOD = 1000) {
+    Texture(const std::string& imagePath, AlphaMode alphaMode = AlphaMode::Opaque, bool genMipMap = true, int wrapMode = GL_REPEAT, int minFilter = GL_LINEAR_MIPMAP_LINEAR, int magFilter = GL_LINEAR, int minLOD = -1000, int maxLOD = 1000) {
         stbi_set_flip_vertically_on_load(true);
-        unsigned char* imageData = stbi_load(imagePath, &width, &height, &numChannel, 0);
+        unsigned char* imageData = stbi_load(imagePath.c_str(), &width, &height, &numChannel, 0);
         if (imageData == nullptr) std::cout << "[-] Failed to load image" << std::endl;
 
         glGenTextures(1, &texture);

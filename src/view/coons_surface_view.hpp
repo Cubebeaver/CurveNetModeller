@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <model/coons_surface.hpp>
+#include <model/coons_surface.h>
 #include <model/bezier_curve.h>
 
 #include "gl_engine/camera.hpp"
@@ -15,7 +15,7 @@ private:
     std::unique_ptr<Material> material;
 
 public:
-    CoonsSurfaceView(Shader* sharedShader) {
+    CoonsSurfaceView() {
         std::vector<float> emptyVerts;
         std::vector<GLuint> emptyIdxs;
         mesh = std::make_unique<Mesh>(emptyVerts, emptyIdxs);
@@ -23,7 +23,7 @@ public:
              .AddAttribPointer(3, GL_FLOAT, false)
              .FinishVertexAttribs();
 
-        material = std::make_unique<Material>(sharedShader);
+        material = std::make_unique<Material>(ShaderShaders::Get("shaded"));
         material->SetVec4("color", glm::vec4(.1f, .2f, .3f, 1));
     }
 

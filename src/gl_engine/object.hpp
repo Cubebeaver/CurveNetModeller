@@ -7,11 +7,12 @@
 
 class Object {
 public:
-    Transform* transform;
-    Mesh* mesh;
-    Material* material;
+    std::shared_ptr<Transform> transform;
+    std::shared_ptr<Mesh> mesh;
+    std::shared_ptr<Material> material;
 
-    Object(Transform* transform, Mesh* mesh, Material* material) : transform(transform), mesh(mesh), material(material) { }
+    Object(std::shared_ptr<Transform> transform, std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material)
+        : transform(transform), mesh(mesh), material(material) { }
 
     virtual void Draw() const {
         //TODO transform.EmitMatrix(); ez beállíthatná a shadert

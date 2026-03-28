@@ -19,13 +19,13 @@ using UniformValue = std::variant<int, float, glm::vec2, glm::vec3, glm::vec4, g
 
 class Material {
 private:
-    Shader* ShaderProgram;
+    std::weak_ptr<Shader> ShaderProgram;
     std::unordered_map<std::string, UniformValue> Uniforms;
-    std::vector<std::pair<std::string, Texture*>> Textures;
+    std::vector<std::pair<std::string, std::weak_ptr<Texture>>> Textures;
 
 public:
     // A Material egy létező Shaderre hivatkozik (nem ő hozza létre!)
-    Material(Shader* shader) : ShaderProgram(shader) { }
+    Material(std::shared_ptr<Shader> shader) : ShaderProgram(shader) { }
 
     // --- Uniform értékek beállítása (CPU memóriában tároljuk) ---
     void SetInt(const std::string& name, int value) { Uniforms[name] = value; }
@@ -37,13 +37,13 @@ public:
 
     // --- Textúrák hozzáadása ---
     // A samplerName a shaderben lévő uniform neve, pl.: "diffuseMap"
-    void AddTexture(const std::string& samplerName, Texture* texture) {
+    void AddTexture(const std::string& samplerName, std::weak_ptr<Texture> texture) {
         Textures.push_back({samplerName, texture});
     }
 
     // --- A varázslat: A Material aktiválása renderelés előtt ---
     void Bind() const {
-        if (!ShaderProgram) {
+        if (!ShaderProgram.lock()) {
             std::cerr << "[-] No shader attached" << std::endl;
             return;
         }
@@ -56,12 +56,12 @@ public:
 
         // 1. Aktiváljuk a shadert
         // (Feltételezem, hogy a Shader osztályodnak van egy Use() vagy Bind() függvénye)
-        ShaderProgram->Use(); 
+        ShaderProgram.lock()->Use();
 
         // 2. Töltsük fel a letárolt uniformokat a GPU-ra
         for (const auto& [name, value] : Uniforms) {
             // Megkeressük a uniform helyét a shaderben (feltételezve, hogy a Shader-nek van publikus ID-ja)
-            GLint location = glGetUniformLocation(ShaderProgram->program , name.c_str());
+            GLint location = glGetUniformLocation(ShaderProgram.lock()->program , name.c_str());
             
             if (location == -1) continue; // Ha nincs ilyen uniform a shaderben (pl. optimalizálta a fordító), ugrunk
 
@@ -89,10 +89,10 @@ public:
             const auto& [samplerName, texture] = Textures[i];
             
             // Textúra bindolása az i. texture slot-ba (Feltételezem, hogy a Texture osztálynak van egy Bind() fv-e)
-            texture->BindToUnit(i);
+            texture.lock()->BindToUnit(i);
             
             // Beállítjuk a shaderben a samplert, hogy tudja, melyik slotból kell olvasnia (0, 1, 2...)
-            GLint location = glGetUniformLocation(ShaderProgram->program, samplerName.c_str());
+            GLint location = glGetUniformLocation(ShaderProgram.lock()->program, samplerName.c_str());
             if (location != -1) {
                 glUniform1i(location, i);
             }

@@ -15,6 +15,19 @@
 #include "gl_engine/material.hpp"
 
 
+
+
+//TODO itt a kamerában is áttérni Ray-re
+struct Ray {
+    glm::vec3 origin;
+    glm::vec3 direction;
+
+    Ray(glm::vec3 origin, glm::vec3 direction) {
+        this->origin = origin;
+        this->direction = direction;
+    }
+};
+
 //! Az egesz kamera pozicionalasat ujra kellene csinalni mert ez tragedia
 //! Minden ami baj lehet az van ezzel a szarral >:(
 //! Ezt fejdalmas lesz ujrairni
@@ -161,22 +174,7 @@ public:
     }
 
 
-    glm::vec3 GetRayDirectionFromScreen(float mouseX, float mouseY) const {
-        float ndcX = (2.0f * mouseX) / screenWidth - 1.0f;
-        float ndcY = 1.0f - (2.0f * mouseY) / screenHeight; 
-        
-        // NDC -> Clip Space
-        glm::vec4 ray_clip = glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
-
-        // Clip Space -> Eye Space
-        glm::vec4 ray_eye = glm::inverse(matProjection) * ray_clip;
-        ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
-
-        // Eye Space -> World Space
-        glm::vec3 ray_world = glm::vec3(glm::inverse(matView) * ray_eye);
-        
-        return glm::normalize(ray_world);
-    }
+    virtual glm::vec3 GetRayDirectionFromScreen(float mouseX, float mouseY) const = 0;
 
     glm::vec3 GetRayDirectionFromScreen(const glm::vec2& mousePos) const {
         return GetRayDirectionFromScreen(mousePos.x, mousePos.y);
@@ -207,8 +205,6 @@ public:
             activeCamera->UpdateProjection();
         }
     }
-    static float* GetActiveViewMatrix() { return glm::value_ptr(activeCamera->matView); }
-    static float* GetActiveProjectionMatrix() { return glm::value_ptr(activeCamera->matProjection); }
 };
 
 
@@ -231,6 +227,23 @@ public:
             farClippingPlane
         );
     }
+
+    virtual glm::vec3 GetRayDirectionFromScreen(float mouseX, float mouseY) const override {
+        float ndcX = (2.0f * mouseX) / screenWidth - 1.0f;
+        float ndcY = 1.0f - (2.0f * mouseY) / screenHeight;
+
+        // NDC -> Clip Space
+        glm::vec4 ray_clip = glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
+
+        // Clip Space -> Eye Space
+        glm::vec4 ray_eye = glm::inverse(matProjection) * ray_clip;
+        ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
+
+        // Eye Space -> World Space
+        glm::vec3 ray_world = glm::vec3(glm::inverse(matView) * ray_eye);
+
+        return glm::normalize(ray_world);
+    }
 };
 
 class OrthoCamera : public Camera {
@@ -251,5 +264,22 @@ public:
             nearClippingPlane, 
             farClippingPlane
         );
+    }
+
+    virtual glm::vec3 GetRayDirectionFromScreen(float mouseX, float mouseY) const override {
+        float ndcX = (2.0f * mouseX) / screenWidth - 1.0f;
+        float ndcY = 1.0f - (2.0f * mouseY) / screenHeight;
+
+        // NDC -> Clip Space
+        glm::vec4 ray_clip = glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
+
+        // Clip Space -> Eye Space
+        glm::vec4 ray_eye = glm::inverse(matProjection) * ray_clip;
+        ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
+
+        // Eye Space -> World Space
+        glm::vec3 ray_world = glm::vec3(glm::inverse(matView) * ray_eye);
+
+        return glm::normalize(ray_world);
     }
 };

@@ -1,5 +1,6 @@
 #pragma once
-#include "coons_surface.hpp"
+
+#include "coons_surface.h"
 
 class Scene {
 public:

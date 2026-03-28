@@ -22,6 +22,7 @@
 #include "gl_engine/texture.hpp"
 #include "gl_engine/framebuffer.hpp"
 #include "gl_engine/camera.hpp"
+#include "gl_engine/shader_shaders.hpp"
 
 // Model
 #include "model/bezier_node.h"
@@ -34,9 +35,10 @@
 #include "controller/bezier_curve_controller.hpp"
 
 // Util
-#include "model/coons_surface.hpp"
+#include "model/coons_surface.h"
 #include "util/screenshot.hpp"
 #include "view/coons_surface_view.hpp"
+
 #include "view/floor_grid.hpp"
 
 
@@ -103,7 +105,7 @@ int OPENGL_INIT(GLFWwindow* window) {
     return 0;
 }
 
-int IMGUI_INNIT(GLFWwindow* window) {
+int IMGUI_INIT(GLFWwindow* window) {
     // ------------------------------------------------------------------
     // 3. ImGui inicializálása
     // ------------------------------------------------------------------
@@ -253,10 +255,13 @@ int main() {
         std::cout << "[-] Failed to initialize OpenGL/GLAD" << std::endl;
         return -2;
     }
-    if (IMGUI_INNIT(mainWindow)) {
+    if (IMGUI_INIT(mainWindow)) {
         std::cout << "[-] Failed to initialize IMGUI" << std::endl;
         return -3;
     }
+
+    ShaderShaders::Register("solid_color", std::make_shared<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag"));
+    ShaderShaders::Register("shaded", std::make_shared<Shader>("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag"));
 
 
     PerspectiveCamera cam(
@@ -271,34 +276,32 @@ int main() {
 
     std::shared_ptr<Viewport> vp = std::make_shared<Viewport>();
     c = std::make_unique<BezierCurveController>(vp);
-    c->AddNode(BezierNode(glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec3(-0.7f,  0.3f, 0.0f), glm::vec3(-0.3f,  0.7f, 0.0f)));
-    c->AddNode(BezierNode(glm::vec3( 0.0f,  0.0f, 0.0f), glm::vec3(-0.2f, -0.2f, 0.0f), glm::vec3( 0.2f,  0.2f, 0.0f)));
-    c->AddNode(BezierNode(glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec3( 0.3f, -0.7f, 0.0f), glm::vec3( 0.7f, -0.3f, 0.0f)));
+    c->AddNode(std::make_shared<BezierNode>(glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec3(-0.7f,  0.3f, 0.0f), glm::vec3(-0.3f,  0.7f, 0.0f)));
+    c->AddNode(std::make_shared<BezierNode>(glm::vec3( 0.0f,  0.0f, 0.0f), glm::vec3(-0.2f, -0.2f, 0.0f), glm::vec3( 0.2f,  0.2f, 0.0f)));
+    c->AddNode(std::make_shared<BezierNode>(glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec3( 0.3f, -0.7f, 0.0f), glm::vec3( 0.7f, -0.3f, 0.0f)));
     c->SyncViews();
 
-    Shader coonsMat("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag");
-
     BezierCurveController c1(vp);
-    c1.AddNode(BezierNode(glm::vec3(-2,  0, -2), glm::vec3(-3, -1, -2), glm::vec3(-1,  1, -2)));
-    c1.AddNode(BezierNode(glm::vec3( 2,  0, -2), glm::vec3( 1,  1, -2), glm::vec3( 3, -1, -2)));
+    c1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0, -2), glm::vec3(-3, -1, -2), glm::vec3(-1,  1, -2)));
+    c1.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 1,  1, -2), glm::vec3( 3, -1, -2)));
     BezierCurveController c2(vp);
-    c2.AddNode(BezierNode(glm::vec3(-2,  0,  2), glm::vec3(-3, -1,  2), glm::vec3(-1,  1,  2)));
-    c2.AddNode(BezierNode(glm::vec3( 2,  0,  2), glm::vec3( 1,  1,  2), glm::vec3( 3, -1,  2)));
+    c2.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0,  2), glm::vec3(-3, -1,  2), glm::vec3(-1,  1,  2)));
+    c2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 1,  1,  2), glm::vec3( 3, -1,  2)));
     BezierCurveController d1(vp);
-    d1.AddNode(BezierNode(glm::vec3(-2,  0, -2), glm::vec3(-2,  1, -3), glm::vec3(-2, -1, -1)));
-    d1.AddNode(BezierNode(glm::vec3(-2,  0,  2), glm::vec3(-2, -1,  1), glm::vec3(-2,  1,  3)));
+    d1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0, -2), glm::vec3(-2,  1, -3), glm::vec3(-2, -1, -1)));
+    d1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0,  2), glm::vec3(-2, -1,  1), glm::vec3(-2,  1,  3)));
     BezierCurveController d2(vp);
-    d2.AddNode(BezierNode(glm::vec3( 2,  0, -2), glm::vec3( 2,  1, -3), glm::vec3( 2, -1, -1)));
-    d2.AddNode(BezierNode(glm::vec3( 2,  0,  2), glm::vec3( 2, -1,  1), glm::vec3( 2,  1,  3)));
+    d2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 2,  1, -3), glm::vec3( 2, -1, -1)));
+    d2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 2, -1,  1), glm::vec3( 2,  1,  3)));
 
     CoonsSurface coons(c1.GetModel(), c2.GetModel(), d1.GetModel(), d2.GetModel());
-    CoonsSurfaceView coonsView(&coonsMat);
+    CoonsSurfaceView coonsView;
     coonsView.Update(coons);
 
     coons.CoonsSurfaceChanged += [&](){ coonsView.Update(coons); };
 
     Shader solid("resources/shaders/trafo.vert", "resources/shaders/color.frag");
-    FloorGrid floor(&solid);
+    FloorGrid floor;
 
     // MAIN LOOP
     while (!glfwWindowShouldClose(mainWindow)) {

@@ -36,8 +36,8 @@ public:
         
         //TODO ezt flyweight-el vagy valamivel megoldani
         sharedShader = std::make_unique<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag");
-        viewCurve = std::make_unique<BezierCurveView>(sharedShader.get());
-        curvatureView = std::make_unique<BezierCurveCurvatureCombView>(sharedShader.get());
+        viewCurve = std::make_unique<BezierCurveView>();
+        curvatureView = std::make_unique<BezierCurveCurvatureCombView>();
 
         modelCurve->BezierCurveChanged += [&](){ SyncViews(); };
 
@@ -47,32 +47,29 @@ public:
 
     std::shared_ptr<BezierCurve> GetModel() { return modelCurve; }
 
-    void AddNode(const BezierNode& node) {
+    void AddNode(std::shared_ptr<BezierNode> node) {
         modelCurve->AddNode(node);
-    }
-    void AddNode(glm::vec3 position) {
-        modelCurve->AddNode(BezierNode(position));
     }
     void AddNode() {
         if (modelCurve->Nodes.empty()) {
-            AddNode(glm::vec3(0, 0, 0));
+            AddNode(std::make_shared<BezierNode>(glm::vec3(0, 0, 0)));
             return;
         }
 
         const auto& last = modelCurve->Nodes.back();
-        modelCurve->AddNode(BezierNode(last.GetPosition() + glm::vec3(0.1, 0, 0), last.GetLeftHandle() + glm::vec3(0.1, 0, 0), last.GetRightHandle() + glm::vec3(0.1, 0, 0), last.GetMode()));
+        modelCurve->AddNode(std::make_shared<BezierNode>(last->GetPosition() + glm::vec3(1, 0, 0), last->GetLeftHandle() + glm::vec3(0, 0, 0), last->GetRightHandle() + glm::vec3(0, 0, 0), last->GetMode()));
     }
 
     void RemoveNode() {
         if (modelCurve->Nodes.empty()) return;
-        
-        modelCurve->RemoveNode(modelCurve->Nodes.back());
+
+        modelCurve->RemoveNodeAt(selected);
     }
 
     void SetNodeMode(HandleMode newMode) {
         if (selected == -1) return;
 
-        modelCurve->Nodes[selected].SetMode(newMode);
+        modelCurve->Nodes[selected]->SetMode(newMode);
     }
 
     void SetNormalType(bool normalType) {
@@ -104,8 +101,8 @@ public:
 
         viewNodes.clear();
         for (const auto& node : modelCurve->Nodes) {
-            auto nodeView = std::make_unique<BezierNodeView>(sharedShader.get());
-            nodeView->Update(node);
+            auto nodeView = std::make_unique<BezierNodeView>();
+            nodeView->Update(*node);
             viewNodes.push_back(std::move(nodeView));
         }
     }
@@ -123,7 +120,7 @@ private:
         
         float closestDistance = std::numeric_limits<float>::max();
         for (int i = 0; i < modelCurve->Nodes.size(); i++) {
-            const BezierNode& node = modelCurve->Nodes[i];
+            const BezierNode& node = *modelCurve->Nodes[i];
 
             const glm::vec3& center = node.GetPosition();
             const glm::vec3& left = node.GetLeftHandle();
@@ -160,7 +157,7 @@ private:
         if (button != ImGuiMouseButton_Left || selected == -1) return;
 
         // 1. Lekérjük a jelenleg kiválasztott pont/handle 3D-s pozícióját
-        BezierNode& node = modelCurve->Nodes[selected];
+        BezierNode& node = *modelCurve->Nodes[selected];
         glm::vec3 currentPos3D;
         
         switch(selectedPartType) {

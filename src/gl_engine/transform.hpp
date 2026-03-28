@@ -12,19 +12,17 @@
 class Transform
 {
 private:
-
-public:
-    Transform* Parent = nullptr;
+    std::weak_ptr<Transform> Parent;
 
     glm::vec3 LocalPosition;
     glm::vec3 LocalRotation;
     glm::vec3 LocalScale;
 
     glm::mat4 LocalMatrix;
+    bool dirty_local = true;
 
-
-
-    void UpdateMatrix() {
+public:
+    void UpdateLocalMatrix() {
         LocalMatrix = glm::mat4(1.0f);
         LocalMatrix = glm::translate(LocalMatrix, LocalPosition);
         LocalMatrix = glm::rotate   (LocalMatrix, LocalRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -32,11 +30,15 @@ public:
         LocalMatrix = glm::rotate   (LocalMatrix, LocalRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
         LocalMatrix = glm::scale    (LocalMatrix, LocalScale);
     }
-    float* GetMatricPtr() { return glm::value_ptr(LocalMatrix); }
-
+    glm::mat4 GetLocalMatrix() {
+        if (dirty_local) UpdateLocalMatrix();
+        return LocalMatrix;
+    }
     glm::mat4 GetWorldMatrix() {
-        if (Parent) {
-            return Parent->GetWorldMatrix() * LocalMatrix;
+        if (dirty_local) UpdateLocalMatrix();
+
+        if (auto p = Parent.lock()) {
+            return p->GetWorldMatrix() * LocalMatrix;
         } else {
             return LocalMatrix;
         }
@@ -49,7 +51,7 @@ public:
           LocalMatrix(glm::mat4(1.0f)) { }
     Transform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale_)
         : LocalPosition(pos), LocalRotation(rot), LocalScale(scale_) { 
-        UpdateMatrix(); 
+        UpdateLocalMatrix();
     }
     Transform(glm::vec3 pos, glm::vec3 rot, float scale_)
         : Transform(pos, rot, glm::vec3(scale_, scale_, scale_)) { }
@@ -57,32 +59,46 @@ public:
         : Transform(glm::vec3(posX, posY, posZ), glm::vec3(rotX, rotY, rotZ), glm::vec3(scaleX, scaleY, scaleZ)) { }
     Transform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float scale_)
         : Transform(glm::vec3(posX, posY, posZ), glm::vec3(rotX, rotY, rotZ), glm::vec3(scale_, scale_, scale_)) { }
-    ~Transform() {
-        
-    }
+
+    glm::vec3 GetPosition() { return LocalPosition; }
+    glm::vec3 GetRotation() { return LocalRotation; }
+    glm::vec3 GetScale() { return LocalScale; }
+    std::weak_ptr<Transform> GetParent() { return Parent; }
+
+    void SetParent(std::shared_ptr<Transform> parent) { Parent = parent; }
 
     void SetTransform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale_) {
         LocalPosition = pos;
         LocalRotation = rot;
         LocalScale = scale_;
 
-        UpdateMatrix();
+        dirty_local = true;
     }
-    void SetTransform(glm::vec3 pos, glm::vec3 rot, float scale_) { SetTransform(pos, rot, glm::vec3(scale_, scale_, scale_)); }
-    void SetTransform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float scaleX, float scaleY, float scaleZ) { SetTransform(glm::vec3(posX, posY, posZ), glm::vec3(rotX, rotY, rotZ), glm::vec3(scaleX, scaleY, scaleZ)); }
-    void SetTransform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float scale_) { SetTransform(glm::vec3(posX, posY, posZ), glm::vec3(rotX, rotY, rotZ), glm::vec3(scale_, scale_, scale_)); }
+    void SetTransform(glm::vec3 pos, glm::vec3 rot, float scale_) {
+        SetTransform(pos, rot, glm::vec3(scale_, scale_, scale_));
+    }
+    void SetTransform(float posX, float posY, float posZ,
+                      float rotX, float rotY, float rotZ,
+                      float scaleX, float scaleY, float scaleZ) {
+        SetTransform(glm::vec3(posX, posY, posZ), glm::vec3(rotX, rotY, rotZ), glm::vec3(scaleX, scaleY, scaleZ));
+    }
+    void SetTransform(float posX, float posY, float posZ,
+                      float rotX, float rotY, float rotZ,
+                      float scale_) {
+        SetTransform(glm::vec3(posX, posY, posZ), glm::vec3(rotX, rotY, rotZ), glm::vec3(scale_, scale_, scale_));
+    }
 
     void SetPosition(glm::vec3 pos) {
         LocalPosition = pos;
-        UpdateMatrix();
+        dirty_local = true;
     }
     void SetRotation(glm::vec3 rot) {
         LocalRotation = rot;
-        UpdateMatrix();
+        dirty_local = true;
     }
     void SetScale   (glm::vec3 scale_) {
         LocalScale = scale_;
-        UpdateMatrix();
+        dirty_local = true;
     }
     void SetPosition(float x, float y, float z) { SetPosition(glm::vec3(x, y, z)); }
     void SetRotation(float x, float y, float z) { SetRotation(glm::vec3(x, y, z)); }
@@ -91,15 +107,15 @@ public:
 
     void Translate(glm::vec3 offset) {
         LocalPosition += offset;
-        UpdateMatrix();
+        dirty_local = true;
     }
     void Rotate   (glm::vec3 rotate) {
         LocalRotation += rotate;
-        UpdateMatrix();
+        dirty_local = true;
     }
     void Scale    (glm::vec3 scale_) {
         LocalScale *= scale_;
-        UpdateMatrix();
+        dirty_local = true;
     }
     void Translate(float x, float y, float z) { Translate(glm::vec3(x, y, z)); }
     void Rotate   (float x, float y, float z) { Rotate   (glm::vec3(x, y, z)); }

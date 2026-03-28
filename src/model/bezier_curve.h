@@ -15,16 +15,16 @@
 
 class BezierCurve {
 public:
-    std::vector<BezierNode> Nodes;
+    std::vector<std::shared_ptr<BezierNode>> Nodes;
 
     Event<> BezierCurveChanged;
     
     int GetSegmentCount() const;
 
-    void AddNode(const BezierNode& node);
-    void AddNode(const glm::vec3& position);
+    void AddNode(std::shared_ptr<BezierNode> node);
 
-    void RemoveNode(const BezierNode& node);
+    void RemoveNodeAt(int idx);
+    void RemoveNodeLast() { RemoveNodeAt(Nodes.size() - 1); }
 
     glm::vec3 EvaluateSegment(int segmentIndex, float t) const;
     float EvaluateSegmentCurvature(int segmentIndex, float t) const;

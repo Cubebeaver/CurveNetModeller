@@ -1,7 +1,9 @@
 #pragma once
+
 #include "gl_engine/camera.hpp"
 #include "gl_engine/material.hpp"
 #include "gl_engine/mesh.hpp"
+#include "gl_engine/shader_shaders.hpp"
 
 class FloorGrid {
 private:
@@ -10,11 +12,11 @@ private:
     std::unique_ptr<Material> material;
 
 public:
-    FloorGrid(Shader* shaderShader) {
+    FloorGrid() {
         SetupGrid();
         SetupAxis();
 
-        material = std::make_unique<Material>(shaderShader);
+        material = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
     }
 
     void Draw() {

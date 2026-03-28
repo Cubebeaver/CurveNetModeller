@@ -13,13 +13,13 @@ private:
     std::unique_ptr<Material> material;
 
 public:
-    BezierCurveView(Shader* sharedShader) {
+    BezierCurveView() {
         std::vector<float> emptyVerts;
         std::vector<GLuint> emptyIdxs;
         mesh = std::make_unique<Mesh>(emptyVerts, emptyIdxs);
         mesh->AddAttribPointer(3, GL_FLOAT, false).FinishVertexAttribs();
 
-        material = std::make_unique<Material>(sharedShader);
+        material = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
         material->SetVec4("color", glm::vec4(0, 1, 1, 1));
     }
 
