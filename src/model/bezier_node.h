@@ -10,6 +10,8 @@
 #include <cereal/types/string.hpp>
 #include <util/glm_serializer.hpp>
 
+#include "point.h"
+
 
 enum class HandleType {
     None = 0b0,
@@ -24,38 +26,39 @@ enum class HandleMode {
     Symmetric
 };
 
-class BezierNode {
-public:
-    glm::vec3 Position;
-    glm::vec3 LeftHandle;
-    glm::vec3 RightHandle;
+class BezierNode : public IElement {
+private:
+    std::shared_ptr<Point> CenterHandle;
+    std::shared_ptr<Point> LeftHandle;
+    std::shared_ptr<Point> RightHandle;
     HandleMode Mode;
 
+public:
     Event<> BezierNodeChanged;
     
     BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode = HandleMode::Symmetric);
     BezierNode(HandleMode mode = HandleMode::Aligned);
     BezierNode(glm::vec3 position, HandleMode mode = HandleMode::Aligned);
 
-    const glm::vec3& GetPosition() const { return Position; }
-    glm::vec3& GetPosition() { return Position; }
+    std::shared_ptr<Point> GetCenterHandle() const { return CenterHandle; }
     void SetPosition(const glm::vec3& newPos);
+    void SetPosition(const std::shared_ptr<Point> newPoint);
     
-    const glm::vec3& GetLeftHandle() const { return LeftHandle; }
-    glm::vec3& GetLeftHandle() { return LeftHandle; }
+    std::shared_ptr<Point> GetLeftHandle() const { return LeftHandle; }
     void SetLeftHandle(const glm::vec3& newPos);
-    
-    const glm::vec3& GetRightHandle() const { return RightHandle; }
-    glm::vec3& GetRightHandle() { return RightHandle; }
+    void SetLeftHandle(const std::shared_ptr<Point> newPoint);
+
+    std::shared_ptr<Point> GetRightHandle() const { return RightHandle; }
     void SetRightHandle(const glm::vec3& newPos);
-    
+    void SetRightHandle(const std::shared_ptr<Point> newPoint);
+
     const HandleMode& GetMode() const { return Mode; }
     HandleMode& GetMode() { return Mode; }
     void SetMode(HandleMode newMode);
 
     template<class Archive>
     void serialize(Archive& archive) {
-        archive(CEREAL_NVP(Position), CEREAL_NVP(LeftHandle), CEREAL_NVP(RightHandle));
+        archive(CEREAL_NVP(CenterHandle), CEREAL_NVP(LeftHandle), CEREAL_NVP(RightHandle));
     }
 
 private:

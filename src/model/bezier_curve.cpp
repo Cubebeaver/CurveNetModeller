@@ -30,10 +30,10 @@ glm::vec3 BezierCurve::EvaluateSegment(int segmentIndex, float t) const {
     const BezierNode& nodeA = *Nodes[segmentIndex];
     const BezierNode& nodeB = *Nodes[segmentIndex + 1];
 
-    const glm::vec3& p0 = nodeA.GetPosition();
-    const glm::vec3& p1 = nodeA.GetRightHandle();
-    const glm::vec3& p2 = nodeB.GetLeftHandle();
-    const glm::vec3& p3 = nodeB.GetPosition();
+    const glm::vec3& p0 = nodeA.GetCenterHandle()->GetPosition();
+    const glm::vec3& p1 = nodeA.GetRightHandle()->GetPosition();
+    const glm::vec3& p2 = nodeB.GetLeftHandle()->GetPosition();
+    const glm::vec3& p3 = nodeB.GetCenterHandle()->GetPosition();
 
     float u = 1.0f - t;
     float tt = t * t;
@@ -56,10 +56,10 @@ float BezierCurve::EvaluateSegmentCurvature(int segmentIndex, float t) const {
     const BezierNode& nodeA = *Nodes[segmentIndex];
     const BezierNode& nodeB = *Nodes[segmentIndex + 1];
 
-    const glm::vec3& p0 = nodeA.GetPosition();
-    const glm::vec3& p1 = nodeA.GetRightHandle();
-    const glm::vec3& p2 = nodeB.GetLeftHandle();
-    const glm::vec3& p3 = nodeB.GetPosition();
+    const glm::vec3& p0 = nodeA.GetCenterHandle()->GetPosition();
+    const glm::vec3& p1 = nodeA.GetRightHandle()->GetPosition();
+    const glm::vec3& p2 = nodeB.GetLeftHandle()->GetPosition();
+    const glm::vec3& p3 = nodeB.GetCenterHandle()->GetPosition();
 
     float u = 1.0f - t;
 
@@ -89,10 +89,10 @@ glm::vec3 BezierCurve::EvaluateSegmentPrincipalNormal(int segmentIndex, float t)
     const BezierNode& nodeA = *Nodes[segmentIndex];
     const BezierNode& nodeB = *Nodes[segmentIndex + 1];
 
-    const glm::vec3& p0 = nodeA.GetPosition();
-    const glm::vec3& p1 = nodeA.GetRightHandle();
-    const glm::vec3& p2 = nodeB.GetLeftHandle();
-    const glm::vec3& p3 = nodeB.GetPosition();
+    const glm::vec3& p0 = nodeA.GetCenterHandle()->GetPosition();
+    const glm::vec3& p1 = nodeA.GetRightHandle()->GetPosition();
+    const glm::vec3& p2 = nodeB.GetLeftHandle()->GetPosition();
+    const glm::vec3& p3 = nodeB.GetCenterHandle()->GetPosition();
 
     float u = 1.0f - t;
 
@@ -129,10 +129,10 @@ glm::vec3 BezierCurve::EvaluateSegmentCameraNormal(int segmentIndex, float t, gl
     const BezierNode& nodeA = *Nodes[segmentIndex];
     const BezierNode& nodeB = *Nodes[segmentIndex + 1];
 
-    const glm::vec3& p0 = nodeA.GetPosition();
-    const glm::vec3& p1 = nodeA.GetRightHandle();
-    const glm::vec3& p2 = nodeB.GetLeftHandle();
-    const glm::vec3& p3 = nodeB.GetPosition();
+    const glm::vec3& p0 = nodeA.GetCenterHandle()->GetPosition();
+    const glm::vec3& p1 = nodeA.GetRightHandle()->GetPosition();
+    const glm::vec3& p2 = nodeB.GetLeftHandle()->GetPosition();
+    const glm::vec3& p3 = nodeB.GetCenterHandle()->GetPosition();
 
     float u = 1.0f - t;
 
@@ -173,7 +173,7 @@ std::vector<glm::vec3> BezierCurve::GenerateRenderPoints(int resolution) const {
 
     int segments = GetSegmentCount();
     if (segments == 0 && !Nodes.empty()) {
-        renderPoints.push_back(Nodes[0]->GetPosition());
+        renderPoints.push_back(Nodes[0]->GetCenterHandle()->GetPosition());
         return renderPoints;
     }
 

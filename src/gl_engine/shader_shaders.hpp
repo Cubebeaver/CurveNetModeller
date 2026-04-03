@@ -6,7 +6,9 @@
 
 #include "shader.hpp"
 
-class ShaderShaders {
+namespace gl_engine {
+
+class SharedShaders {
 private:
     static inline std::unordered_map<std::string, std::shared_ptr<Shader>> shaders;
 
@@ -19,3 +21,5 @@ public:
         return shaders[name];
     }
 };
+
+} // namespace gl_engine

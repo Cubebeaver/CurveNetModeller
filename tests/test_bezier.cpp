@@ -11,8 +11,8 @@ TEST(BezierNodeTest, Initialization) {
     glm::vec3 startPos(5.0f, 10.0f, 0.0f);
     BezierNode node(startPos);
 
-    EXPECT_NEAR(node.Position.x, 5.0f, 0.001f);
-    EXPECT_NEAR(node.Position.y, 10.0f, 0.001f);
+    EXPECT_NEAR(node.CenterHandle.x, 5.0f, 0.001f);
+    EXPECT_NEAR(node.CenterHandle.y, 10.0f, 0.001f);
     EXPECT_EQ(node.Mode, HandleMode::Aligned);
 }
 

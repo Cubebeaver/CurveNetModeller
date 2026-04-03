@@ -6,7 +6,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-
+namespace gl_engine {
 
 enum class AlphaMode {
     Opaque,       // No alpha
@@ -80,3 +80,5 @@ public:
         glBindTexture(GL_TEXTURE_2D, texture);
     }
 };
+
+} // namespace gl_engine

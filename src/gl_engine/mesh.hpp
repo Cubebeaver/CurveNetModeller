@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 
-
+namespace gl_engine {
 
 typedef struct VertexArrtribListElement {
     int Number;
@@ -137,3 +137,5 @@ public:
     Mesh(const std::vector<float>& vertexBuffer, const std::vector<GLuint>& indexBuffer, GLenum drawMode = GL_STATIC_DRAW)
         : MeshBase<float, float>(vertexBuffer, indexBuffer, drawMode) { }
 };
+
+} // namespace gl_engine

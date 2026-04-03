@@ -15,7 +15,7 @@
 #include "gl_engine/material.hpp"
 
 
-
+namespace gl_engine {
 
 //TODO itt a kamerában is áttérni Ray-re
 struct Ray {
@@ -41,11 +41,11 @@ public:
     inline static int screenWidth;
     inline static int screenHeight;
     inline static float aspect;
-    
+
     // x, y, z - pitch, yaw, roll - (up-down, left-right, tilt)
     glm::vec3 position;
-    glm::vec3 rotation; 
-    glm::vec3 direction; 
+    glm::vec3 rotation;
+    glm::vec3 direction;
 
     float fieldOfView;
     float nearClippingPlane;
@@ -135,7 +135,7 @@ public:
     void Rotate(float rotX, float rotY, float rotZ) { Rotate(glm::vec3(rotX, rotY, rotZ)); }
     void LookAt(glm::vec3 pos, glm::vec3 target, glm::vec3 up = glm::vec3(0, 1, 0)) {
         std::cout << "[-] void Camera::LookAt(glm::vec3 pos, glm::vec3 target, glm::vec3 up) not implemented" << std::endl;
-        
+
         position = pos;
         direction = glm::normalize(target - pos);
         rotation = glm::vec3(
@@ -157,12 +157,12 @@ public:
     }
     void SetNearClippingPlane(float zNear) {
         nearClippingPlane = zNear;
-        
+
         UpdateProjection();
     }
     void SetFarClippingPlane(float zFar) {
         farClippingPlane = zFar;
-        
+
         UpdateProjection();
     }
     void SetFrustum(float fov, float zNear, float zFar) {
@@ -221,9 +221,9 @@ public:
 
     virtual void UpdateProjection() override {
         matProjection = glm::perspective(
-            fieldOfView, 
-            Camera::aspect, 
-            nearClippingPlane, 
+            fieldOfView,
+            Camera::aspect,
+            nearClippingPlane,
             farClippingPlane
         );
     }
@@ -257,11 +257,11 @@ public:
 
     virtual void UpdateProjection() override {
         matProjection = glm::ortho(
-            -fieldOfView * aspect / 2, 
-            fieldOfView * aspect / 2, 
-            -fieldOfView / 2, 
-            fieldOfView / 2, 
-            nearClippingPlane, 
+            -fieldOfView * aspect / 2,
+            fieldOfView * aspect / 2,
+            -fieldOfView / 2,
+            fieldOfView / 2,
+            nearClippingPlane,
             farClippingPlane
         );
     }
@@ -283,3 +283,5 @@ public:
         return glm::normalize(ray_world);
     }
 };
+
+} // namespace gl_engine

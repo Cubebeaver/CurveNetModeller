@@ -11,7 +11,9 @@
 #include "workspace/viewport.hpp"
 
 
-
+//TODO Nem tudom miért de miután áttértem smart pointerekre (nem fix hogy ez az oka) utána,
+//     ha az utosó kontrol pontot is kitöröm, akkor valahogy mefagy az egész, de pörgeti a processzort,
+//     de nem száll el se stack overflow, se sigsegv-vel ugyh nem tudom mi lehet
 class BezierCurveController {
 private:
     int resolution = 20;
@@ -22,11 +24,13 @@ private:
 
     std::shared_ptr<BezierCurve> modelCurve;
     
-    std::unique_ptr<Shader> sharedShader;
+    std::shared_ptr<Shader> sharedShader;
     std::unique_ptr<BezierCurveView> viewCurve;
     std::unique_ptr<BezierCurveCurvatureCombView> curvatureView;
     std::vector<std::unique_ptr<BezierNodeView>> viewNodes;
-    
+
+    // std::weak_ptr<Point> selectedPoint;
+    // std::weak_ptr<BezierNode> selectedNode;
     int selected = -1;
     HandleType selectedPartType = HandleType::None;
 public:
@@ -35,7 +39,7 @@ public:
         modelCurve = std::make_shared<BezierCurve>();
         
         //TODO ezt flyweight-el vagy valamivel megoldani
-        sharedShader = std::make_unique<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag");
+        sharedShader = SharedShaders::Get("solid");
         viewCurve = std::make_unique<BezierCurveView>();
         curvatureView = std::make_unique<BezierCurveCurvatureCombView>();
 
@@ -51,17 +55,22 @@ public:
         modelCurve->AddNode(node);
     }
     void AddNode() {
-        if (modelCurve->Nodes.empty()) {
+        if (modelCurve->GetNodes().empty()) {
             AddNode(std::make_shared<BezierNode>(glm::vec3(0, 0, 0)));
             return;
         }
 
-        const auto& last = modelCurve->Nodes.back();
-        modelCurve->AddNode(std::make_shared<BezierNode>(last->GetPosition() + glm::vec3(1, 0, 0), last->GetLeftHandle() + glm::vec3(0, 0, 0), last->GetRightHandle() + glm::vec3(0, 0, 0), last->GetMode()));
+        const auto& last = modelCurve->GetNodes().back();
+        modelCurve->AddNode(std::make_shared<BezierNode>(
+            last->GetCenterHandle()->GetPosition() + glm::vec3(1, 0, 0),
+            last->GetLeftHandle()->GetPosition() + glm::vec3(0, 0, 0),
+            last->GetRightHandle()->GetPosition() + glm::vec3(0, 0, 0),
+            last->GetMode())
+        );
     }
 
     void RemoveNode() {
-        if (modelCurve->Nodes.empty()) return;
+        if (modelCurve->GetNodes().empty()) return;
 
         modelCurve->RemoveNodeAt(selected);
     }
@@ -69,7 +78,7 @@ public:
     void SetNodeMode(HandleMode newMode) {
         if (selected == -1) return;
 
-        modelCurve->Nodes[selected]->SetMode(newMode);
+        modelCurve->GetNodes()[selected]->SetMode(newMode);
     }
 
     void SetNormalType(bool normalType) {
@@ -100,7 +109,7 @@ public:
         if (showCurvature) curvatureView->Update(*modelCurve, resolution, length);
 
         viewNodes.clear();
-        for (const auto& node : modelCurve->Nodes) {
+        for (const auto& node : modelCurve->GetNodes()) {
             auto nodeView = std::make_unique<BezierNodeView>();
             nodeView->Update(*node);
             viewNodes.push_back(std::move(nodeView));
@@ -115,16 +124,16 @@ public:
 private:
 
     void OnClick(const glm::vec2& position, ImGuiMouseButton_ button) {
-        if (modelCurve->Nodes.empty()) return;
+        if (modelCurve->GetNodes().empty()) return;
         if (button != ImGuiMouseButton_Left) return;
         
         float closestDistance = std::numeric_limits<float>::max();
-        for (int i = 0; i < modelCurve->Nodes.size(); i++) {
-            const BezierNode& node = *modelCurve->Nodes[i];
+        for (int i = 0; i < modelCurve->GetNodes().size(); i++) {
+            const BezierNode& node = *modelCurve->GetNodes()[i];
 
-            const glm::vec3& center = node.GetPosition();
-            const glm::vec3& left = node.GetLeftHandle();
-            const glm::vec3& right = node.GetRightHandle();
+            const glm::vec3& center = node.GetCenterHandle()->GetPosition();
+            const glm::vec3& left = node.GetLeftHandle()->GetPosition();
+            const glm::vec3& right = node.GetRightHandle()->GetPosition();
 
             float centerDistance = Camera::activeCamera->DistanceToRay(center, position);
             float leftDistance = Camera::activeCamera->DistanceToRay(left, position);
@@ -157,11 +166,11 @@ private:
         if (button != ImGuiMouseButton_Left || selected == -1) return;
 
         // 1. Lekérjük a jelenleg kiválasztott pont/handle 3D-s pozícióját
-        BezierNode& node = *modelCurve->Nodes[selected];
-        glm::vec3 currentPos3D;
+        BezierNode& node = *modelCurve->GetNodes()[selected];
+        std::weak_ptr<Point> currentPos3D;
         
         switch(selectedPartType) {
-            case HandleType::Center: currentPos3D = node.GetPosition(); break;
+            case HandleType::Center: currentPos3D = node.GetCenterHandle(); break;
             case HandleType::Left:   currentPos3D = node.GetLeftHandle(); break;
             case HandleType::Right:  currentPos3D = node.GetRightHandle(); break;
             default: return;
@@ -187,10 +196,10 @@ private:
             float denom = glm::dot(planeNormal, rayDir);
             if (std::abs(denom) > 0.0001f) {
                 // A sík távolsága a kamerától a pont irányában
-                float t = glm::dot(currentPos3D - cameraPos, planeNormal) / denom;
+                float t = glm::dot(currentPos3D.lock()->GetPosition() - cameraPos, planeNormal) / denom;
                 return cameraPos + rayDir * t;
             }
-            return currentPos3D; // Fallback
+            return currentPos3D.lock()->GetPosition(); // Fallback
         };
 
         // 5. A 3D-s elmozdulás kiszámítása
@@ -198,7 +207,7 @@ private:
         glm::vec3 hitPrev = intersectPlane(prevRayDir);
         
         glm::vec3 translation3D = hitCurrent - hitPrev;
-        glm::vec3 newPos3D = currentPos3D + translation3D;
+        glm::vec3 newPos3D = currentPos3D.lock()->GetPosition() + translation3D;
 
         // 6. Az új pozíció beállítása a modellben
         switch(selectedPartType) {

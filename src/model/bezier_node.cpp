@@ -3,7 +3,11 @@
 
 
 BezierNode::BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode) 
-    : Position(position), LeftHandle(leftHandle), RightHandle(rightHandle), Mode(mode) {
+    : CenterHandle(std::make_shared<Point>(position)), LeftHandle(std::make_shared<Point>(leftHandle)), RightHandle(std::make_shared<Point>(rightHandle)), Mode(mode) {
+    CenterHandle->PointChanged += [&](glm::vec3 delta){ LeftHandle->GetPosition() += delta; RightHandle->GetPosition() += delta; BezierNodeChanged.Invoke(); };
+    LeftHandle->PointChanged += [&](glm::vec3 delta){ RightHandle->GetPosition() += delta; EnforceMode(true); BezierNodeChanged.Invoke(); };
+    RightHandle->PointChanged += [&](glm::vec3 delta){ LeftHandle->GetPosition() += delta; EnforceMode(false); BezierNodeChanged.Invoke(); };
+
     EnforceMode(true);
     BezierNodeChanged.Invoke();
 }
@@ -15,25 +19,42 @@ BezierNode::BezierNode(glm::vec3 position, HandleMode mode)
     : BezierNode(position, position + glm::vec3(-1, 0, 0), position + glm::vec3(1, 0, 0), mode) { }
 
 void BezierNode::SetPosition(const glm::vec3& newPos) {
-    glm::vec3 delta = newPos - Position;
-    Position = newPos;
-    LeftHandle += delta;
-    RightHandle += delta;
+    glm::vec3 delta = newPos - CenterHandle->GetPosition();
+    CenterHandle->GetPosition() = newPos;
+    LeftHandle->GetPosition() += delta;
+    RightHandle->GetPosition() += delta;
+
+    BezierNodeChanged.Invoke();
+}
+void BezierNode::SetPosition(const std::shared_ptr<Point> newPoint) {
+    CenterHandle = newPoint;
+    glm::vec3 delta = newPoint->GetPosition() - CenterHandle->GetPosition();
+    LeftHandle->GetPosition() += delta;
+    RightHandle->GetPosition() += delta;
 
     BezierNodeChanged.Invoke();
 }
 
-void BezierNode::SetLeftHandle(const glm::vec3& newPos) {
-    LeftHandle = newPos;
-    EnforceMode(true);
 
+void BezierNode::SetLeftHandle(const glm::vec3& newPos) {
+    LeftHandle->GetPosition() = newPos;
+    EnforceMode(true);
+    BezierNodeChanged.Invoke();
+}
+void BezierNode::SetLeftHandle(const std::shared_ptr<Point> newPoint) {
+    LeftHandle = newPoint;
+    EnforceMode(true);
     BezierNodeChanged.Invoke();
 }
 
 void BezierNode::SetRightHandle(const glm::vec3& newPos) {
-    RightHandle = newPos;
+    RightHandle->GetPosition() = newPos;
     EnforceMode(false);
-
+    BezierNodeChanged.Invoke();
+}
+void BezierNode::SetRightHandle(const std::shared_ptr<Point> newPoint) {
+    RightHandle = newPoint;
+    EnforceMode(false);
     BezierNodeChanged.Invoke();
 }
 
@@ -50,21 +71,21 @@ void BezierNode::SetMode(HandleMode newMode) {
 void BezierNode::EnforceMode(bool isLeftChanged) {
     if (Mode == HandleMode::Free) return;
 
-    glm::vec3& movedHandle = isLeftChanged ? LeftHandle : RightHandle;
-    glm::vec3& oppositeHandle = isLeftChanged ? RightHandle : LeftHandle;
+    glm::vec3& movedHandle = isLeftChanged ? LeftHandle->GetPosition() : RightHandle->GetPosition();
+    glm::vec3& oppositeHandle = isLeftChanged ? RightHandle->GetPosition() : LeftHandle->GetPosition();
 
-    glm::vec3 direction = Position - movedHandle;
+    glm::vec3 direction = CenterHandle->GetPosition() - movedHandle;
     float distanceMoved = glm::length(direction);
-    float distanceOpposite = glm::length(Position - oppositeHandle);
+    float distanceOpposite = glm::length(CenterHandle->GetPosition() - oppositeHandle);
 
     if (distanceMoved < 0.0001f) return;
 
     glm::vec3 normalizedDir = direction / distanceMoved;
 
     if (Mode == HandleMode::Aligned) {
-        oppositeHandle = Position + normalizedDir * distanceOpposite;
+        oppositeHandle = CenterHandle->GetPosition() + normalizedDir * distanceOpposite;
     } 
     else if (Mode == HandleMode::Symmetric) {
-        oppositeHandle = Position + normalizedDir * distanceMoved;
+        oppositeHandle = CenterHandle->GetPosition() + normalizedDir * distanceMoved;
     }
 }

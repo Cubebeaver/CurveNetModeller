@@ -19,7 +19,7 @@ public:
         mesh = std::make_unique<Mesh>(emptyVerts, emptyIdxs);
         mesh->AddAttribPointer(3, GL_FLOAT, false).FinishVertexAttribs();
 
-        material = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
+        material = std::make_unique<Material>(SharedShaders::Get("solid_color"));
         material->SetVec4("color", glm::vec4(0, 1, 1, 1));
     }
 

@@ -10,6 +10,8 @@
 
 #include "util/util.hpp"
 
+namespace gl_engine {
+
 class Shader {
 public:
     GLuint program;
@@ -73,3 +75,5 @@ private:
         }
     }
 };
+
+} // namespace gl_engine

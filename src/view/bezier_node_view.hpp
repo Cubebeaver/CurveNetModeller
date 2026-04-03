@@ -21,21 +21,21 @@ public:
         mesh = std::make_unique<Mesh>(emptyVerts, emptyIdxs);
         mesh->AddAttribPointer(3, GL_FLOAT, false).FinishVertexAttribs();
         
-        lineMat = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
+        lineMat = std::make_unique<Material>(SharedShaders::Get("solid_color"));
         lineMat->SetVec4("color", glm::vec4(1, 1, 0, 1));
         
-        pointMat = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
+        pointMat = std::make_unique<Material>(SharedShaders::Get("solid_color"));
         pointMat->SetVec4("color", glm::vec4(1, 0, 0, 1));
 
-        selectedMat = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
+        selectedMat = std::make_unique<Material>(SharedShaders::Get("solid_color"));
         selectedMat->SetVec4("color", glm::vec4(1, 0, 1, 1));
     }
 
     void Update(const BezierNode& nodeModel) {
         std::vector<float> vertices {
-            nodeModel.GetLeftHandle().x,  nodeModel.GetLeftHandle().y,  nodeModel.GetLeftHandle().z,
-            nodeModel.GetPosition().x,    nodeModel.GetPosition().y,    nodeModel.GetPosition().z,
-            nodeModel.GetRightHandle().x, nodeModel.GetRightHandle().y, nodeModel.GetRightHandle().z,
+            nodeModel.GetLeftHandle()->GetPosition().x,  nodeModel.GetLeftHandle()->GetPosition().y,  nodeModel.GetLeftHandle()->GetPosition().z,
+            nodeModel.GetCenterHandle()->GetPosition().x,    nodeModel.GetCenterHandle()->GetPosition().y,    nodeModel.GetCenterHandle()->GetPosition().z,
+            nodeModel.GetRightHandle()->GetPosition().x, nodeModel.GetRightHandle()->GetPosition().y, nodeModel.GetRightHandle()->GetPosition().z,
         };
         std::vector<GLuint> indices { 0, 1, 2 };
         

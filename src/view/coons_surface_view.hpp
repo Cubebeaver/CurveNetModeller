@@ -23,7 +23,7 @@ public:
              .AddAttribPointer(3, GL_FLOAT, false)
              .FinishVertexAttribs();
 
-        material = std::make_unique<Material>(ShaderShaders::Get("shaded"));
+        material = std::make_unique<Material>(SharedShaders::Get("shaded"));
         material->SetVec4("color", glm::vec4(.1f, .2f, .3f, 1));
     }
 

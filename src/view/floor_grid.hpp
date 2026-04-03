@@ -16,7 +16,7 @@ public:
         SetupGrid();
         SetupAxis();
 
-        material = std::make_unique<Material>(ShaderShaders::Get("solid_color"));
+        material = std::make_unique<Material>(SharedShaders::Get("solid_color"));
     }
 
     void Draw() {

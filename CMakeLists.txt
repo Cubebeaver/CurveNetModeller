@@ -37,6 +37,12 @@ set(MODEL_SOURCES
     src/model/bezier_curve.cpp
     src/model/bezier_node.cpp
     src/model/coons_surface.cpp
+        src/model/point.cpp
+        src/model/point.h
+        src/model/Object.cpp
+        src/model/Object.h
+        src/model/CurveMesh.cpp
+        src/model/CurveMesh.h
 )
 
 # Csak a főprogramhoz tartozó fájlok (Ablakkezelés, UI)
@@ -49,7 +55,7 @@ set(GL_ENGINE_SOURCES
     src/gl_engine/mesh.hpp
     src/gl_engine/shader.hpp
     src/gl_engine/texture.hpp
-    src/gl_engine/transform.hpp
+        src/model/transform.hpp
     src/gl_engine/material.hpp
 )
 

@@ -232,17 +232,17 @@ void SaveSurface(const CoonsSurface& scene) {
     std::cout << "[+] Successfully saved to output/save.json" << std::endl;
 }
 
-CoonsSurface LoadSurface() {
-    std::ifstream fs("output/save.json");
-
-    std::cout << ReadAllText("output/save.json") << std::endl;
-
-    CoonsSurface loaded;
-    cereal::JSONInputArchive archive(fs);
-    archive(cereal::make_nvp("SaveData", loaded)); // A varázslat itt történik!
-
-    return loaded;
-}
+// CoonsSurface LoadSurface() {
+//     std::ifstream fs("output/save.json");
+//
+//     std::cout << ReadAllText("output/save.json") << std::endl;
+//
+//     CoonsSurface loaded;
+//     cereal::JSONInputArchive archive(fs);
+//     archive(cereal::make_nvp("SaveData", loaded)); // A varázslat itt történik!
+//
+//     return loaded;
+// }
 
 int main() {
     GLFWwindow* mainWindow;
@@ -260,8 +260,8 @@ int main() {
         return -3;
     }
 
-    ShaderShaders::Register("solid_color", std::make_shared<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag"));
-    ShaderShaders::Register("shaded", std::make_shared<Shader>("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag"));
+    SharedShaders::Register("solid_color", std::make_shared<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag"));
+    SharedShaders::Register("shaded", std::make_shared<Shader>("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag"));
 
 
     PerspectiveCamera cam(
@@ -276,9 +276,9 @@ int main() {
 
     std::shared_ptr<Viewport> vp = std::make_shared<Viewport>();
     c = std::make_unique<BezierCurveController>(vp);
-    c->AddNode(std::make_shared<BezierNode>(glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec3(-0.7f,  0.3f, 0.0f), glm::vec3(-0.3f,  0.7f, 0.0f)));
-    c->AddNode(std::make_shared<BezierNode>(glm::vec3( 0.0f,  0.0f, 0.0f), glm::vec3(-0.2f, -0.2f, 0.0f), glm::vec3( 0.2f,  0.2f, 0.0f)));
-    c->AddNode(std::make_shared<BezierNode>(glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec3( 0.3f, -0.7f, 0.0f), glm::vec3( 0.7f, -0.3f, 0.0f)));
+    c->AddNode(std::make_shared<BezierNode>(glm::vec3(-5.0f,  5.0f, 0.0f), glm::vec3(-7.0f,  3.0f, 0.0f), glm::vec3(-3.0f,  7.0f, 0.0f)));
+    c->AddNode(std::make_shared<BezierNode>(glm::vec3( 0.0f,  0.0f, 0.0f), glm::vec3(-2.0f, -2.0f, 0.0f), glm::vec3( 2.0f,  2.0f, 0.0f)));
+    c->AddNode(std::make_shared<BezierNode>(glm::vec3( 5.0f, -5.0f, 0.0f), glm::vec3( 3.0f, -7.0f, 0.0f), glm::vec3( 7.0f, -3.0f, 0.0f)));
     c->SyncViews();
 
     BezierCurveController c1(vp);

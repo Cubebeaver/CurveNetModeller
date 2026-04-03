@@ -9,10 +9,10 @@
 
 //TODO - Itt lehetne ilyen dirty-zőset csinálni, hogy ha a world matrixot is eltároljuk,
 //todo   és csak akkor számítjuk újra ha változott valami
-class Transform
-{
+class Transform : public std::enable_shared_from_this<Transform> {
 private:
     std::weak_ptr<Transform> Parent;
+    std::vector<std::weak_ptr<Transform>> Children;
 
     glm::vec3 LocalPosition;
     glm::vec3 LocalRotation;
@@ -64,8 +64,13 @@ public:
     glm::vec3 GetRotation() { return LocalRotation; }
     glm::vec3 GetScale() { return LocalScale; }
     std::weak_ptr<Transform> GetParent() { return Parent; }
+    const std::vector<std::weak_ptr<Transform>>& GetChildren() const { return Children; }
 
-    void SetParent(std::shared_ptr<Transform> parent) { Parent = parent; }
+    void SetParent(std::shared_ptr<Transform> parent) {
+        Parent = parent;
+
+        parent->Children.push_back(shared_from_this());
+    }
 
     void SetTransform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale_) {
         LocalPosition = pos;

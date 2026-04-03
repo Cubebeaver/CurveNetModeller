@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <iostream>
 
+using namespace gl_engine;
 #include "gl_engine/framebuffer.hpp"
 #include "util/event.hpp"
 

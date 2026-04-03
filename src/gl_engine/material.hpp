@@ -14,6 +14,8 @@
 #include "shader.hpp"
 #include "texture.hpp"
 
+namespace gl_engine {
+
 // Egy típus, ami a felsoroltak közül BÁRMELYIK lehet
 using UniformValue = std::variant<int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat4>;
 
@@ -99,3 +101,5 @@ public:
         }
     }
 };
+
+} // namespace gl_engine

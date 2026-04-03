@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <glm/glm.hpp>
 
-#include "gl_engine/transform.hpp"
+#include "../src/model/transform.hpp"
 
 
 
@@ -17,6 +17,7 @@ TEST(TransformTest, Initialization) {
                                             0, 0, 1, 0,
                                             0, 0, 0, 1));
     EXPECT_EQ(t.GetParent().lock(), nullptr);
+    EXPECT_EQ(t.C)
 }
 
 TEST(TransformTest, Translate) {

@@ -4,25 +4,25 @@ CoonsSurface::CoonsSurface(
     std::shared_ptr<BezierCurve> c1, std::shared_ptr<BezierCurve> c2,
     std::shared_ptr<BezierCurve> d1, std::shared_ptr<BezierCurve> d2
 ) : c1(c1), c2(c2), d1(d1), d2(d2) {
-    this->c1.lock()->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
-    this->c2.lock()->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
-    this->d1.lock()->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
-    this->d2.lock()->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    this->c1->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    this->c2->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    this->d1->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    this->d2->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
 }
 
 glm::vec3 CoonsSurface::Evaluate(float u, float v) const {
-    const auto& S_u0 = c1.lock()->EvaluateCurve(u);
-    const auto& S_u1 = c2.lock()->EvaluateCurve(u);
-    const auto& S_0v = d1.lock()->EvaluateCurve(v);
-    const auto& S_1v = d2.lock()->EvaluateCurve(v);
+    const auto& S_u0 = c1->EvaluateCurve(u);
+    const auto& S_u1 = c2->EvaluateCurve(u);
+    const auto& S_0v = d1->EvaluateCurve(v);
+    const auto& S_1v = d2->EvaluateCurve(v);
 
     const auto& S1_uv = (1 - v) * S_u0 + v * S_u1;
     const auto& S2_uv = (1 - u) * S_0v + u * S_1v;
 
-    const auto& S_00 = c1.lock()->EvaluateCurve(0);
-    const auto& S_10 = c1.lock()->EvaluateCurve(1);
-    const auto& S_01 = c2.lock()->EvaluateCurve(0);
-    const auto& S_11 = c2.lock()->EvaluateCurve(1);
+    const auto& S_00 = c1->EvaluateCurve(0);
+    const auto& S_10 = c1->EvaluateCurve(1);
+    const auto& S_01 = c2->EvaluateCurve(0);
+    const auto& S_11 = c2->EvaluateCurve(1);
 
     const auto& S12_uv = (1 - v) * ((1 - u) * S_00 + u * S_10)
                              + v * ((1 - u) * S_01 + u * S_11);

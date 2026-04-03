@@ -2,9 +2,11 @@
 
 #include <vector>
 
-#include <glm/glm.hpp>
-
 #include "model/bezier_node.h"
+#include "ICurve.hpp"
+#include "ISpline.hpp"
+
+#include <glm/glm.hpp>
 
 #include <cereal/archives/json.hpp>
 #include <cereal/types/memory.hpp>
@@ -13,32 +15,33 @@
 
 
 
-class BezierCurve {
-public:
+class BezierCurve : public ISpline {
+private:
     std::vector<std::shared_ptr<BezierNode>> Nodes;
-
+public:
     Event<> BezierCurveChanged;
     
     int GetSegmentCount() const;
+    const std::vector<std::shared_ptr<BezierNode>>& GetNodes() const { return Nodes; }
 
     void AddNode(std::shared_ptr<BezierNode> node);
 
     void RemoveNodeAt(int idx);
     void RemoveNodeLast() { RemoveNodeAt(Nodes.size() - 1); }
 
-    glm::vec3 EvaluateSegment(int segmentIndex, float t) const;
-    float EvaluateSegmentCurvature(int segmentIndex, float t) const;
-    glm::vec3 EvaluateSegmentPrincipalNormal(int segmentIndex, float t) const;
-    glm::vec3 EvaluateSegmentCameraNormal(int segmentIndex, float t, glm::vec3 cam) const;
+    [[nodiscard]] glm::vec3 EvaluateSegment(int segmentIndex, float t) const override;
+    [[nodiscard]] float EvaluateSegmentCurvature(int segmentIndex, float t) const override;
+    [[nodiscard]] glm::vec3 EvaluateSegmentPrincipalNormal(int segmentIndex, float t) const override;
+    [[nodiscard]] glm::vec3 EvaluateSegmentCameraNormal(int segmentIndex, float t, glm::vec3 cam) const;
 
-    glm::vec3 EvaluateCurve(float t) const;
-    float EvaluateCurveCurvature(float t) const;
-    glm::vec3 EvaluateCurvePrincipalNormal(float t) const;
+    [[nodiscard]] glm::vec3 EvaluateCurve(float t) const override;
+    [[nodiscard]] float EvaluateCurveCurvature(float t) const override;
+    [[nodiscard]] glm::vec3 EvaluateCurvePrincipalNormal(float t) const override;
 
-    std::vector<glm::vec3> GenerateRenderPoints(int resolution = 50) const;
-    std::vector<glm::vec3> GenerateRenderNormals(int resolution = 50) const;
-    std::vector<glm::vec3> GenerateRenderCameraNormals(int resolution = 50, glm::vec3 cam = glm::vec3(0, 0, 1)) const;
-    std::vector<float> GenerateRenderCurvatures(int resolution = 50) const;
+    [[nodiscard]] std::vector<glm::vec3> GenerateRenderPoints(int resolution = 50) const;
+    [[nodiscard]] std::vector<glm::vec3> GenerateRenderNormals(int resolution = 50) const;
+    [[nodiscard]] std::vector<glm::vec3> GenerateRenderCameraNormals(int resolution = 50, glm::vec3 cam = glm::vec3(0, 0, 1)) const;
+    [[nodiscard]] std::vector<float> GenerateRenderCurvatures(int resolution = 50) const;
 
     template<class Archive>
     void serialize(Archive& archive) {

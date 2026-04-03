@@ -3,6 +3,7 @@
 #include <iostream>
 #include <glad/glad.h>
 
+namespace gl_engine {
 
 class FrameBuffer {
 public:
@@ -75,3 +76,5 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 };
+
+} // namespace gl_engine
