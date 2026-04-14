@@ -17,30 +17,25 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // GlEngine
-#include "gl_engine/shader.hpp"
-#include "gl_engine/material.hpp"
-#include "gl_engine/texture.hpp"
-#include "gl_engine/framebuffer.hpp"
-#include "gl_engine/camera.hpp"
-#include "gl_engine/shader_shaders.hpp"
+#include "gl_engine/shared_shaders.hpp"
 
 // Model
 #include "model/bezier_node.h"
 #include "model/scene.hpp"
 
 // Views
-#include "workspace/viewport.hpp"
+#include "editor/workspace/viewport.hpp"
 
 // Controller
-#include "controller/bezier_curve_controller.hpp"
+#include "editor/controller/bezier_curve_controller.hpp"
 
 // Util
 #include "model/coons_surface.h"
 #include "util/screenshot.hpp"
-#include "view/coons_surface_view.hpp"
+#include "editor/view/coons_surface_view.hpp"
 
-#include "view/floor_grid.hpp"
-
+#include "editor/view/floor_grid.hpp"
+#include "editor/workspace/model_to_interface.hpp"
 
 
 static int Width = 1280, Height = 720;
@@ -263,6 +258,8 @@ int main() {
     SharedShaders::Register("solid_color", std::make_shared<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag"));
     SharedShaders::Register("shaded", std::make_shared<Shader>("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag"));
 
+    //ModelToInterface::Register(std::type_index(typeid(Point)), )
+
 
     PerspectiveCamera cam(
         glm::vec3(0, 0, 5),
@@ -274,23 +271,28 @@ int main() {
     cam.Init();
 
 
-    std::shared_ptr<Viewport> vp = std::make_shared<Viewport>();
-    c = std::make_unique<BezierCurveController>(vp);
+    std::shared_ptr<Viewport> viewport = std::make_shared<Viewport>();
+    Workspaces::viewport = viewport;
+
+    std::shared_ptr<Properties> properties = std::make_shared<Properties>();
+    Workspaces::properties = properties;
+
+    c = std::make_unique<BezierCurveController>();
     c->AddNode(std::make_shared<BezierNode>(glm::vec3(-5.0f,  5.0f, 0.0f), glm::vec3(-7.0f,  3.0f, 0.0f), glm::vec3(-3.0f,  7.0f, 0.0f)));
     c->AddNode(std::make_shared<BezierNode>(glm::vec3( 0.0f,  0.0f, 0.0f), glm::vec3(-2.0f, -2.0f, 0.0f), glm::vec3( 2.0f,  2.0f, 0.0f)));
     c->AddNode(std::make_shared<BezierNode>(glm::vec3( 5.0f, -5.0f, 0.0f), glm::vec3( 3.0f, -7.0f, 0.0f), glm::vec3( 7.0f, -3.0f, 0.0f)));
     c->SyncViews();
 
-    BezierCurveController c1(vp);
+    BezierCurveController c1;
     c1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0, -2), glm::vec3(-3, -1, -2), glm::vec3(-1,  1, -2)));
     c1.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 1,  1, -2), glm::vec3( 3, -1, -2)));
-    BezierCurveController c2(vp);
+    BezierCurveController c2;
     c2.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0,  2), glm::vec3(-3, -1,  2), glm::vec3(-1,  1,  2)));
     c2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 1,  1,  2), glm::vec3( 3, -1,  2)));
-    BezierCurveController d1(vp);
+    BezierCurveController d1;
     d1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0, -2), glm::vec3(-2,  1, -3), glm::vec3(-2, -1, -1)));
     d1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0,  2), glm::vec3(-2, -1,  1), glm::vec3(-2,  1,  3)));
-    BezierCurveController d2(vp);
+    BezierCurveController d2;
     d2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 2,  1, -3), glm::vec3( 2, -1, -1)));
     d2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 2, -1,  1), glm::vec3( 2,  1,  3)));
 
@@ -300,7 +302,6 @@ int main() {
 
     coons.CoonsSurfaceChanged += [&](){ coonsView.Update(coons); };
 
-    Shader solid("resources/shaders/trafo.vert", "resources/shaders/color.frag");
     FloorGrid floor;
 
     // MAIN LOOP
@@ -311,11 +312,11 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Scene
-        vp->BindFrameBuffer();
+        viewport->BindFrameBuffer();
             glEnable(GL_DEPTH_TEST);
-            vp->viewportBuffer->Clear();
+            viewport->viewportBuffer->Clear();
 
-                Camera::activeCamera->UpdateFrameSize(vp->viewportBuffer->Width, vp->viewportBuffer->Height);
+                Camera::activeCamera->UpdateFrameSize(viewport->viewportBuffer->Width, viewport->viewportBuffer->Height);
                 floor.Draw();
                 c->Present();
                 coonsView.Draw();
@@ -325,10 +326,10 @@ int main() {
                 d2.Present();
 
             glDisable(GL_DEPTH_TEST);
-        vp->UnbindFrameBuffer();
+        viewport->UnbindFrameBuffer();
         glViewport(0, 0, Width, Height);
 
-            UI(*vp);
+            UI(*viewport);
 
         glfwSwapBuffers(mainWindow);
     }

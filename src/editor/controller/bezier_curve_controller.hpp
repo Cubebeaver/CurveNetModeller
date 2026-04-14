@@ -4,11 +4,14 @@
 
 #include <model/bezier_node.h>
 #include <model/bezier_curve.h>
-#include <view/bezier_node_view.hpp>
-#include <view/bezier_curve_view.hpp>
 
-#include "view/bezier_curve_curvature_comb_view.hpp"
-#include "workspace/viewport.hpp"
+#include "gl_engine/camera.hpp"
+#include <editor/view/bezier_node_view.hpp>
+#include <editor/view/curve_view.hpp>
+
+#include "editor/view/bezier_curve_curvature_comb_view.hpp"
+#include "editor/workspace/viewport.hpp"
+#include "editor/workspace/workspaces.hpp"
 
 
 //TODO Nem tudom miért de miután áttértem smart pointerekre (nem fix hogy ez az oka) utána,
@@ -23,24 +26,24 @@ private:
     std::weak_ptr<Viewport> vp;
 
     std::shared_ptr<BezierCurve> modelCurve;
-    
-    std::shared_ptr<Shader> sharedShader;
-    std::unique_ptr<BezierCurveView> viewCurve;
+
+    std::unique_ptr<CurveView> viewCurve;
     std::unique_ptr<BezierCurveCurvatureCombView> curvatureView;
     std::vector<std::unique_ptr<BezierNodeView>> viewNodes;
 
     // std::weak_ptr<Point> selectedPoint;
     // std::weak_ptr<BezierNode> selectedNode;
     int selected = -1;
-    HandleType selectedPartType = HandleType::None;
+    BezierHandleType selectedPartType = BezierHandleType::None;
 public:
 
-    BezierCurveController(std::shared_ptr<Viewport> viewport) : vp(viewport) {
+    BezierCurveController() {
+        vp = Workspaces::viewport;
+
         modelCurve = std::make_shared<BezierCurve>();
         
         //TODO ezt flyweight-el vagy valamivel megoldani
-        sharedShader = SharedShaders::Get("solid");
-        viewCurve = std::make_unique<BezierCurveView>();
+        viewCurve = std::make_unique<CurveView>();
         curvatureView = std::make_unique<BezierCurveCurvatureCombView>();
 
         modelCurve->BezierCurveChanged += [&](){ SyncViews(); };
@@ -141,24 +144,24 @@ private:
 
             if (centerDistance < closestDistance) {
                 selected = i;
-                selectedPartType = HandleType::Center;
+                selectedPartType = BezierHandleType::Center;
                 closestDistance = centerDistance;
             }
             if (leftDistance < closestDistance) {
                 selected = i;
-                selectedPartType = HandleType::Left;
+                selectedPartType = BezierHandleType::Left;
                 closestDistance = leftDistance;
             }
             if (rightDistance < closestDistance) {
                 selected = i;
-                selectedPartType = HandleType::Right;
+                selectedPartType = BezierHandleType::Right;
                 closestDistance = rightDistance;
             }
         }
 
         if (closestDistance >= 0.1f) {
             selected = -1;
-            selectedPartType = HandleType::None;
+            selectedPartType = BezierHandleType::None;
         }
     }
 
@@ -170,9 +173,9 @@ private:
         std::weak_ptr<Point> currentPos3D;
         
         switch(selectedPartType) {
-            case HandleType::Center: currentPos3D = node.GetCenterHandle(); break;
-            case HandleType::Left:   currentPos3D = node.GetLeftHandle(); break;
-            case HandleType::Right:  currentPos3D = node.GetRightHandle(); break;
+            case BezierHandleType::Center: currentPos3D = node.GetCenterHandle(); break;
+            case BezierHandleType::Left:   currentPos3D = node.GetLeftHandle(); break;
+            case BezierHandleType::Right:  currentPos3D = node.GetRightHandle(); break;
             default: return;
         }
 
@@ -211,9 +214,9 @@ private:
 
         // 6. Az új pozíció beállítása a modellben
         switch(selectedPartType) {
-            case HandleType::Center: node.SetPosition(newPos3D); break;
-            case HandleType::Left:   node.SetLeftHandle(newPos3D); break;
-            case HandleType::Right:  node.SetRightHandle(newPos3D); break;
+            case BezierHandleType::Center: node.SetPosition(newPos3D); break;
+            case BezierHandleType::Left:   node.SetLeftHandle(newPos3D); break;
+            case BezierHandleType::Right:  node.SetRightHandle(newPos3D); break;
             default: break;
         }
     }

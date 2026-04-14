@@ -147,7 +147,7 @@ glm::vec3 BezierCurve::EvaluateSegmentCameraNormal(int segmentIndex, float t, gl
     return glm::normalize(normal);
 }
 
-glm::vec3 BezierCurve::EvaluateCurve(float t) const {
+glm::vec3 BezierCurve::EvaluatePosition(float t) const {
     int segmentIdx = t >= 1.0f ? GetSegmentCount() - 1 : (int)(GetSegmentCount() * t);
     float localT = t * GetSegmentCount() - segmentIdx;
 
@@ -167,29 +167,6 @@ glm::vec3 BezierCurve::EvaluateCurvePrincipalNormal(float t) const {
     return EvaluateSegmentPrincipalNormal(segmentIdx, localT);
 }
 
-
-std::vector<glm::vec3> BezierCurve::GenerateRenderPoints(int resolution) const {
-    std::vector<glm::vec3> renderPoints;
-
-    int segments = GetSegmentCount();
-    if (segments == 0 && !Nodes.empty()) {
-        renderPoints.push_back(Nodes[0]->GetCenterHandle()->GetPosition());
-        return renderPoints;
-    }
-
-    renderPoints.reserve(segments * resolution);
-
-    for (int i = 0; i < segments; ++i) {
-        int steps = (i == segments - 1) ? resolution : resolution - 1;
-
-        for (int step = 0; step <= steps; ++step) {
-            float t = static_cast<float>(step) / static_cast<float>(resolution);
-            renderPoints.push_back(EvaluateSegment(i, t));
-        }
-    }
-
-    return renderPoints;
-}
 std::vector<glm::vec3> BezierCurve::GenerateRenderNormals(int resolution) const {
     std::vector<glm::vec3> renderPoints;
 

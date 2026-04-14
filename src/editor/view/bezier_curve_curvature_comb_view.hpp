@@ -7,6 +7,7 @@
 #include "gl_engine/material.hpp"
 #include "gl_engine/mesh.hpp"
 #include "model/bezier_curve.h"
+#include "editor/view/curve_view.hpp"
 
 class BezierCurveCurvatureCombView {
 private:
@@ -30,7 +31,7 @@ public:
     }
 
     void Update(const BezierCurve& curveModel, int resolution = 50, float length = 1.0f) {
-        const std::vector<glm::vec3>& points =  curveModel.GenerateRenderPoints(resolution);
+        const std::vector<glm::vec3>& points =  CurveView::GetRenderPoints(curveModel, resolution * curveModel.GetSegmentCount() + 1);
         const std::vector<float>& curvatures = curveModel.GenerateRenderCurvatures(resolution);
         std::vector<glm::vec3> normals;
         if (normalType) {

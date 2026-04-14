@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "object.h"
-#include "ICurve.hpp"
-#include "ISurface.hpp"
+#include "i_Curve.hpp"
+#include "i_Surface.hpp"
 #include "util/event.hpp"
 
 
@@ -22,6 +22,8 @@ public:
 
     void AddEdge(std::shared_ptr<ICurve> edge);
     void AddSurface(std::shared_ptr<ISurface> surface);
+
+    void AddNewCoonsSurface();
 
     virtual ~CurveMesh() override = default;
 };

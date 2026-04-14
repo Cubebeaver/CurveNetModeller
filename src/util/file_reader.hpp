@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <iostream>
 
-std::string ReadAllText(const std::filesystem::path& path) {
+inline std::string ReadAllText(const std::filesystem::path& path) {
     if (!std::filesystem::exists(path)) {
         std::cerr << "[-] File does not exist: " << path << std::endl;
         return "";

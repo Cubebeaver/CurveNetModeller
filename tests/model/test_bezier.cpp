@@ -11,9 +11,9 @@ TEST(BezierNodeTest, Initialization) {
     glm::vec3 startPos(5.0f, 10.0f, 0.0f);
     BezierNode node(startPos);
 
-    EXPECT_NEAR(node.CenterHandle.x, 5.0f, 0.001f);
-    EXPECT_NEAR(node.CenterHandle.y, 10.0f, 0.001f);
-    EXPECT_EQ(node.Mode, HandleMode::Aligned);
+    EXPECT_NEAR(node.GetCenterHandle()->GetPosition().x, 5.0f, 0.001f);
+    EXPECT_NEAR(node.GetCenterHandle()->GetPosition().y, 10.0f, 0.001f);
+    EXPECT_EQ(node.GetMode(), HandleMode::Aligned);
 }
 
 // Teszteljük a szimmetrikus mód kényszerítését
@@ -25,8 +25,8 @@ TEST(BezierNodeTest, SymmetricHandleMovement) {
     node.SetLeftHandle(glm::vec3(-2.0f, 0.0f, 0.0f));
 
     // ...akkor a jobb handle-nek automatikusan a tükörképének kell lennie (2, 0, 0)
-    EXPECT_NEAR(node.RightHandle.x, 2.0f, 0.001f);
-    EXPECT_NEAR(node.RightHandle.y, 0.0f, 0.001f);
+    EXPECT_NEAR(node.GetRightHandle()->GetPosition().x, 2.0f, 0.001f);
+    EXPECT_NEAR(node.GetRightHandle()->GetPosition().y, 0.0f, 0.001f);
 }
 
 // Teszteljük, hogy a fő pont mozgatása viszi-e a handle-öket is
@@ -38,8 +38,8 @@ TEST(BezierNodeTest, MoveCenterUpdatesHandles) {
     node.SetPosition(glm::vec3(5.0f, 5.0f, 0.0f));
 
     // ...akkor a bal handle is tolódik: (-1+5, 0+5, 0) = (4, 5, 0)
-    EXPECT_NEAR(node.LeftHandle.x, 4.0, 0.001f);
-    EXPECT_NEAR(node.LeftHandle.y, 5.0, 0.001f);
+    EXPECT_NEAR(node.GetLeftHandle()->GetPosition().x, 4.0, 0.001f);
+    EXPECT_NEAR(node.GetLeftHandle()->GetPosition().y, 5.0, 0.001f);
 }
 
 TEST(BezierCurveTest, EvaluatePoint) {
@@ -50,7 +50,7 @@ TEST(BezierCurveTest, EvaluatePoint) {
     curve.AddNode(node1);
     curve.AddNode(node2);
 
-    auto point = curve.EvaluateCurve(0.5f);
+    auto point = curve.EvaluatePosition(0.5f);
     EXPECT_NEAR(point.x, 0.0f, 0.001);
     EXPECT_NEAR(point.y, -0.75f, 0.001f);
     EXPECT_NEAR(point.z, 0.0f, 0.001f);

@@ -5,7 +5,7 @@
 #include "gl_engine/mesh.hpp"
 #include "gl_engine/material.hpp"
 #include "gl_engine/camera.hpp"
-#include "gl_engine/shader_shaders.hpp"
+#include "gl_engine/shared_shaders.hpp"
 
 class BezierNodeView {
 private:
@@ -42,7 +42,7 @@ public:
         mesh->Replace(vertices, indices);
     }
 
-    void Draw(HandleType selected = HandleType::None) {
+    void Draw(BezierHandleType selected = BezierHandleType::None) {
         glLineWidth(1);
         lineMat->Bind();
         lineMat->SetMat4("Model", glm::mat4(1.0f));
@@ -61,15 +61,15 @@ public:
         selectedMat->SetMat4("View", Camera::activeCamera->matView);
         selectedMat->SetMat4("Projection", Camera::activeCamera->matProjection);
         
-        if ((int)selected & (int)HandleType::Left) selectedMat->Bind();
+        if ((int)selected & (int)BezierHandleType::Left) selectedMat->Bind();
         else /* Left not selected */               pointMat->Bind();
         mesh->DrawPartial(0, 1, GL_POINTS);
         
-        if ((int)selected & (int)HandleType::Center) selectedMat->Bind();
+        if ((int)selected & (int)BezierHandleType::Center) selectedMat->Bind();
         else /* Center not selected */               pointMat->Bind();
         mesh->DrawPartial(1, 2, GL_POINTS);
         
-        if ((int)selected & (int)HandleType::Right) selectedMat->Bind();
+        if ((int)selected & (int)BezierHandleType::Right) selectedMat->Bind();
         else /* Right not selected */               pointMat->Bind();
         mesh->DrawPartial(2, 3, GL_POINTS);
     }

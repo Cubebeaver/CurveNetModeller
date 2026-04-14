@@ -2,8 +2,9 @@
 // Created by Cubebeaver on 2026. 04. 03..
 //
 
-#include "CurveMesh.h"
-void CurveMesh::AddEdge(std::shared_ptr<ISpline> edge) {
+#include "curve_mesh.h"
+
+void CurveMesh::AddEdge(std::shared_ptr<ICurve> edge) {
     edges.push_back(edge);
 }
 

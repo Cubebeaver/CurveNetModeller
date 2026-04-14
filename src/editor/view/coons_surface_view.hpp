@@ -2,12 +2,10 @@
 
 #include <glm/glm.hpp>
 #include <model/coons_surface.h>
-#include <model/bezier_curve.h>
 
 #include "gl_engine/camera.hpp"
 #include "gl_engine/material.hpp"
 #include "gl_engine/mesh.hpp"
-#include "gl_engine/shader.hpp"
 
 class CoonsSurfaceView {
 private:

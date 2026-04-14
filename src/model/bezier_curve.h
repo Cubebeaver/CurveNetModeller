@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "model/bezier_node.h"
-#include "ICurve.hpp"
-#include "ISpline.hpp"
+#include "i_Curve.hpp"
+#include "i_Spline.hpp"
 
 #include <glm/glm.hpp>
 
@@ -34,11 +34,10 @@ public:
     [[nodiscard]] glm::vec3 EvaluateSegmentPrincipalNormal(int segmentIndex, float t) const override;
     [[nodiscard]] glm::vec3 EvaluateSegmentCameraNormal(int segmentIndex, float t, glm::vec3 cam) const;
 
-    [[nodiscard]] glm::vec3 EvaluateCurve(float t) const override;
+    [[nodiscard]] glm::vec3 EvaluatePosition(float t) const override;
     [[nodiscard]] float EvaluateCurveCurvature(float t) const override;
     [[nodiscard]] glm::vec3 EvaluateCurvePrincipalNormal(float t) const override;
 
-    [[nodiscard]] std::vector<glm::vec3> GenerateRenderPoints(int resolution = 50) const;
     [[nodiscard]] std::vector<glm::vec3> GenerateRenderNormals(int resolution = 50) const;
     [[nodiscard]] std::vector<glm::vec3> GenerateRenderCameraNormals(int resolution = 50, glm::vec3 cam = glm::vec3(0, 0, 1)) const;
     [[nodiscard]] std::vector<float> GenerateRenderCurvatures(int resolution = 50) const;

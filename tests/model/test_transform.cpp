@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <glm/glm.hpp>
 
-#include "../src/model/transform.hpp"
+#include "model/transform.h"
 
 
 
@@ -17,7 +17,7 @@ TEST(TransformTest, Initialization) {
                                             0, 0, 1, 0,
                                             0, 0, 0, 1));
     EXPECT_EQ(t.GetParent().lock(), nullptr);
-    EXPECT_EQ(t.C)
+    EXPECT_EQ(t.GetChildren().size(), 0);
 }
 
 TEST(TransformTest, Translate) {
@@ -33,6 +33,7 @@ TEST(TransformTest, Translate) {
                                        0, 0, 1, 0,
                                        1, 0, 0, 1));
     EXPECT_EQ(t.GetParent().lock(), nullptr);
+    EXPECT_EQ(t.GetChildren().size(), 0);
 }
 
 TEST(TransformTest, Parenting) {
@@ -75,4 +76,7 @@ TEST(TransformTest, Parenting) {
                                                  0, 0.5f, 0, 0,
                                                  0, 0, 0.5f, 0,
                                                  3, 5, 7, 1.0f));
+
+    EXPECT_EQ(parent->GetChildren().size(), 1);
+    EXPECT_EQ(parent->GetChildren()[0].lock().get(), child.get());
 }

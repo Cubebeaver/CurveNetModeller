@@ -1,15 +1,15 @@
 #pragma once
 
 #include <glad/glad.h>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <filesystem>
 #include <ctime>
+#include <iomanip>
 
-std::string GetCurrentTimeString() {
+inline std::string GetCurrentTimeString() {
     std::time_t t = std::time(nullptr);
     std::tm* now = std::localtime(&t);
 
@@ -19,7 +19,7 @@ std::string GetCurrentTimeString() {
     return ss.str();
 }
 
-void CaptureScreenshot(GLuint fboID, int width, int height) {
+inline void CaptureScreenshot(GLuint fboID, int width, int height) {
     std::string savename = "output/screenshots/" + GetCurrentTimeString() + "_screenshot.png";
     std::vector<unsigned char> pixels(width * height * 3);
     

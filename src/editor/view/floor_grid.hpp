@@ -3,7 +3,7 @@
 #include "gl_engine/camera.hpp"
 #include "gl_engine/material.hpp"
 #include "gl_engine/mesh.hpp"
-#include "gl_engine/shader_shaders.hpp"
+#include "gl_engine/shared_shaders.hpp"
 
 class FloorGrid {
 private:

@@ -38,16 +38,17 @@ set(MODEL_SOURCES
     src/model/bezier_node.cpp
     src/model/coons_surface.cpp
         src/model/point.cpp
-        src/model/point.h
         src/model/Object.cpp
-        src/model/Object.h
-        src/model/CurveMesh.cpp
-        src/model/CurveMesh.h
+        src/model/curve_mesh.cpp
+        src/model/transform.cpp
 )
 
 # Csak a főprogramhoz tartozó fájlok (Ablakkezelés, UI)
 set(APP_SOURCES
     src/main.cpp
+        src/util/stb_implementation.cpp
+        src/editor/controller/curve_mesh_controller.cpp
+        src/editor/controller/curve_mesh_controller.h
 )
 
 # Az OpenGL motorhoz tartozó fáljok (Shaderek, Objectek)
@@ -55,15 +56,15 @@ set(GL_ENGINE_SOURCES
     src/gl_engine/mesh.hpp
     src/gl_engine/shader.hpp
     src/gl_engine/texture.hpp
-        src/model/transform.hpp
+        src/model/transform.h
     src/gl_engine/material.hpp
 )
 
 # Csak a tesztekhez tartozó fájlok
 set(TEST_SOURCES
-    tests/test_bezier.cpp
-    tests/test_transform.cpp
-    tests/test_coons.cpp
+        tests/model/test_bezier.cpp
+        tests/model/test_transform.cpp
+        tests/model/test_coons.cpp
 )
 
 

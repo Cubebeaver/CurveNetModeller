@@ -10,10 +10,11 @@
 #include <cereal/types/string.hpp>
 #include <util/glm_serializer.hpp>
 
+#include "i_Node.hpp"
 #include "point.h"
 
 
-enum class HandleType {
+enum class BezierHandleType {
     None = 0b0,
     Center = 0b1,
     Left = 0b10,
@@ -26,7 +27,7 @@ enum class HandleMode {
     Symmetric
 };
 
-class BezierNode : public IElement {
+class BezierNode : public INode {
 private:
     std::shared_ptr<Point> CenterHandle;
     std::shared_ptr<Point> LeftHandle;

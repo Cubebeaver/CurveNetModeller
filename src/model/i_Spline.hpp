@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "ICurve.hpp"
+#include "i_Curve.hpp"
 
 class ISpline : public ICurve {
 public:

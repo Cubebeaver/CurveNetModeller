@@ -8,7 +8,7 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
 
-#include "ISurface.hpp"
+#include "i_Surface.hpp"
 
 
 class CoonsSurface : public ISurface {
