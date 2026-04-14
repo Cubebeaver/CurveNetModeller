@@ -31,10 +31,10 @@ private:
     std::unique_ptr<BezierCurveCurvatureCombView> curvatureView;
     std::vector<std::unique_ptr<BezierNodeView>> viewNodes;
 
-    // std::weak_ptr<Point> selectedPoint;
-    // std::weak_ptr<BezierNode> selectedNode;
-    int selected = -1;
-    BezierHandleType selectedPartType = BezierHandleType::None;
+    std::weak_ptr<Point> selectedPoint;
+    std::weak_ptr<BezierNode> selectedNode;
+    //int selected = -1;
+    //BezierHandleType selectedPartType = BezierHandleType::None;
 public:
 
     BezierCurveController() {
@@ -74,14 +74,21 @@ public:
 
     void RemoveNode() {
         if (modelCurve->GetNodes().empty()) return;
+        int idx = modelCurve->IndexOf(selectedNode);
 
-        modelCurve->RemoveNodeAt(selected);
+        modelCurve->RemoveNode(selectedNode);
+
+        if (idx >= modelCurve->GetNodes().size()) idx = modelCurve->GetNodes().size() - 1;
+        if (idx < 0) return;
+        selectedNode = modelCurve->GetNodes()[idx];
+        selectedPoint = selectedNode.lock()->GetCenterHandle();
     }
 
     void SetNodeMode(HandleMode newMode) {
-        if (selected == -1) return;
+        auto n = selectedNode.lock();
+        if (!n) return;
 
-        modelCurve->GetNodes()[selected]->SetMode(newMode);
+        n->SetMode(newMode);
     }
 
     void SetNormalType(bool normalType) {
@@ -100,9 +107,13 @@ public:
     void Present() {
         viewCurve->Draw();
         if (showCurvature) curvatureView->Draw();
+
+        int idx = modelCurve->IndexOf(selectedNode);
+        BezierHandleType selectedPartType = selectedNode.lock()->GetHandleType(selectedPoint);
+
         for (int i = 0; i < viewNodes.size(); i++) {
-            if (i == selected) viewNodes[i]->Draw(selectedPartType);
-            else               viewNodes[i]->Draw();
+            if (i == idx) viewNodes[i]->Draw(selectedPartType);
+            else          viewNodes[i]->Draw();
         }
     }
 
@@ -132,52 +143,45 @@ private:
         
         float closestDistance = std::numeric_limits<float>::max();
         for (int i = 0; i < modelCurve->GetNodes().size(); i++) {
-            const BezierNode& node = *modelCurve->GetNodes()[i];
+            auto node = modelCurve->GetNodes()[i];
 
-            const glm::vec3& center = node.GetCenterHandle()->GetPosition();
-            const glm::vec3& left = node.GetLeftHandle()->GetPosition();
-            const glm::vec3& right = node.GetRightHandle()->GetPosition();
+            const glm::vec3& center = node->GetCenterHandle()->GetPosition();
+            const glm::vec3& left = node->GetLeftHandle()->GetPosition();
+            const glm::vec3& right = node->GetRightHandle()->GetPosition();
 
             float centerDistance = Camera::activeCamera->DistanceToRay(center, position);
             float leftDistance = Camera::activeCamera->DistanceToRay(left, position);
             float rightDistance = Camera::activeCamera->DistanceToRay(right, position);
 
             if (centerDistance < closestDistance) {
-                selected = i;
-                selectedPartType = BezierHandleType::Center;
+                selectedPoint = node->GetCenterHandle();
+                selectedNode = node;
                 closestDistance = centerDistance;
             }
             if (leftDistance < closestDistance) {
-                selected = i;
-                selectedPartType = BezierHandleType::Left;
+                selectedPoint = node->GetLeftHandle();
+                selectedNode = node;
                 closestDistance = leftDistance;
             }
             if (rightDistance < closestDistance) {
-                selected = i;
-                selectedPartType = BezierHandleType::Right;
+                selectedPoint = node->GetRightHandle();
+                selectedNode = node;
                 closestDistance = rightDistance;
             }
         }
 
         if (closestDistance >= 0.1f) {
-            selected = -1;
-            selectedPartType = BezierHandleType::None;
+            selectedPoint.reset();
+            selectedNode.reset();
         }
     }
 
     void OnDrag(const glm::vec2& totalDelta, const glm::vec2& delta, const glm::vec2& position, ImGuiMouseButton_ button) {
-        if (button != ImGuiMouseButton_Left || selected == -1) return;
+        auto p = selectedPoint.lock();
+        if (button != ImGuiMouseButton_Left || !p) return;
 
         // 1. Lekérjük a jelenleg kiválasztott pont/handle 3D-s pozícióját
-        BezierNode& node = *modelCurve->GetNodes()[selected];
-        std::weak_ptr<Point> currentPos3D;
-        
-        switch(selectedPartType) {
-            case BezierHandleType::Center: currentPos3D = node.GetCenterHandle(); break;
-            case BezierHandleType::Left:   currentPos3D = node.GetLeftHandle(); break;
-            case BezierHandleType::Right:  currentPos3D = node.GetRightHandle(); break;
-            default: return;
-        }
+        std::weak_ptr<Point> currentPos3D = p;
 
         // --- EZEKET A VÁLTOZÓKAT A KAMERÁBÓL/VIEWPORTBÓL KELL LEKÉRNED ---
         glm::vec3 cameraPos = Camera::activeCamera->position;
@@ -213,11 +217,6 @@ private:
         glm::vec3 newPos3D = currentPos3D.lock()->GetPosition() + translation3D;
 
         // 6. Az új pozíció beállítása a modellben
-        switch(selectedPartType) {
-            case BezierHandleType::Center: node.SetPosition(newPos3D); break;
-            case BezierHandleType::Left:   node.SetLeftHandle(newPos3D); break;
-            case BezierHandleType::Right:  node.SetRightHandle(newPos3D); break;
-            default: break;
-        }
+        p->SetPosition(newPos3D);
     }
 };

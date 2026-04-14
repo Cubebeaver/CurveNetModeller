@@ -31,7 +31,7 @@ public:
     }
 
     void Update(const BezierCurve& curveModel, int resolution = 50, float length = 1.0f) {
-        const std::vector<glm::vec3>& points =  CurveView::GetRenderPoints(curveModel, resolution * curveModel.GetSegmentCount() + 1);
+        const std::vector<glm::vec3>& points = curveModel.GenerateRenderPoints(resolution);
         const std::vector<float>& curvatures = curveModel.GenerateRenderCurvatures(resolution);
         std::vector<glm::vec3> normals;
         if (normalType) {
@@ -60,7 +60,7 @@ public:
             idxs.push_back(i);
             idxs.push_back(i + points.size());
         }
-        for (int i = points.size(); i < points.size() * 2 - 1; i++) {
+        for (int i = points.size(); i < (points.size() == 0 ? 0 : points.size() * 2 - 1); i++) {
             idxs.push_back(i);
             idxs.push_back(i + 1);
         }

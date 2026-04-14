@@ -41,6 +41,8 @@ public:
     BezierNode(HandleMode mode = HandleMode::Aligned);
     BezierNode(glm::vec3 position, HandleMode mode = HandleMode::Aligned);
 
+    BezierHandleType GetHandleType(std::weak_ptr<Point> point) const;
+
     std::shared_ptr<Point> GetCenterHandle() const { return CenterHandle; }
     void SetPosition(const glm::vec3& newPos);
     void SetPosition(const std::shared_ptr<Point> newPoint);

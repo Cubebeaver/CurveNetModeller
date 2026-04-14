@@ -22,6 +22,25 @@ void BezierCurve::RemoveNodeAt(int idx) {
     BezierCurveChanged.Invoke();
 }
 
+void BezierCurve::RemoveNode(std::weak_ptr<BezierNode> node) {
+    auto n = node.lock();
+    if (!n) return;
+
+    Nodes.erase(std::remove(Nodes.begin(), Nodes.end(), n), Nodes.end());
+    BezierCurveChanged.Invoke();
+}
+
+int BezierCurve::IndexOf(std::weak_ptr<BezierNode> node) const {
+    auto n = node.lock();
+    if (!n) return -1;
+
+    auto it = std::find(Nodes.begin(), Nodes.end(), n);
+    if (it != Nodes.end()) {
+        return (int)std::distance(Nodes.begin(), it);
+    }
+    return -1;
+}
+
 glm::vec3 BezierCurve::EvaluateSegment(int segmentIndex, float t) const {
     if (segmentIndex < 0 || segmentIndex >= GetSegmentCount()) {
         return glm::vec3(0.0f);
@@ -165,6 +184,29 @@ glm::vec3 BezierCurve::EvaluateCurvePrincipalNormal(float t) const {
     float localT = t * GetSegmentCount() - segmentIdx;
 
     return EvaluateSegmentPrincipalNormal(segmentIdx, localT);
+}
+
+std::vector<glm::vec3> BezierCurve::GenerateRenderPoints(int resolution) const {
+    std::vector<glm::vec3> renderPoints;
+
+    int segments = GetSegmentCount();
+    if (segments == 0 && !Nodes.empty()) {
+        renderPoints.push_back(glm::vec3(0, 0, 0));
+        return renderPoints;
+    }
+
+    renderPoints.reserve(segments * resolution);
+
+    for (int i = 0; i < segments; ++i) {
+        int steps = (i == segments - 1) ? resolution : resolution - 1;
+
+        for (int step = 0; step <= steps; ++step) {
+            float t = static_cast<float>(step) / static_cast<float>(resolution);
+            renderPoints.push_back(EvaluateSegment(i, t));
+        }
+    }
+
+    return renderPoints;
 }
 
 std::vector<glm::vec3> BezierCurve::GenerateRenderNormals(int resolution) const {

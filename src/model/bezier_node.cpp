@@ -18,6 +18,16 @@ BezierNode::BezierNode(HandleMode mode)
 BezierNode::BezierNode(glm::vec3 position, HandleMode mode)
     : BezierNode(position, position + glm::vec3(-1, 0, 0), position + glm::vec3(1, 0, 0), mode) { }
 
+BezierHandleType BezierNode::GetHandleType(std::weak_ptr<Point> point) const {
+    auto p = point.lock();
+    if (!p) return BezierHandleType::None;
+
+    if (p == CenterHandle) return BezierHandleType::Center;
+    if (p == LeftHandle) return BezierHandleType::Left;
+    if (p == RightHandle) return BezierHandleType::Right;
+    return BezierHandleType::None;
+}
+
 void BezierNode::SetPosition(const glm::vec3& newPos) {
     glm::vec3 delta = newPos - CenterHandle->GetPosition();
     CenterHandle->GetPosition() = newPos;

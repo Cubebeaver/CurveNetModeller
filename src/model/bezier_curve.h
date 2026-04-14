@@ -28,6 +28,9 @@ public:
 
     void RemoveNodeAt(int idx);
     void RemoveNodeLast() { RemoveNodeAt(Nodes.size() - 1); }
+    void RemoveNode(std::weak_ptr<BezierNode> node);
+
+    int IndexOf(std::weak_ptr<BezierNode> node) const;
 
     [[nodiscard]] glm::vec3 EvaluateSegment(int segmentIndex, float t) const override;
     [[nodiscard]] float EvaluateSegmentCurvature(int segmentIndex, float t) const override;
@@ -38,6 +41,7 @@ public:
     [[nodiscard]] float EvaluateCurveCurvature(float t) const override;
     [[nodiscard]] glm::vec3 EvaluateCurvePrincipalNormal(float t) const override;
 
+    [[nodiscard]] std::vector<glm::vec3> GenerateRenderPoints(int resolution = 50) const;
     [[nodiscard]] std::vector<glm::vec3> GenerateRenderNormals(int resolution = 50) const;
     [[nodiscard]] std::vector<glm::vec3> GenerateRenderCameraNormals(int resolution = 50, glm::vec3 cam = glm::vec3(0, 0, 1)) const;
     [[nodiscard]] std::vector<float> GenerateRenderCurvatures(int resolution = 50) const;
