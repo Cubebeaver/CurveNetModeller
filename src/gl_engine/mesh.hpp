@@ -108,7 +108,7 @@ public:
         for (int i = 0; i < VertexAttribList.size(); i++) {
             const VertexArrtribListElement& record = VertexAttribList[i];
 
-            glVertexAttribPointer(i, record.Number, record.DataType, record.Normalized ? GL_TRUE : GL_FALSE, Stride, (void*)(uintptr_t)offset);
+            glVertexAttribPointer(i, record.Number, record.DataType, record.Normalized ? GL_TRUE : GL_FALSE, Stride, reinterpret_cast<void*>(static_cast<unsigned long long>(offset)));
             glEnableVertexAttribArray(i);
 
             offset += record.Number * sizeof(VertexElementType);
@@ -128,7 +128,7 @@ public:
     void DrawPartial(int start, int end, GLenum mode = GL_TRIANGLES) const {
         Bind();
 
-        glDrawElements(mode, end - start, GL_UNSIGNED_INT, (void*)(uintptr_t)(start * sizeof(GLuint)));
+        glDrawElements(mode, end - start, GL_UNSIGNED_INT, reinterpret_cast<void*>(start * sizeof(GLuint)));
     }
 };
 

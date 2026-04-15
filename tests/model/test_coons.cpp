@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <glm/glm.hpp>
 
-#include "model/bezier_curve.h"
-#include "model/bezier_node.h"
+#include "../../src/model/element/bezier_curve.h"
+#include "../../src/model/element/bezier_node.h"
 #include "model/coons_surface.h"
 
 

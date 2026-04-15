@@ -1,21 +1,23 @@
 #pragma once
 #include <memory>
 
+#include "editor/view/bezier_node_view.hpp"
 #include "editor/view/curve_view.hpp"
 #include "editor/view/coons_surface_view.hpp"
-#include "model/curve_mesh.h"
-#include "model/i_Node.hpp"
-#include "model/point.h"
+#include "../../model/object/curve_mesh.h"
+#include "../../model/element/i_Node.hpp"
+#include "../../model/element/point.h"
 
 class CurveMeshController {
 private:
     std::shared_ptr<CurveMesh> curveMesh;
 
-    std::weak_ptr<ICurve> selectedEdge;
     std::weak_ptr<ISurface> selectedSurface;
-    std::weak_ptr<Point> selectedPoint;
+    std::weak_ptr<ICurve> selectedEdge;
     std::weak_ptr<INode> selectedNode;
+    std::weak_ptr<Point> selectedPoint;
 
+    std::vector<std::unique_ptr<BezierNodeView>> nodeViews;
     std::vector<std::unique_ptr<CurveView>> curveViews;
     std::vector<std::unique_ptr<CoonsSurfaceView>> surfaceViews;
 

@@ -1,13 +1,13 @@
-#include  "coons_surface.h"
+#include "coons_surface.h"
 
 CoonsSurface::CoonsSurface(
     std::shared_ptr<BezierCurve> c1, std::shared_ptr<BezierCurve> c2,
     std::shared_ptr<BezierCurve> d1, std::shared_ptr<BezierCurve> d2
 ) : c1(c1), c2(c2), d1(d1), d2(d2) {
-    this->c1->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
-    this->c2->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
-    this->d1->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
-    this->d2->BezierCurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    this->c1->CurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    this->c2->CurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    this->d1->CurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    this->d2->CurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
 }
 
 glm::vec3 CoonsSurface::Evaluate(float u, float v) const {
@@ -49,7 +49,7 @@ std::vector<glm::vec3> CoonsSurface::GetRenderPoints(int resolution) const {
     surfacePoints.reserve(resolution * resolution);
     for (int i = 0; i < resolution; i++) {
         for (int j = 0; j < resolution; j++) {
-            surfacePoints.push_back(Evaluate((float)i / (resolution - 1), (float)j / (resolution - 1)));
+            surfacePoints.push_back(Evaluate(static_cast<float>(i) / (resolution - 1), static_cast<float>(j) / (resolution - 1)));
         }
     }
     return surfacePoints;
@@ -60,8 +60,8 @@ std::vector<glm::vec3> CoonsSurface::GetRenderNormals(int resolution) const {
     surfaceNormals.reserve(resolution * resolution);
     for (int i = 0; i < resolution; i++) {
         for (int j = 0; j < resolution; j++) {
-            float u = (float)i / (resolution - 1);
-            float v = (float)j / (resolution - 1);
+            float u = static_cast<float>(i) / (resolution - 1);
+            float v = static_cast<float>(j) / (resolution - 1);
 
             glm::vec3 normal = EvaluateNormal(u, v);
             surfaceNormals.push_back(normal);

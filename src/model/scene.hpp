@@ -1,7 +1,7 @@
 #pragma once
 
-#include "coons_surface.h"
-#include "object.h"
+#include "element/coons_surface.h"
+#include "object/object.h"
 
 class Scene {
 public:

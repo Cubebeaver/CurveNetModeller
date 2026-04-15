@@ -6,17 +6,17 @@
 #include "gl_engine/camera.hpp"
 #include "gl_engine/material.hpp"
 #include "gl_engine/mesh.hpp"
-#include "model/bezier_curve.h"
+#include "../../model/element/bezier_curve.h"
 #include "editor/view/curve_view.hpp"
 
-class BezierCurveCurvatureCombView {
+class CurveCurvatureCombView {
 private:
     std::unique_ptr<Mesh> mesh;
     std::unique_ptr<Material> material;
     bool normalType = false;
 
 public:
-    BezierCurveCurvatureCombView() {
+    CurveCurvatureCombView() {
         std::vector<float> emptyVerts;
         std::vector<GLuint> emptyIdxs;
         mesh = std::make_unique<Mesh>(emptyVerts, emptyIdxs);

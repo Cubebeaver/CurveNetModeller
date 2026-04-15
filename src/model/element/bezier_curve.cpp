@@ -1,4 +1,4 @@
-#include "model/bezier_curve.h"
+#include "bezier_curve.h"
 
 #include <algorithm>
 #include <vector>
@@ -10,8 +10,8 @@ int BezierCurve::GetSegmentCount() const {
 
 void BezierCurve::AddNode(std::shared_ptr<BezierNode> node) {
     Nodes.push_back(node);
-    Nodes.back()->BezierNodeChanged += [&](){ BezierCurveChanged.Invoke(); };
-    BezierCurveChanged.Invoke();
+    Nodes.back()->BezierNodeChanged += [&](){ CurveChanged.Invoke(); };
+    CurveChanged.Invoke();
 }
 
 void BezierCurve::RemoveNodeAt(int idx) {
@@ -19,7 +19,7 @@ void BezierCurve::RemoveNodeAt(int idx) {
         Nodes.erase(Nodes.begin() + idx);
     }
 
-    BezierCurveChanged.Invoke();
+    CurveChanged.Invoke();
 }
 
 void BezierCurve::RemoveNode(std::weak_ptr<BezierNode> node) {
@@ -27,7 +27,7 @@ void BezierCurve::RemoveNode(std::weak_ptr<BezierNode> node) {
     if (!n) return;
 
     Nodes.erase(std::remove(Nodes.begin(), Nodes.end(), n), Nodes.end());
-    BezierCurveChanged.Invoke();
+    CurveChanged.Invoke();
 }
 
 int BezierCurve::IndexOf(std::weak_ptr<BezierNode> node) const {
@@ -36,7 +36,7 @@ int BezierCurve::IndexOf(std::weak_ptr<BezierNode> node) const {
 
     auto it = std::find(Nodes.begin(), Nodes.end(), n);
     if (it != Nodes.end()) {
-        return (int)std::distance(Nodes.begin(), it);
+        return static_cast<int>(std::distance(Nodes.begin(), it));
     }
     return -1;
 }
@@ -167,20 +167,20 @@ glm::vec3 BezierCurve::EvaluateSegmentCameraNormal(int segmentIndex, float t, gl
 }
 
 glm::vec3 BezierCurve::EvaluatePosition(float t) const {
-    int segmentIdx = t >= 1.0f ? GetSegmentCount() - 1 : (int)(GetSegmentCount() * t);
+    int segmentIdx = t >= 1.0f ? GetSegmentCount() - 1 : static_cast<int>(GetSegmentCount() * t);
     float localT = t * GetSegmentCount() - segmentIdx;
 
     return EvaluateSegment(segmentIdx, localT);
 }
 
 float BezierCurve::EvaluateCurveCurvature(float t) const {
-    int segmentIdx = t >= 1.0f ? GetSegmentCount() - 1 : (int)(GetSegmentCount() * t);
+    int segmentIdx = t >= 1.0f ? GetSegmentCount() - 1 : static_cast<int>(GetSegmentCount() * t);
     float localT = t * GetSegmentCount() - segmentIdx;
 
     return EvaluateSegmentCurvature(segmentIdx, localT);
 }
 glm::vec3 BezierCurve::EvaluateCurvePrincipalNormal(float t) const {
-    int segmentIdx = t >= 1.0f ? GetSegmentCount() - 1 : (int)(GetSegmentCount() * t);
+    int segmentIdx = t >= 1.0f ? GetSegmentCount() - 1 : static_cast<int>(GetSegmentCount() * t);
     float localT = t * GetSegmentCount() - segmentIdx;
 
     return EvaluateSegmentPrincipalNormal(segmentIdx, localT);

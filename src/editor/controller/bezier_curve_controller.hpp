@@ -2,14 +2,14 @@
 
 #include<vector>
 
-#include <model/bezier_node.h>
-#include <model/bezier_curve.h>
+#include <model/element/bezier_node.h>
+#include <model/element/bezier_curve.h>
 
 #include "gl_engine/camera.hpp"
 #include <editor/view/bezier_node_view.hpp>
 #include <editor/view/curve_view.hpp>
 
-#include "editor/view/bezier_curve_curvature_comb_view.hpp"
+#include "editor/view/curve_curvature_comb_view.hpp"
 #include "editor/workspace/viewport.hpp"
 #include "editor/workspace/workspaces.hpp"
 
@@ -28,7 +28,7 @@ private:
     std::shared_ptr<BezierCurve> modelCurve;
 
     std::unique_ptr<CurveView> viewCurve;
-    std::unique_ptr<BezierCurveCurvatureCombView> curvatureView;
+    std::unique_ptr<CurveCurvatureCombView> curvatureView;
     std::vector<std::unique_ptr<BezierNodeView>> viewNodes;
 
     std::weak_ptr<Point> selectedPoint;
@@ -44,9 +44,9 @@ public:
         
         //TODO ezt flyweight-el vagy valamivel megoldani
         viewCurve = std::make_unique<CurveView>();
-        curvatureView = std::make_unique<BezierCurveCurvatureCombView>();
+        curvatureView = std::make_unique<CurveCurvatureCombView>();
 
-        modelCurve->BezierCurveChanged += [&](){ SyncViews(); };
+        modelCurve->CurveChanged += [&](){ SyncViews(); };
 
         vp.lock()->OnClick += [this] (const glm::vec2& position, ImGuiMouseButton_ button) { this->OnClick(position, button); };
         vp.lock()->OnDrag += [this] (const glm::vec2& totalDelta, const glm::vec2& delta, const glm::vec2& position, ImGuiMouseButton_ button) { this->OnDrag(totalDelta, delta, position, button); };

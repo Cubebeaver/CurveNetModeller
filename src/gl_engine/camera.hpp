@@ -81,7 +81,7 @@ public:
     void UpdateFrameSize(int x, int y) {
         screenWidth = x;
         screenHeight = y;
-        aspect = (float)x / (float)y;
+        aspect = static_cast<float>(x) / static_cast<float>(y);
 
         UpdateProjection();
     }

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include "model/bezier_curve.h"
+
+#include "render_point_generator.h"
+#include "../../model/element/bezier_curve.h"
 
 #include "gl_engine/mesh.hpp"
 #include "gl_engine/material.hpp"
@@ -25,10 +27,12 @@ public:
         material->SetVec4("color", glm::vec4(0, 1, 1, 1));
     }
 
-    void Update(const ICurve& curveModel, int resolution = 50) {
+    virtual void Update(const ICurve& curveModel, int resolution = 50) {
+        const auto* spline = dynamic_cast<const ISpline*>(&curveModel);
+        int res = resolution;
+        if (spline) res *= spline->GetSegmentCount();
 
-
-        const std::vector<glm::vec3>& points = GetRenderPoints(curveModel, resolution);
+        const std::vector<glm::vec3>& points = RenderPointGenerator::GetRenderPoints(curveModel, res);
 
         std::vector<float> verts; 
         verts.reserve(points.size() * 3);
@@ -56,31 +60,5 @@ public:
         mesh->Draw(GL_LINE_STRIP);
     }
 
-    static std::vector<glm::vec3> GetRenderPoints(const ICurve& curveModel, int resolution) {
-        std::vector<glm::vec3> renderPoints;
-
-        // int segments = GetSegmentCount();
-        // if (segments == 0 && !Nodes.empty()) {
-        //     renderPoints.push_back(Nodes[0]->GetCenterHandle()->GetPosition());
-        //     return renderPoints;
-        // }
-
-        renderPoints.reserve(resolution);
-
-        // for (int i = 0; i < segments; ++i) {
-        //     int steps = (i == segments - 1) ? resolution : resolution - 1;
-        //
-        //     for (int step = 0; step <= steps; ++step) {
-        //         float t = static_cast<float>(step) / static_cast<float>(resolution);
-        //         renderPoints.push_back(EvaluateSegment(i, t));
-        //     }
-        // }
-
-        for (int i = 0; i < resolution; i++) {
-            float t = (float)i / (float)resolution;
-            renderPoints.push_back(curveModel.EvaluatePosition(t));
-        }
-
-        return renderPoints;
-    }
+    virtual ~CurveView() = default;
 };

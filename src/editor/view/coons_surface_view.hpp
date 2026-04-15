@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <model/coons_surface.h>
+#include <model/element/coons_surface.h>
 
 #include "gl_engine/camera.hpp"
 #include "gl_engine/material.hpp"

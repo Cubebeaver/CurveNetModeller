@@ -10,6 +10,8 @@ public:
     virtual float EvaluateSegmentCurvature(int segmentIndex, float t) const = 0;
     virtual glm::vec3 EvaluateSegmentPrincipalNormal(int segmentIndex, float t) const = 0;
 
+    virtual int GetSegmentCount() const = 0;
+
     virtual ~ISpline() override = default;
 };
 

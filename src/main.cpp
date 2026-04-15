@@ -20,7 +20,7 @@
 #include "gl_engine/shared_shaders.hpp"
 
 // Model
-#include "model/bezier_node.h"
+#include "model/element/bezier_node.h"
 #include "model/scene.hpp"
 
 // Views
@@ -30,7 +30,7 @@
 #include "editor/controller/bezier_curve_controller.hpp"
 
 // Util
-#include "model/coons_surface.h"
+#include "model/element/coons_surface.h"
 #include "util/screenshot.hpp"
 #include "editor/view/coons_surface_view.hpp"
 

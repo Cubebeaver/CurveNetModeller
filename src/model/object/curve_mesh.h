@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "object.h"
-#include "i_Curve.hpp"
-#include "i_Surface.hpp"
+#include "model/element/i_Curve.hpp"
+#include "model/element/i_Surface.hpp"
 #include "util/event.hpp"
 
 

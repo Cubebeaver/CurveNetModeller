@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "model/bezier_node.h"
+#include "bezier_node.h"
 #include "i_Curve.hpp"
 #include "i_Spline.hpp"
 
@@ -19,9 +19,7 @@ class BezierCurve : public ISpline {
 private:
     std::vector<std::shared_ptr<BezierNode>> Nodes;
 public:
-    Event<> BezierCurveChanged;
-    
-    int GetSegmentCount() const;
+    virtual int GetSegmentCount() const override;
     const std::vector<std::shared_ptr<BezierNode>>& GetNodes() const { return Nodes; }
 
     void AddNode(std::shared_ptr<BezierNode> node);

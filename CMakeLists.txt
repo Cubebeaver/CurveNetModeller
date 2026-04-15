@@ -34,13 +34,15 @@ find_path(STB_INCLUDE_DIR "stb_image.h" REQUIRED)
 # ==========================================
 # Közös kód: Ezt a főprogram és a teszt is használni fogja (az üzleti logika)
 set(MODEL_SOURCES
-    src/model/bezier_curve.cpp
-    src/model/bezier_node.cpp
-    src/model/coons_surface.cpp
-        src/model/point.cpp
-        src/model/Object.cpp
-        src/model/curve_mesh.cpp
-        src/model/transform.cpp
+        src/model/element/bezier_curve.cpp
+        src/model/element/bezier_node.cpp
+        src/model/element/coons_surface.cpp
+        src/model/element/point.cpp
+        src/model/object/object.cpp
+        src/model/object/curve_mesh.cpp
+        src/model/object/transform.cpp
+        src/model/object/curve_mesh.cpp
+        src/model/object/curve_mesh.h
 )
 
 # Csak a főprogramhoz tartozó fájlok (Ablakkezelés, UI)
@@ -49,6 +51,8 @@ set(APP_SOURCES
         src/util/stb_implementation.cpp
         src/editor/controller/curve_mesh_controller.cpp
         src/editor/controller/curve_mesh_controller.h
+        src/editor/view/render_point_generator.cpp
+        src/editor/view/render_point_generator.h
 )
 
 # Az OpenGL motorhoz tartozó fáljok (Shaderek, Objectek)
@@ -56,7 +60,7 @@ set(GL_ENGINE_SOURCES
     src/gl_engine/mesh.hpp
     src/gl_engine/shader.hpp
     src/gl_engine/texture.hpp
-        src/model/transform.h
+        src/model/object/transform.h
     src/gl_engine/material.hpp
 )
 

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <glm/glm.hpp>
 
-#include "model/transform.h"
+#include "../../src/model/object/transform.h"
 
 
 
