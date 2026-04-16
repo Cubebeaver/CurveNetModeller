@@ -1,9 +1,16 @@
-#include "model/bezier_node.h"
+#include "model/element/bezier_node.h"
 
 
+#define CenterHandle points[0]
+#define LeftHandle points[1]
+#define RightHandle points[2]
 
 BezierNode::BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode) 
-    : CenterHandle(std::make_shared<Point>(position)), LeftHandle(std::make_shared<Point>(leftHandle)), RightHandle(std::make_shared<Point>(rightHandle)), Mode(mode) {
+    : Mode(mode) {
+    points.push_back(std::make_shared<Point>(position));
+    points.push_back(std::make_shared<Point>(leftHandle));
+    points.push_back(std::make_shared<Point>(rightHandle));
+
     CenterHandle->PointChanged += [&](glm::vec3 delta){ LeftHandle->GetPosition() += delta; RightHandle->GetPosition() += delta; BezierNodeChanged.Invoke(); };
     LeftHandle->PointChanged += [&](glm::vec3 delta){ EnforceMode(true); BezierNodeChanged.Invoke(); };
     RightHandle->PointChanged += [&](glm::vec3 delta){ EnforceMode(false); BezierNodeChanged.Invoke(); };
@@ -75,7 +82,6 @@ void BezierNode::SetMode(HandleMode newMode) {
         BezierNodeChanged.Invoke();
     }
 }
-
 
 
 void BezierNode::EnforceMode(bool isLeftChanged) {

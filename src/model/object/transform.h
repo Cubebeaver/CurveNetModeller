@@ -5,6 +5,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <cereal/archives/json.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
+
 
 
 //TODO - Itt lehetne ilyen dirty-zőset csinálni, hogy ha a world matrixot is eltároljuk,
@@ -84,4 +89,9 @@ public:
     void Rotate   (float x, float y, float z) { Rotate   (glm::vec3(x, y, z)); }
     void Scale    (float x, float y, float z) { Scale    (glm::vec3(x, y, z)); }
     void Scale    (float scale_)              { Scale    (glm::vec3(scale_, scale_, scale_)); }
+
+    template<class Archive>
+    void serialize(Archive& archive) {
+        archive(CEREAL_NVP(Parent), CEREAL_NVP(Children), CEREAL_NVP(LocalPosition), CEREAL_NVP(LocalRotation), CEREAL_NVP(LocalScale));
+    }
 };

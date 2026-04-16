@@ -9,36 +9,36 @@ class FloorGrid {
 private:
     std::unique_ptr<Mesh> grid;
     std::unique_ptr<Mesh> axis;
-    std::unique_ptr<Material> material;
+    std::unique_ptr<Material> mat;
 
 public:
     FloorGrid() {
         SetupGrid();
         SetupAxis();
 
-        material = std::make_unique<Material>(SharedShaders::Get("solid_color"));
+        mat = std::make_unique<Material>(SharedShaders::Get("solid_color"));
     }
 
     void Draw() {
-        material->Bind();
-        material->SetMat4("Model", glm::mat4(1.0f));
-        material->SetMat4("View", Camera::activeCamera->matView);
-        material->SetMat4("Projection", Camera::activeCamera->matProjection);
+        mat->Bind();
+        mat->SetMat4("Model", glm::mat4(1.0f));
+        mat->SetMat4("View", Camera::activeCamera->matView);
+        mat->SetMat4("Projection", Camera::activeCamera->matProjection);
 
         glLineWidth(1);
-        material->SetVec4("color", glm::vec4(0.2f, 0.2f, 0.2f, 0.5f));
-        material->Bind();
+        mat->SetVec4("color", glm::vec4(0.2f, 0.2f, 0.2f, 0.5f));
+        mat->Bind();
         grid->Draw(GL_LINES);
 
         glLineWidth(2);
-        material->SetVec4("color", glm::vec4(1, 0, 0, 1));
-        material->Bind();
+        mat->SetVec4("color", glm::vec4(1, 0, 0, 1));
+        mat->Bind();
         axis->DrawPartial(0, 2, GL_LINES);
-        material->SetVec4("color", glm::vec4(0, 1, 0, 1));
-        material->Bind();
+        mat->SetVec4("color", glm::vec4(0, 1, 0, 1));
+        mat->Bind();
         axis->DrawPartial(2, 4, GL_LINES);
-        material->SetVec4("color", glm::vec4(0, 0, 1, 1));
-        material->Bind();
+        mat->SetVec4("color", glm::vec4(0, 0, 1, 1));
+        mat->Bind();
         axis->DrawPartial(4, 6, GL_LINES);
     }
 

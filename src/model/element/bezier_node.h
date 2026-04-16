@@ -27,11 +27,13 @@ enum class HandleMode {
     Symmetric
 };
 
+#define CenterHandle points[0]
+#define LeftHandle points[1]
+#define RightHandle points[2]
+
 class BezierNode : public INode {
 private:
-    std::shared_ptr<Point> CenterHandle;
-    std::shared_ptr<Point> LeftHandle;
-    std::shared_ptr<Point> RightHandle;
+    std::vector<std::shared_ptr<Point>> points;
     HandleMode Mode;
 
 public:
@@ -42,6 +44,8 @@ public:
     BezierNode(glm::vec3 position, HandleMode mode = HandleMode::Aligned);
 
     BezierHandleType GetHandleType(std::weak_ptr<Point> point) const;
+
+    virtual const std::vector<std::shared_ptr<Point>>& GetPoints() const override { return points; }
 
     std::shared_ptr<Point> GetCenterHandle() const { return CenterHandle; }
     void SetPosition(const glm::vec3& newPos);
@@ -61,9 +65,13 @@ public:
 
     template<class Archive>
     void serialize(Archive& archive) {
-        archive(CEREAL_NVP(CenterHandle), CEREAL_NVP(LeftHandle), CEREAL_NVP(RightHandle));
+        archive(CEREAL_NVP(points));
     }
 
 private:
     void EnforceMode(bool isLeftChanged);
 };
+
+#undef CenterHandle
+#undef LeftHandle
+#undef RightHandle

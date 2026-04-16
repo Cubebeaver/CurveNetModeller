@@ -17,7 +17,7 @@ public:
         if (t < 0 || t > 1) std::cout << "[!] t must be between 0 and 1";
 
         self->PointChanged += [&](auto delta) { if (!Verify()) Enforce(); };
-        target->CurveChanged += [&](auto delta) { if (!Verify()) Enforce(); };
+        target->CurveChanged += [&]() { if (!Verify()) Enforce(); };
     }
 
     virtual void Enforce() override {

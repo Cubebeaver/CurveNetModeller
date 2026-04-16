@@ -13,7 +13,10 @@ private:
 
 public:
     SamePointPositionConstraint(std::shared_ptr<Point> self, std::shared_ptr<Point> target)
-        : self(self), target(target) { }
+        : self(self), target(target) {
+        self->PointChanged += [&](auto delta) { if (!Verify()) Enforce(); };
+        target->PointChanged += [&](auto delta) { if (!Verify()) Enforce(); };
+    }
 
     virtual void Enforce() override {
         auto s = self.lock();

@@ -30,11 +30,13 @@
 #include "editor/controller/bezier_curve_controller.hpp"
 
 // Util
+#include "editor/controller/curve_mesh_controller.h"
 #include "model/element/coons_surface.h"
 #include "util/screenshot.hpp"
 #include "editor/view/coons_surface_view.hpp"
 
 #include "editor/view/floor_grid.hpp"
+#include "editor/view/skybox.hpp"
 #include "editor/workspace/model_to_interface.hpp"
 
 
@@ -210,7 +212,7 @@ void UI(const Viewport& viewport) {
     // }
 }
 
-void SaveSurface(const CoonsSurface& scene) {
+void Save(const CurveMesh& scene) {
     std::ofstream fs("output/save.json");
 
     if (!fs.is_open()) {
@@ -257,6 +259,7 @@ int main() {
 
     SharedShaders::Register("solid_color", std::make_shared<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag"));
     SharedShaders::Register("shaded", std::make_shared<Shader>("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag"));
+    SharedShaders::Register("skybox", std::make_shared<Shader>("resources/shaders/skybox.vert", "resources/shaders/skybox.frag"));
 
     //ModelToInterface::Register(std::type_index(typeid(Point)), )
 
@@ -283,26 +286,32 @@ int main() {
     c->AddNode(std::make_shared<BezierNode>(glm::vec3( 5.0f, -5.0f, 0.0f), glm::vec3( 3.0f, -7.0f, 0.0f), glm::vec3( 7.0f, -3.0f, 0.0f)));
     c->SyncViews();
 
-    BezierCurveController c1;
-    c1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0, -2), glm::vec3(-3, -1, -2), glm::vec3(-1,  1, -2)));
-    c1.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 1,  1, -2), glm::vec3( 3, -1, -2)));
-    BezierCurveController c2;
-    c2.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0,  2), glm::vec3(-3, -1,  2), glm::vec3(-1,  1,  2)));
-    c2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 1,  1,  2), glm::vec3( 3, -1,  2)));
-    BezierCurveController d1;
-    d1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0, -2), glm::vec3(-2,  1, -3), glm::vec3(-2, -1, -1)));
-    d1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0,  2), glm::vec3(-2, -1,  1), glm::vec3(-2,  1,  3)));
-    BezierCurveController d2;
-    d2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 2,  1, -3), glm::vec3( 2, -1, -1)));
-    d2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 2, -1,  1), glm::vec3( 2,  1,  3)));
+    CurveMeshController curveMeshController;
+    curveMeshController.AddNewCurve();
+    curveMeshController.AddNewSurface();
 
-    CoonsSurface coons(c1.GetModel(), c2.GetModel(), d1.GetModel(), d2.GetModel());
-    CoonsSurfaceView coonsView;
-    coonsView.Update(coons);
 
-    coons.CoonsSurfaceChanged += [&](){ coonsView.Update(coons); };
+    // BezierCurveController c1;
+    // c1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0, -2), glm::vec3(-3, -1, -2), glm::vec3(-1,  1, -2)));
+    // c1.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 1,  1, -2), glm::vec3( 3, -1, -2)));
+    // BezierCurveController c2;
+    // c2.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0,  2), glm::vec3(-3, -1,  2), glm::vec3(-1,  1,  2)));
+    // c2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 1,  1,  2), glm::vec3( 3, -1,  2)));
+    // BezierCurveController d1;
+    // d1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0, -2), glm::vec3(-2,  1, -3), glm::vec3(-2, -1, -1)));
+    // d1.AddNode(std::make_shared<BezierNode>(glm::vec3(-2,  0,  2), glm::vec3(-2, -1,  1), glm::vec3(-2,  1,  3)));
+    // BezierCurveController d2;
+    // d2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 2,  1, -3), glm::vec3( 2, -1, -1)));
+    // d2.AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 2, -1,  1), glm::vec3( 2,  1,  3)));
+
+    // CoonsSurface coons(c1.GetModel(), c2.GetModel(), d1.GetModel(), d2.GetModel());
+    // CoonsSurfaceView coonsView;
+    // coonsView.Update(coons);
+
+    // coons.CoonsSurfaceChanged += [&](){ coonsView.Update(coons); };
 
     FloorGrid floor;
+    SkyBox skybox("resources/images/skybox/sunset.png", AlphaMode::AlphaBlend, 0.25f);
 
     // MAIN LOOP
     while (!glfwWindowShouldClose(mainWindow)) {
@@ -317,13 +326,15 @@ int main() {
             viewport->viewportBuffer->Clear();
 
                 Camera::activeCamera->UpdateFrameSize(viewport->viewportBuffer->Width, viewport->viewportBuffer->Height);
+                skybox.Draw();
                 floor.Draw();
                 c->Present();
-                coonsView.Draw();
-                c1.Present();
-                c2.Present();
-                d1.Present();
-                d2.Present();
+                // coonsView.Draw();
+                // c1.Present();
+                // c2.Present();
+                // d1.Present();
+                // d2.Present();
+                curveMeshController.Present();
 
             glDisable(GL_DEPTH_TEST);
         viewport->UnbindFrameBuffer();
@@ -334,7 +345,7 @@ int main() {
         glfwSwapBuffers(mainWindow);
     }
 
-    SaveSurface(coons);
+    Save(*curveMeshController.GetModel());
 
     // ------------------------------------------------------------------
     // 6. Takarítás (Erőforrások felszabadítása)

@@ -54,6 +54,9 @@ public:
     glm::mat4 matView;
     glm::mat4 matProjection;
 
+    glm::mat4 matInvView;
+    glm::mat4 matInvProjection;
+
 
     //! ez igy nem jo sztem
     Camera(const glm::vec3& pos, const glm::vec3& rot, float fov, float zNear, float zFar)
@@ -98,6 +101,7 @@ public:
         );
 
         matView = glm::lookAt(position, position + direction, up);
+        matInvView = glm::inverse(matView);
     }
     virtual void UpdateProjection() = 0;
 
@@ -226,6 +230,7 @@ public:
             nearClippingPlane,
             farClippingPlane
         );
+        matInvProjection = glm::inverse(matProjection);
     }
 
     virtual glm::vec3 GetRayDirectionFromScreen(float mouseX, float mouseY) const override {
@@ -264,6 +269,7 @@ public:
             nearClippingPlane,
             farClippingPlane
         );
+        matInvProjection = glm::inverse(matProjection);
     }
 
     virtual glm::vec3 GetRayDirectionFromScreen(float mouseX, float mouseY) const override {

@@ -9,7 +9,7 @@ namespace gl_engine {
 
 enum class AlphaMode {
     Opaque,       // No alpha
-    AplhaClip,    // Either opaque or transparent, no inbetween
+    AlphaClip,    // Either opaque or transparent, no inbetween
     AlphaBlend    // Can be translucent
 };
 
@@ -60,10 +60,10 @@ public:
         //      const void *pixels        this is the actual image data.
         //  )
         if (alphaMode == AlphaMode::Opaque)          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,  width, height, 0, GL_RGB,  GL_UNSIGNED_BYTE, imageData);
-        else if (alphaMode == AlphaMode::AplhaClip)  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,  width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+        else if (alphaMode == AlphaMode::AlphaClip)  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,  width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
         else if (alphaMode == AlphaMode::AlphaBlend) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
         else /*  .  .  .  .  .  .  .  .  .  .  .  */ std::cout << "[-] Invalid AlphaMode" << std::endl;
-        
+
         if (genMipMap) glGenerateMipmap(GL_TEXTURE_2D);
 
         stbi_image_free(imageData);

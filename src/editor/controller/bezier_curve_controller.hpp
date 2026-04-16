@@ -33,8 +33,6 @@ private:
 
     std::weak_ptr<Point> selectedPoint;
     std::weak_ptr<BezierNode> selectedNode;
-    //int selected = -1;
-    //BezierHandleType selectedPartType = BezierHandleType::None;
 public:
 
     BezierCurveController() {
@@ -145,28 +143,14 @@ private:
         for (int i = 0; i < modelCurve->GetNodes().size(); i++) {
             auto node = modelCurve->GetNodes()[i];
 
-            const glm::vec3& center = node->GetCenterHandle()->GetPosition();
-            const glm::vec3& left = node->GetLeftHandle()->GetPosition();
-            const glm::vec3& right = node->GetRightHandle()->GetPosition();
-
-            float centerDistance = Camera::activeCamera->DistanceToRay(center, position);
-            float leftDistance = Camera::activeCamera->DistanceToRay(left, position);
-            float rightDistance = Camera::activeCamera->DistanceToRay(right, position);
-
-            if (centerDistance < closestDistance) {
-                selectedPoint = node->GetCenterHandle();
-                selectedNode = node;
-                closestDistance = centerDistance;
-            }
-            if (leftDistance < closestDistance) {
-                selectedPoint = node->GetLeftHandle();
-                selectedNode = node;
-                closestDistance = leftDistance;
-            }
-            if (rightDistance < closestDistance) {
-                selectedPoint = node->GetRightHandle();
-                selectedNode = node;
-                closestDistance = rightDistance;
+            const auto& points = node->GetPoints();
+            for (const auto p : points) {
+                float d = Camera::activeCamera->DistanceToRay(p->GetPosition(), position);
+                if (d < closestDistance) {
+                    selectedPoint = p;
+                    selectedNode = node;
+                    closestDistance = d;
+                }
             }
         }
 

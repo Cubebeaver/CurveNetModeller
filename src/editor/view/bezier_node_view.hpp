@@ -63,15 +63,15 @@ public:
         selectedMat->SetMat4("Projection", Camera::activeCamera->matProjection);
         
         if (static_cast<int>(selected) & static_cast<int>(BezierHandleType::Left)) selectedMat->Bind();
-        else /* Left not selected */               pointMat->Bind();
+        else /* Left not selected */                                               pointMat->Bind();
         mesh->DrawPartial(0, 1, GL_POINTS);
         
         if (static_cast<int>(selected) & static_cast<int>(BezierHandleType::Center)) selectedMat->Bind();
-        else /* Center not selected */               pointMat->Bind();
+        else /* Center not selected */                                               pointMat->Bind();
         mesh->DrawPartial(1, 2, GL_POINTS);
         
         if (static_cast<int>(selected) & static_cast<int>(BezierHandleType::Right)) selectedMat->Bind();
-        else /* Right not selected */               pointMat->Bind();
+        else /* Right not selected */                                               pointMat->Bind();
         mesh->DrawPartial(2, 3, GL_POINTS);
     }
 };

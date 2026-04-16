@@ -10,7 +10,7 @@ int BezierCurve::GetSegmentCount() const {
 
 void BezierCurve::AddNode(std::shared_ptr<BezierNode> node) {
     Nodes.push_back(node);
-    Nodes.back()->BezierNodeChanged += [&](){ CurveChanged.Invoke(); };
+    node->BezierNodeChanged += [&](){ CurveChanged.Invoke(); };
     CurveChanged.Invoke();
 }
 

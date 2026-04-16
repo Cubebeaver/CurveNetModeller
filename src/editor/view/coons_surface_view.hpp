@@ -25,10 +25,9 @@ public:
         material->SetVec4("color", glm::vec4(.1f, .2f, .3f, 1));
     }
 
-    void Update(const CoonsSurface& surfaceModel) {
-        int res = 10;
-        const std::vector<glm::vec3>& points = surfaceModel.GetRenderPoints(res);
-        const std::vector<glm::vec3>& normals = surfaceModel.GetRenderNormals(res);
+    void Update(const CoonsSurface& surfaceModel, int resolution = 20) {
+        const std::vector<glm::vec3>& points = surfaceModel.GetRenderPoints(resolution);
+        const std::vector<glm::vec3>& normals = surfaceModel.GetRenderNormals(resolution);
 
         if (points.size() != normals.size()) std::cout << "[-] Na itt valami nagyon félrement ¯\\_(ツ)_/¯" << std::endl;
 
@@ -46,15 +45,15 @@ public:
         }
 
         std::vector<GLuint> idxs;
-        idxs.reserve((res - 1) * (res - 1) * 2 * 3);
+        idxs.reserve((resolution - 1) * (resolution - 1) * 2 * 3);
 
-        for (int i = 0; i < res - 1; i++) {
-            for (int j = 0; j < res - 1; j++) {
+        for (int i = 0; i < resolution - 1; i++) {
+            for (int j = 0; j < resolution - 1; j++) {
                 // Corners
-                int bl = GetIndex(i    , j    , res);
-                int br = GetIndex(i + 1, j    , res);
-                int tl = GetIndex(i    , j + 1, res);
-                int tr = GetIndex(i + 1, j + 1, res);
+                int bl = GetIndex(i    , j    , resolution);
+                int br = GetIndex(i + 1, j    , resolution);
+                int tl = GetIndex(i    , j + 1, resolution);
+                int tr = GetIndex(i + 1, j + 1, resolution);
                 // Tri1
                 idxs.push_back(bl);
                 idxs.push_back(br);
