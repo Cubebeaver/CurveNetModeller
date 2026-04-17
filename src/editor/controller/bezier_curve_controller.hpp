@@ -6,10 +6,10 @@
 #include <model/element/bezier_curve.h>
 
 #include "gl_engine/camera.hpp"
-#include <editor/view/bezier_node_view.hpp>
-#include <editor/view/curve_view.hpp>
+#include <editor/view/bezier_node_view.h>
+#include <editor/view/curve_view.h>
 
-#include "editor/view/curve_curvature_comb_view.hpp"
+#include "editor/view/curve_curvature_comb_view.h"
 #include "editor/workspace/viewport.hpp"
 #include "editor/workspace/workspaces.hpp"
 

@@ -35,10 +35,10 @@
 #include "editor/interface/global_actions_interface.hpp"
 #include "model/element/coons_surface.h"
 #include "util/screenshot.hpp"
-#include "editor/view/coons_surface_view.hpp"
+#include "editor/view/coons_surface_view.h"
 
-#include "editor/view/floor_grid.hpp"
-#include "editor/view/skybox.hpp"
+#include "editor/view/floor_grid.h"
+#include "editor/view/skybox.h"
 #include "editor/workspace/model_to_interface.hpp"
 
 

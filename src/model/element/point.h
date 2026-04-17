@@ -23,9 +23,11 @@ private:
 
     //OBSERVER_LIST(Point);
 public:
+    inline static int COUNT = 0;
+
     Event<glm::vec3 /* delta */> PointChanged;
 
-    Point(glm::vec3 position) : position(position) { }
+    Point(glm::vec3 position) : position(position) { COUNT++; }
     Point() : Point(glm::vec3(0, 0, 0)) { }
     Point(float x, float y, float z) : Point(glm::vec3(x, y, z)) { }
 
@@ -38,6 +40,10 @@ public:
         position = newPos;
         //Notify();
         PointChanged.Invoke(delta);
+    }
+
+    virtual ~Point() override {
+        COUNT--;
     }
 
     //OBSERVER_FUNC_HPP

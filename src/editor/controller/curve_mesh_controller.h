@@ -1,9 +1,9 @@
 #pragma once
 #include <memory>
 
-#include "editor/view/bezier_node_view.hpp"
-#include "editor/view/curve_view.hpp"
-#include "editor/view/coons_surface_view.hpp"
+#include "editor/view/bezier_node_view.h"
+#include "editor/view/curve_view.h"
+#include "editor/view/coons_surface_view.h"
 #include "../../model/object/curve_mesh.h"
 #include "../../model/element/i_Node.hpp"
 #include "../../model/element/point.h"
@@ -49,8 +49,8 @@ public:
     void AddNewCurve() {
         auto newEdge = std::make_shared<BezierCurve>();
 
-        newEdge->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(-1.5f, -0.5f, 0.0f), glm::vec3(0.5f, 0.5f, 0.0f), HandleMode::Aligned));
-        newEdge->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, 0.0f), glm::vec3( 0.5f,  0.0f, 0.0f), glm::vec3(1.5f, 0.0f, 0.0f), HandleMode::Aligned));
+        newEdge->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(-1.5f, -0.5f, 0.0f), glm::vec3(-0.5f, 0.5f, 0.0f), HandleMode::Aligned));
+        newEdge->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, 0.0f), glm::vec3( 0.5f,  0.0f, 0.0f), glm::vec3( 1.5f, 0.0f, 0.0f), HandleMode::Aligned));
 
         curveMesh->AddEdge(newEdge);
     }

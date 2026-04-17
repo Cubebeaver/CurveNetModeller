@@ -41,18 +41,22 @@ set(MODEL_SOURCES
         src/model/object/object.cpp
         src/model/object/curve_mesh.cpp
         src/model/object/transform.cpp
-        src/model/object/curve_mesh.cpp
-        src/model/object/curve_mesh.h
+        src/model/constraint/point_on_curve_constraint.cpp
+        src/model/constraint/same_point_position_constraint.cpp
 )
 
 # Csak a főprogramhoz tartozó fájlok (Ablakkezelés, UI)
 set(APP_SOURCES
     src/main.cpp
-        src/util/stb_implementation.cpp
         src/editor/controller/curve_mesh_controller.cpp
-        src/editor/controller/curve_mesh_controller.h
+        src/editor/view/bezier_node_view.cpp
+        src/editor/view/coons_surface_view.cpp
+        src/editor/view/curve_curvature_comb_view.cpp
+        src/editor/view/curve_view.cpp
+        src/editor/view/floor_grid.cpp
         src/editor/view/render_point_generator.cpp
-        src/editor/view/render_point_generator.h
+        src/editor/view/skybox.cpp
+        src/util/stb_implementation.cpp
 )
 
 # Az OpenGL motorhoz tartozó fáljok (Shaderek, Objectek)
@@ -60,7 +64,6 @@ set(GL_ENGINE_SOURCES
     src/gl_engine/mesh.hpp
     src/gl_engine/shader.hpp
     src/gl_engine/texture.hpp
-        src/model/object/transform.h
     src/gl_engine/material.hpp
 )
 
@@ -132,4 +135,13 @@ add_custom_command(TARGET CurveNetModeller POST_BUILD
     "${CMAKE_CURRENT_SOURCE_DIR}/resources"
     # HOVÁ: Oda, ahová a CurveNetModeller.exe éppen legenerálódott, egy 'resources' almappába
     "$<TARGET_FILE_DIR:CurveNetModeller>/resources"
+)
+
+add_custom_command(TARGET CurveNetModeller POST_BUILD
+        # A CMake beépített, operációs rendszer független másoló parancsát használjuk
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        # HONNAN: A projekt gyökerében lévő 'output' mappa
+        "${CMAKE_CURRENT_SOURCE_DIR}/output"
+        # HOVÁ: Oda, ahová a CurveNetModeller.exe éppen legenerálódott, egy 'output' almappába
+        "$<TARGET_FILE_DIR:CurveNetModeller>/output"
 )

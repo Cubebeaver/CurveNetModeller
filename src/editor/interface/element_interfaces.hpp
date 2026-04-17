@@ -32,7 +32,7 @@ public:
         ImGui::SeparatorText("Point");
 
         auto pos = point->GetPosition();
-        ImGui::DragFloat3("Position", &pos.x);
+        ImGui::DragFloat3("Location", &pos.x);
         point->SetPosition(pos);
     }
 
