@@ -41,6 +41,11 @@ public:
 
     std::shared_ptr<CurveMesh> GetModel() { return curveMesh; }
 
+    std::weak_ptr<CoonsSurface> GetSelectedSurface() { return selectedSurface; }
+    std::weak_ptr<BezierCurve> GetSelectedEdge() { return selectedEdge; }
+    std::weak_ptr<BezierNode> GetSelectedNode() { return selectedNode; }
+    std::weak_ptr<Point> GetSelectedPoint() { return selectedPoint; }
+
     void AddNewCurve() {
         auto newEdge = std::make_shared<BezierCurve>();
 

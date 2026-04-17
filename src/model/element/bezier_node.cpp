@@ -76,6 +76,7 @@ void BezierNode::SetRightHandle(const std::shared_ptr<Point> newPoint) {
 }
 
 void BezierNode::SetMode(HandleMode newMode) {
+    if (Mode == newMode) return; //DEBUG??
     Mode = newMode;
     if (Mode != HandleMode::Free) {
         EnforceMode(true);

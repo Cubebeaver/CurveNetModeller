@@ -32,9 +32,10 @@ public:
     const glm::vec3& GetPosition() const { return position; }
     glm::vec3& GetPosition() { return position; }
     void SetPosition(const glm::vec3& newPos) {
+        if (newPos == position) return; //DEBUG??
+
         const glm::vec3 delta = newPos - position;
         position = newPos;
-
         //Notify();
         PointChanged.Invoke(delta);
     }

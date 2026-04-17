@@ -15,7 +15,7 @@ public:
     }
 
     void Draw() const {
-        ImGui::SetNextWindowSize(ImVec2(560, 720), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(560, 720), ImGuiCond_::ImGuiCond_FirstUseEver);
         ImGui::Begin("Properties");
 
         for (auto& interface : interfaces) {
