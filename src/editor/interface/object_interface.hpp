@@ -2,7 +2,7 @@
 #include <imgui.h>
 #include <memory>
 
-#include "element_interfaces.hpp"
+#include "element_interfaces.h"
 #include "i_interface.hpp"
 #include "model/object/object.h"
 

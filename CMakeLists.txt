@@ -49,6 +49,7 @@ set(MODEL_SOURCES
 set(APP_SOURCES
     src/main.cpp
         src/editor/controller/curve_mesh_controller.cpp
+        src/editor/interface/element_interfaces.cpp
         src/editor/view/bezier_node_view.cpp
         src/editor/view/coons_surface_view.cpp
         src/editor/view/curve_curvature_comb_view.cpp

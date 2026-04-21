@@ -1,4 +1,6 @@
 #include "point_on_curve_constraint.h"
+#include "model/element/point.h"
+#include "model/element/i_Curve.hpp"
 
 PointOnCurveConstraint::PointOnCurveConstraint(std::shared_ptr<Point> self, std::shared_ptr<ICurve> target, float parameter)
 : self(self), target(target), parameter(parameter) {
@@ -26,5 +28,5 @@ bool PointOnCurveConstraint::Verify() const {
     if (!s || !t) return false;
 
     auto tpos = t->EvaluatePosition(parameter);
-    return glm::distance(s->GetPosition(), tpos) < MAX_FLOAT_ERROR;
+    return glm::distance(s->GetPosition(), tpos) < EditorConstants::MaxFloatError;
 }

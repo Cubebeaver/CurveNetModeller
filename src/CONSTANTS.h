@@ -1,3 +1,6 @@
 #pragma once
 
-#define MAX_FLOAT_ERROR 0.0001f
+class EditorConstants {
+public:
+    inline static constexpr float MaxFloatError = 0.0001f;
+};

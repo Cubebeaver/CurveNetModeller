@@ -3,7 +3,7 @@
 
 #include "../../src/model/element/bezier_curve.h"
 #include "../../src/model/element/bezier_node.h"
-#include "model/coons_surface.h"
+#include "../../src/model/element/coons_surface.h"
 
 
 TEST(CoonsSurfaceTest, EvaluatePoint) {

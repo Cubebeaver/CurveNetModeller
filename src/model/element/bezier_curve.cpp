@@ -14,6 +14,14 @@ void BezierCurve::AddNode(std::shared_ptr<BezierNode> node) {
     CurveChanged.Invoke();
 }
 
+void BezierCurve::AddNodeAt(std::shared_ptr<BezierNode> node, int index) {
+    if (index < 0 || index >= static_cast<int>(Nodes.size())) return;
+
+    Nodes.insert(Nodes.begin() + index, node);
+    node->BezierNodeChanged += [&](){ CurveChanged.Invoke(); };
+    CurveChanged.Invoke();
+}
+
 void BezierCurve::RemoveNodeAt(int idx) {
     if (idx >= 0) {
         Nodes.erase(Nodes.begin() + idx);

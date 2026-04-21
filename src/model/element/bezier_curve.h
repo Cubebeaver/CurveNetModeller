@@ -23,6 +23,7 @@ public:
     const std::vector<std::shared_ptr<BezierNode>>& GetNodes() const { return Nodes; }
 
     void AddNode(std::shared_ptr<BezierNode> node);
+    void AddNodeAt(std::shared_ptr<BezierNode> node, int index);
 
     void RemoveNodeAt(int idx);
     void RemoveNodeLast() { RemoveNodeAt(Nodes.size() - 1); }

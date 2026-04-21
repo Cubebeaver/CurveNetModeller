@@ -1,10 +1,11 @@
 #pragma once
 #include <memory>
-#include <glm/detail/func_geometric.inl>
+#include <glm/geometric.hpp>
 
 #include "CONSTANTS.h"
 #include "i_constraint.hpp"
-#include "model/element/point.h"
+
+class Point;
 
 class SamePointPositionConstraint : public IConstraint {
 private:

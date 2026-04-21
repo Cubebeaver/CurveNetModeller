@@ -13,6 +13,9 @@
 #include <cereal/types/string.hpp>
 
 #include "i_Element.hpp"
+//#include <iosfwd>
+
+class IConstraint;
 
 
 //OBSERVER_DEF(Point);
@@ -21,13 +24,13 @@ class Point : public IElement {
 private:
     glm::vec3 position;
 
+    std::vector<std::shared_ptr<IConstraint>> constraints;
+
     //OBSERVER_LIST(Point);
 public:
-    inline static int COUNT = 0;
-
     Event<glm::vec3 /* delta */> PointChanged;
 
-    Point(glm::vec3 position) : position(position) { COUNT++; }
+    Point(glm::vec3 position) : position(position) { }
     Point() : Point(glm::vec3(0, 0, 0)) { }
     Point(float x, float y, float z) : Point(glm::vec3(x, y, z)) { }
 
@@ -42,9 +45,25 @@ public:
         PointChanged.Invoke(delta);
     }
 
-    virtual ~Point() override {
-        COUNT--;
+    const std::vector<std::shared_ptr<IConstraint>>& GetConstraints() const { return constraints; }
+
+    void AddConstraint(std::shared_ptr<IConstraint> constraint) {
+        constraints.push_back(constraint);
     }
+
+    void RemoveConstraint(std::weak_ptr<IConstraint> constraint) {
+        auto c = constraint.lock();
+        if (!c) return;
+
+        constraints.erase(std::remove(constraints.begin(), constraints.end(), c), constraints.end());
+        //PointChanged.Invoke(); //A constraint-ben a setposition miatt ez meghívódik majd
+    }
+
+    bool IsConstrained() {
+        return !constraints.empty();
+    }
+
+    virtual ~Point() override = default;
 
     //OBSERVER_FUNC_HPP
 

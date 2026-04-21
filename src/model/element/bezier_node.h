@@ -40,6 +40,7 @@ public:
     Event<> BezierNodeChanged;
     
     BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode = HandleMode::Symmetric);
+    BezierNode(std::shared_ptr<Point> position, std::shared_ptr<Point> leftHandle, std::shared_ptr<Point> rightHandle, HandleMode mode = HandleMode::Symmetric);
     BezierNode(HandleMode mode = HandleMode::Aligned);
     BezierNode(glm::vec3 position, HandleMode mode = HandleMode::Aligned);
 
@@ -62,6 +63,10 @@ public:
     const HandleMode& GetMode() const { return Mode; }
     HandleMode& GetMode() { return Mode; }
     void SetMode(HandleMode newMode);
+
+    //TODO Az eventekről leiratkozni
+    //TODO AZ eventek ne lambdák legyenek, hanem valami konkrétabbak
+    virtual ~BezierNode() override = default;
 
     template<class Archive>
     void serialize(Archive& archive) {

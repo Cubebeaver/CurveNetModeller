@@ -15,9 +15,33 @@ public:
 
         if (auto c = controller.lock()) {
             // ElementInterface::DrawCoonsSurfaceInterface(c->GetSelectedSurface().lock());
-            // ElementInterface::DrawBezierCurveInterface(c->GetSelectedEdge().lock());
-            ElementInterface::DrawBezierNodeInterface(c->GetSelectedNode().lock());
             ElementInterface::DrawPointInterface(c->GetSelectedPoint().lock());
+            ElementInterface::DrawBezierNodeInterface(c->GetSelectedNode().lock());
+            ElementInterface::DrawBezierCurveInterface(c->GetSelectedEdge().lock());
+
+            if (auto e = c->GetSelectedEdge().lock()) {
+                if (auto n = c->GetSelectedNode().lock()) {
+                    if (ImGui::Button("Add node after selection")) {
+                        int idx = e->IndexOf(n);
+                        auto lastPos = n->GetPoints()[0]->GetPosition();
+                        e->AddNodeAt(std::make_shared<BezierNode>(lastPos + glm::vec3(1, 0, 0), HandleMode::Aligned), idx);
+                    }
+
+                    if (ImGui::Button("Remove selected node")) {
+                        e->RemoveNode(n);
+                    }
+                }
+            }
+
+            ImGui::SeparatorText("Add");
+            if (ImGui::Button("Add new curve")) {
+                c->AddNewCurve();
+            }
+
+            if (ImGui::Button("Add new surface")) {
+                c->AddNewSurface();
+            }
+
         }
     };
 

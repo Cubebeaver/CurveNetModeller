@@ -9,6 +9,7 @@
 #include "../../model/element/point.h"
 #include "editor/workspace/viewport.hpp"
 #include "editor/workspace/workspaces.hpp"
+#include "model/constraint/same_point_position_constraint.h"
 
 class CurveMeshController {
 private:
@@ -70,11 +71,15 @@ public:
 
         auto d1 = std::make_shared<BezierCurve>();
         d1->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(-1.0f, 0.0f, -1.5f), glm::vec3(-1.0f, 0.0f, -0.5f), HandleMode::Aligned));
+        d1->GetNodes()[0]->SetPosition(c1->GetNodes()[0]->GetCenterHandle());
         d1->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f,  1.0f), glm::vec3(-1.0f, 0.0f,  0.5f), glm::vec3(-1.0f, 0.0f,  1.5f), HandleMode::Aligned));
+        d1->GetNodes()[1]->SetPosition(c2->GetNodes()[0]->GetCenterHandle());
 
         auto d2 = std::make_shared<BezierCurve>();
         d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, -1.0f), glm::vec3( 1.0f, 0.0f, -1.5f), glm::vec3( 1.0f, 0.0f, -0.5f), HandleMode::Aligned));
+        d2->GetNodes()[0]->SetPosition(c1->GetNodes()[1]->GetCenterHandle());
         d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f,  1.0f), glm::vec3( 1.0f, 0.0f,  0.5f), glm::vec3( 1.0f, 0.0f,  1.5f), HandleMode::Aligned));
+        d2->GetNodes()[1]->SetPosition(c2->GetNodes()[1]->GetCenterHandle());
 
         auto newSurface = std::make_shared<CoonsSurface>(c1, c2, d1, d2);
         curveMesh->AddSurface(newSurface);
@@ -87,6 +92,10 @@ public:
 
     void AddExistingSurface(std::shared_ptr<CoonsSurface> surface) {
         curveMesh->AddSurface(surface);
+    }
+
+    void ExtrudeSelectedEdge() {
+
     }
 
     void Present() {
@@ -104,10 +113,6 @@ public:
         for (const auto& surfaceView : surfaceViews) {
             surfaceView->Draw();
         }
-    }
-
-    void ForceSyncViews() {
-        SyncViews();
     }
 
 private:

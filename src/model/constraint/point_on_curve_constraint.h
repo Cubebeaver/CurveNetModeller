@@ -1,9 +1,11 @@
 #pragma once
 
+#include <memory>
 #include "CONSTANTS.h"
 #include "i_constraint.hpp"
-#include "model/element/i_Curve.hpp"
-#include "model/element/point.h"
+
+class Point;
+class ICurve;
 
 class PointOnCurveConstraint : public IConstraint {
 private:
