@@ -56,7 +56,10 @@ void ElementInterface::DrawBezierCurveInterface(std::shared_ptr<BezierCurve> cur
     ImGui::SeparatorText("Bezier Curve");
 
     if (ImGui::Button("Add Node to end")) {
-        auto lastPos = curve->GetNodes().back()->GetPoints()[0]->GetPosition();
+        glm::vec3 lastPos;
+        if (!curve->GetNodes().empty()) {
+            auto lastPos = curve->GetNodes().back()->GetPoints()[0]->GetPosition();
+        }
         curve->AddNode(std::make_shared<BezierNode>(lastPos + glm::vec3(1, 0, 0), HandleMode::Aligned));
     }
     if (ImGui::Button("Remove Last Node")) {

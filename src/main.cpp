@@ -1,3 +1,9 @@
+#ifndef NDEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
 #include <iostream>
 #include <numbers>
 #include <fstream>
@@ -132,7 +138,11 @@ void Save(const CurveMesh& scene) {
     }
 
     {
+#ifdef NDEBUG
+        cereal::JSONOutputArchive archive(fs, cereal::JSONOutputArchive::Options::NoIndent());
+#else
         cereal::JSONOutputArchive archive(fs);
+#endif
         archive(cereal::make_nvp("SaveData", scene));
     }
 
@@ -153,6 +163,9 @@ void Save(const CurveMesh& scene) {
 // }
 
 int main() {
+#ifndef NDEBUG
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
     GLFWwindow* mainWindow;
 
     if (GLFW_INIT(&mainWindow) || mainWindow == nullptr) {
@@ -254,6 +267,9 @@ int main() {
     glfwDestroyWindow(mainWindow);
     glfwTerminate();
 
+#ifndef NDEBUG
+    _CrtDumpMemoryLeaks();
+#endif
     return 0;
 }
 

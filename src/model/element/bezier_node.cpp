@@ -51,8 +51,8 @@ void BezierNode::SetPosition(const glm::vec3& newPos) {
 void BezierNode::SetPosition(const std::shared_ptr<Point> newPoint) {
     CenterHandle->PointChanged.RemoveListener(this, &BezierNode::OnCenterPointChanged);
 
-    CenterHandle = newPoint;
     glm::vec3 delta = newPoint->GetPosition() - CenterHandle->GetPosition();
+    CenterHandle = newPoint;
     LeftHandle->GetPosition() += delta;
     RightHandle->GetPosition() += delta;
 

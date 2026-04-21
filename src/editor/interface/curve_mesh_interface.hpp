@@ -15,12 +15,12 @@ public:
 
         if (auto c = controller.lock()) {
             // ElementInterface::DrawCoonsSurfaceInterface(c->GetSelectedSurface().lock());
-            ElementInterface::DrawPointInterface(c->GetSelectedPoint().lock());
-            ElementInterface::DrawBezierNodeInterface(c->GetSelectedNode().lock());
-            ElementInterface::DrawBezierCurveInterface(c->GetSelectedEdge().lock());
+            ElementInterface::DrawPointInterface(c->GetActivePoint().lock());
+            ElementInterface::DrawBezierNodeInterface(c->GetActiveNode().lock());
+            ElementInterface::DrawBezierCurveInterface(c->GetActiveEdge().lock());
 
-            if (auto e = c->GetSelectedEdge().lock()) {
-                if (auto n = c->GetSelectedNode().lock()) {
+            if (auto e = c->GetActiveEdge().lock()) {
+                if (auto n = c->GetActiveNode().lock()) {
                     if (ImGui::Button("Add node after selection")) {
                         int idx = e->IndexOf(n);
                         auto lastPos = n->GetPoints()[0]->GetPosition();
@@ -29,7 +29,34 @@ public:
 
                     if (ImGui::Button("Remove selected node")) {
                         e->RemoveNode(n);
+                        if (e->GetNodes().empty()) {
+                            controller.lock()->GetModel()->RemoveEdge(e);
+                        }
                     }
+                }
+            }
+
+            if (auto e = c->GetActiveEdge().lock()) {
+                if (ImGui::Button("Extrude selected edge")) {
+                    c->ExtrudeSelectedEdge();
+                }
+            }
+
+            if (c->GetSelectedNode().size() >= 2) {
+                if (ImGui::Button("Merge selected nodes")) {
+                    c->MergeNodes();
+                }
+            }
+
+            if (!c->GetSelectedNode().empty()) {
+                if (ImGui::Button("Split selected nodes")) {
+                    c->SplitNodes();
+                }
+            }
+
+            if (c->GetSelectedEdge().size() == 4) {
+                if (ImGui::Button("Fill with Coons surface")) {
+                    c->FillCoons();
                 }
             }
 

@@ -52,7 +52,6 @@ public:
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
                 OnClick.Invoke(glm::vec2(relativeX, relativeY), ImGuiMouseButton_Right);
             }
-            
 
             if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
                 ImVec2 delta = ImGui::GetIO().MouseDelta;
