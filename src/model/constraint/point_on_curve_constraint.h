@@ -1,8 +1,12 @@
 #pragma once
 
 #include <memory>
+#include <glm/vec3.hpp>
+
 #include "CONSTANTS.h"
 #include "i_constraint.hpp"
+#include "model/element/bezier_curve.h"
+#include "model/element/bezier_curve.h"
 
 class Point;
 class ICurve;
@@ -19,5 +23,9 @@ public:
     virtual void Enforce() override;
     virtual bool Verify() const override;
 
-    virtual ~PointOnCurveConstraint() = default;
+    virtual ~PointOnCurveConstraint() override;
+
+private:
+    void OnPointChanged(const glm::vec3 offset);
+    void OnCurveChanged();
 };

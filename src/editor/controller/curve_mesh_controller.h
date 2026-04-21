@@ -30,14 +30,12 @@ public:
     CurveMeshController() {
         curveMesh = std::make_shared<CurveMesh>();
 
-        curveMesh->CurveMeshChanged += [&]() {
-            SyncViews();
-        };
+        curveMesh->CurveMeshChanged.AddListener(this, &CurveMeshController::SyncViews);
 
         vp = Workspaces::viewport;
 
-        vp.lock()->OnClick += [&] (const glm::vec2& position, ImGuiMouseButton_ button) { OnClick(position, button); };
-        vp.lock()->OnDrag += [&] (const glm::vec2& totalDelta, const glm::vec2& delta, const glm::vec2& position, ImGuiMouseButton_ button) { OnDrag(totalDelta, delta, position, button); };
+        vp.lock()->OnClick.AddListener(this, &CurveMeshController::OnClick);
+        vp.lock()->OnDrag.AddListener(this, &CurveMeshController::OnDrag);
     }
 
     std::shared_ptr<CurveMesh> GetModel() { return curveMesh; }

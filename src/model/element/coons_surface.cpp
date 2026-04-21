@@ -4,10 +4,10 @@ CoonsSurface::CoonsSurface(
     std::shared_ptr<BezierCurve> c1, std::shared_ptr<BezierCurve> c2,
     std::shared_ptr<BezierCurve> d1, std::shared_ptr<BezierCurve> d2
 ) : c1(c1), c2(c2), d1(d1), d2(d2) {
-    this->c1->CurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
-    this->c2->CurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
-    this->d1->CurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
-    this->d2->CurveChanged += [&](){ CoonsSurfaceChanged.Invoke(); };
+    this->c1->CurveChanged.AddListener(this, &CoonsSurface::OnCurveChanged);
+    this->c2->CurveChanged.AddListener(this, &CoonsSurface::OnCurveChanged);
+    this->d1->CurveChanged.AddListener(this, &CoonsSurface::OnCurveChanged);
+    this->d2->CurveChanged.AddListener(this, &CoonsSurface::OnCurveChanged);
 }
 
 glm::vec3 CoonsSurface::Evaluate(float u, float v) const {
@@ -68,4 +68,15 @@ std::vector<glm::vec3> CoonsSurface::GetRenderNormals(int resolution) const {
         }
     }
     return surfaceNormals;
+}
+
+CoonsSurface::~CoonsSurface() {
+    c1->CurveChanged.RemoveListener(this, &CoonsSurface::OnCurveChanged);
+    c2->CurveChanged.RemoveListener(this, &CoonsSurface::OnCurveChanged);
+    d1->CurveChanged.RemoveListener(this, &CoonsSurface::OnCurveChanged);
+    d2->CurveChanged.RemoveListener(this, &CoonsSurface::OnCurveChanged);
+}
+
+void CoonsSurface::OnCurveChanged() {
+    CoonsSurfaceChanged.Invoke();
 }

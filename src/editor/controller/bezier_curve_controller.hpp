@@ -44,10 +44,10 @@ public:
         viewCurve = std::make_unique<CurveView>();
         curvatureView = std::make_unique<CurveCurvatureCombView>();
 
-        modelCurve->CurveChanged += [&](){ SyncViews(); };
+        modelCurve->CurveChanged.AddListener(this, &BezierCurveController::SyncViews);
 
-        vp.lock()->OnClick += [this] (const glm::vec2& position, ImGuiMouseButton_ button) { this->OnClick(position, button); };
-        vp.lock()->OnDrag += [this] (const glm::vec2& totalDelta, const glm::vec2& delta, const glm::vec2& position, ImGuiMouseButton_ button) { this->OnDrag(totalDelta, delta, position, button); };
+        vp.lock()->OnClick.AddListener(this, &BezierCurveController::OnClick);
+        vp.lock()->OnDrag.AddListener(this, &BezierCurveController::OnDrag);
     }
 
     std::shared_ptr<BezierCurve> GetModel() { return modelCurve; }

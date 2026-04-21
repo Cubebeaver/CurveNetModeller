@@ -30,10 +30,13 @@ public:
     std::vector<glm::vec3> GetRenderPoints(int resolution) const;
     std::vector<glm::vec3> GetRenderNormals(int resolution) const;
 
-    virtual ~CoonsSurface() = default;
+    virtual ~CoonsSurface() override;
 
     template<class Archive>
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(c1), CEREAL_NVP(c2), CEREAL_NVP(d1), CEREAL_NVP(d2));
     }
+
+private:
+    void OnCurveChanged();
 };

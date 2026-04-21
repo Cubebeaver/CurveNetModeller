@@ -10,7 +10,7 @@ int BezierCurve::GetSegmentCount() const {
 
 void BezierCurve::AddNode(std::shared_ptr<BezierNode> node) {
     Nodes.push_back(node);
-    node->BezierNodeChanged += [&](){ CurveChanged.Invoke(); };
+    node->BezierNodeChanged.AddListener(this, &BezierCurve::OnChange);
     CurveChanged.Invoke();
 }
 
@@ -18,15 +18,15 @@ void BezierCurve::AddNodeAt(std::shared_ptr<BezierNode> node, int index) {
     if (index < 0 || index >= static_cast<int>(Nodes.size())) return;
 
     Nodes.insert(Nodes.begin() + index, node);
-    node->BezierNodeChanged += [&](){ CurveChanged.Invoke(); };
+    node->BezierNodeChanged.AddListener(this, &BezierCurve::OnChange);
     CurveChanged.Invoke();
 }
 
 void BezierCurve::RemoveNodeAt(int idx) {
-    if (idx >= 0) {
-        Nodes.erase(Nodes.begin() + idx);
-    }
+    if (idx < 0 || Nodes.size() <= idx) return;
 
+    Nodes[idx]->BezierNodeChanged.RemoveListener(this, &BezierCurve::OnChange);
+    Nodes.erase(Nodes.begin() + idx);
     CurveChanged.Invoke();
 }
 
@@ -34,6 +34,7 @@ void BezierCurve::RemoveNode(std::weak_ptr<BezierNode> node) {
     auto n = node.lock();
     if (!n) return;
 
+    n->BezierNodeChanged.RemoveListener(this, &BezierCurve::OnChange);
     Nodes.erase(std::remove(Nodes.begin(), Nodes.end(), n), Nodes.end());
     CurveChanged.Invoke();
 }
@@ -282,4 +283,14 @@ std::vector<float> BezierCurve::GenerateRenderCurvatures(int resolution) const {
     }
 
     return renderPoints;
+}
+
+BezierCurve::~BezierCurve() {
+    for (auto& node : Nodes) {
+        node->BezierNodeChanged.RemoveListener(this, &BezierCurve::OnChange);
+    }
+}
+
+void BezierCurve::OnChange() {
+    CurveChanged.Invoke();
 }

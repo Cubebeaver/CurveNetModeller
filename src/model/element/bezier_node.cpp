@@ -6,18 +6,7 @@
 #define RightHandle points[2]
 
 BezierNode::BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode) 
-    : Mode(mode) {
-    points.push_back(std::make_shared<Point>(position));
-    points.push_back(std::make_shared<Point>(leftHandle));
-    points.push_back(std::make_shared<Point>(rightHandle));
-
-    CenterHandle->PointChanged += [&](glm::vec3 delta){ LeftHandle->GetPosition() += delta; RightHandle->GetPosition() += delta; BezierNodeChanged.Invoke(); };
-    LeftHandle->PointChanged += [&](glm::vec3 delta){ EnforceMode(true); BezierNodeChanged.Invoke(); };
-    RightHandle->PointChanged += [&](glm::vec3 delta){ EnforceMode(false); BezierNodeChanged.Invoke(); };
-
-    EnforceMode(true);
-    BezierNodeChanged.Invoke();
-}
+    : BezierNode(std::make_shared<Point>(position), std::make_shared<Point>(leftHandle), std::make_shared<Point>(rightHandle), mode) { }
 
 BezierNode::BezierNode(std::shared_ptr<Point> position, std::shared_ptr<Point> leftHandle, std::shared_ptr<Point> rightHandle, HandleMode mode)
     : Mode(mode) {
@@ -25,9 +14,9 @@ BezierNode::BezierNode(std::shared_ptr<Point> position, std::shared_ptr<Point> l
     points.push_back(leftHandle);
     points.push_back(rightHandle);
 
-    CenterHandle->PointChanged += [&](glm::vec3 delta){ LeftHandle->GetPosition() += delta; RightHandle->GetPosition() += delta; BezierNodeChanged.Invoke(); };
-    LeftHandle->PointChanged += [&](glm::vec3 delta){ EnforceMode(true); BezierNodeChanged.Invoke(); };
-    RightHandle->PointChanged += [&](glm::vec3 delta){ EnforceMode(false); BezierNodeChanged.Invoke(); };
+    CenterHandle->PointChanged.AddListener(this, &BezierNode::OnCenterPointChanged);
+    LeftHandle->PointChanged.AddListener(this, &BezierNode::OnLeftPointChanged);
+    RightHandle->PointChanged.AddListener(this, &BezierNode::OnRightPointChanged);
 
     EnforceMode(true);
     BezierNodeChanged.Invoke();
@@ -60,12 +49,14 @@ void BezierNode::SetPosition(const glm::vec3& newPos) {
 //TODO Amikor kitörlöm a megosztott pont felül az egyik bezierNode-ot,
 //     akkor annak az eventjei bent maradnak, és a törölt this már csak dangling pointer/ref -> crash
 void BezierNode::SetPosition(const std::shared_ptr<Point> newPoint) {
+    CenterHandle->PointChanged.RemoveListener(this, &BezierNode::OnCenterPointChanged);
+
     CenterHandle = newPoint;
     glm::vec3 delta = newPoint->GetPosition() - CenterHandle->GetPosition();
     LeftHandle->GetPosition() += delta;
     RightHandle->GetPosition() += delta;
 
-    CenterHandle->PointChanged += [&](glm::vec3 delta){ LeftHandle->GetPosition() += delta; RightHandle->GetPosition() += delta; BezierNodeChanged.Invoke(); };
+    newPoint->PointChanged.AddListener(this, &BezierNode::OnCenterPointChanged);
 
     BezierNodeChanged.Invoke();
 }
@@ -77,10 +68,12 @@ void BezierNode::SetLeftHandle(const glm::vec3& newPos) {
     BezierNodeChanged.Invoke();
 }
 void BezierNode::SetLeftHandle(const std::shared_ptr<Point> newPoint) {
+    LeftHandle->PointChanged.RemoveListener(this, &BezierNode::OnLeftPointChanged);
+
     LeftHandle = newPoint;
     EnforceMode(true);
 
-    LeftHandle->PointChanged += [&](glm::vec3 delta){ EnforceMode(true); BezierNodeChanged.Invoke(); };
+    newPoint->PointChanged.AddListener(this, &BezierNode::OnLeftPointChanged);
 
     BezierNodeChanged.Invoke();
 }
@@ -91,10 +84,12 @@ void BezierNode::SetRightHandle(const glm::vec3& newPos) {
     BezierNodeChanged.Invoke();
 }
 void BezierNode::SetRightHandle(const std::shared_ptr<Point> newPoint) {
+    RightHandle->PointChanged.RemoveListener(this, &BezierNode::OnRightPointChanged);
+
     RightHandle = newPoint;
     EnforceMode(false);
 
-    RightHandle->PointChanged += [&](glm::vec3 delta){ EnforceMode(false); BezierNodeChanged.Invoke(); };
+    newPoint->PointChanged.AddListener(this, &BezierNode::OnRightPointChanged);
 
     BezierNodeChanged.Invoke();
 }
@@ -106,6 +101,12 @@ void BezierNode::SetMode(HandleMode newMode) {
         EnforceMode(true);
         BezierNodeChanged.Invoke();
     }
+}
+
+BezierNode::~BezierNode() {
+    CenterHandle->PointChanged.RemoveListener(this, &BezierNode::OnCenterPointChanged);
+    LeftHandle->PointChanged.RemoveListener(this, &BezierNode::OnLeftPointChanged);
+    RightHandle->PointChanged.RemoveListener(this, &BezierNode::OnRightPointChanged);
 }
 
 
@@ -129,4 +130,20 @@ void BezierNode::EnforceMode(bool isLeftChanged) {
     else if (Mode == HandleMode::Symmetric) {
         oppositeHandle = CenterHandle->GetPosition() + normalizedDir * distanceMoved;
     }
+}
+
+void BezierNode::OnCenterPointChanged(const glm::vec3 offset) {
+    LeftHandle->GetPosition() += offset;
+    RightHandle->GetPosition() += offset;
+    BezierNodeChanged.Invoke();
+}
+
+void BezierNode::OnLeftPointChanged(const glm::vec3 offset) {
+    EnforceMode(true);
+    BezierNodeChanged.Invoke();
+}
+
+void BezierNode::OnRightPointChanged(const glm::vec3 offset) {
+    EnforceMode(false);
+    BezierNodeChanged.Invoke();
 }

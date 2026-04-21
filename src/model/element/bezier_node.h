@@ -66,7 +66,7 @@ public:
 
     //TODO Az eventekről leiratkozni
     //TODO AZ eventek ne lambdák legyenek, hanem valami konkrétabbak
-    virtual ~BezierNode() override = default;
+    virtual ~BezierNode() override;
 
     template<class Archive>
     void serialize(Archive& archive) {
@@ -75,6 +75,10 @@ public:
 
 private:
     void EnforceMode(bool isLeftChanged);
+
+    void OnCenterPointChanged(const glm::vec3 offset);
+    void OnLeftPointChanged(const glm::vec3 offset);
+    void OnRightPointChanged(const glm::vec3 offset);
 };
 
 #undef CenterHandle

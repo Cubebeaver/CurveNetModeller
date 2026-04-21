@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <glm/geometric.hpp>
+#include <glm/vec3.hpp>
 
 #include "CONSTANTS.h"
 #include "i_constraint.hpp"
@@ -18,5 +19,8 @@ public:
     virtual void Enforce() override;
     virtual bool Verify() const override;
 
-    virtual ~SamePointPositionConstraint() = default;
+    virtual ~SamePointPositionConstraint();
+
+private:
+    void OnPointChanged(const glm::vec3 offset);
 };

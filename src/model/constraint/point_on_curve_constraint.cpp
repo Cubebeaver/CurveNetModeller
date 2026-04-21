@@ -6,8 +6,16 @@ PointOnCurveConstraint::PointOnCurveConstraint(std::shared_ptr<Point> self, std:
 : self(self), target(target), parameter(parameter) {
     if (parameter < 0 || parameter > 1) std::cout << "[!] t must be between 0 and 1";
 
-    self->PointChanged += [&](auto delta) { if (!Verify()) Enforce(); };
-    target->CurveChanged += [&]() { if (!Verify()) Enforce(); };
+    self->PointChanged.AddListener(this, &PointOnCurveConstraint::OnPointChanged);
+    target->CurveChanged.AddListener(this, &PointOnCurveConstraint::OnCurveChanged);
+}
+
+void PointOnCurveConstraint::OnPointChanged(const glm::vec3 offset) {
+    if (!Verify()) Enforce();
+}
+
+void PointOnCurveConstraint::OnCurveChanged() {
+    if (!Verify()) Enforce();
 }
 
 void PointOnCurveConstraint::Enforce() {
@@ -29,4 +37,10 @@ bool PointOnCurveConstraint::Verify() const {
 
     auto tpos = t->EvaluatePosition(parameter);
     return glm::distance(s->GetPosition(), tpos) < EditorConstants::MaxFloatError;
+}
+
+//TODO Ezt mindenhol máshol is????? végülis az event gondoskodik erről
+PointOnCurveConstraint::~PointOnCurveConstraint() {
+    if (auto s = self.lock())   s->PointChanged.RemoveListener(this, &PointOnCurveConstraint::OnPointChanged);
+    if (auto t = target.lock()) t->CurveChanged.RemoveListener(this, &PointOnCurveConstraint::OnCurveChanged);
 }

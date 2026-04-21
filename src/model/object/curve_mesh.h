@@ -42,4 +42,8 @@ public:
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(edges), CEREAL_NVP(surfaces));
     }
+
+private:
+    void OnEdgeChanged();
+    void OnSurfaceChanged();
 };

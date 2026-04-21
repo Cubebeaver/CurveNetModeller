@@ -49,4 +49,9 @@ public:
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(Nodes));
     }
+
+    virtual ~BezierCurve();
+
+private:
+    void OnChange();
 };

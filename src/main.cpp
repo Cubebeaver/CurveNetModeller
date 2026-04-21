@@ -217,9 +217,9 @@ int main() {
             viewport->viewportBuffer->Clear();
 
                 Camera::activeCamera->UpdateFrameSize(viewport->viewportBuffer->Width, viewport->viewportBuffer->Height);
+                curveMeshController->Present();
                 skybox.Draw();
                 floor.Draw();
-                curveMeshController->Present();
 
             glDisable(GL_DEPTH_TEST);
         viewport->UnbindFrameBuffer();
