@@ -17,11 +17,15 @@ This program allows you to create and edit curves, and surfaces.
 
 Hold right click, and move around with the WASD and QE keys.
 
-Manipulate the objects by left clicking and dragging.
+Manipulate the objects by left clicking and dragging, hold shift to multi-select.
 
 Workspaces can be resized and docked to your heart's content.
 
-Detalied documentation can be found [here](https://cubebeaver.hu/curve-net-modeller/documentation).
+There are two workspaces:
+- Viewport: where you can see the curves and surfaces
+- Properties: where you find the properties of the selected object/elements and can perform operations on them
+
+Detalied documentation can be found [here](https://docs.cubebeaver.hu). (TBA)
 
 **Happy editing!**
 
@@ -129,11 +133,15 @@ Ez a program lehetővé teszi görbék és felületek létrehozását és szerke
 
 Tartsd lenyomva a jobb egérgombot, és mozogj a WASD és QE gombokkal.
 
-Szerkeszd az objektumokat a bal egérgomb nyomvatartásával és húzásával.
+Szerkeszd az objektumokat a bal egérgomb nyomvatartásával és húzásával, nyomd a shiftet, ha egyszerre több elemet szeretnél kiválasztani.
 
 A munkaterületeket szabadon méretezheted és dokkolhatod.
 
-A részletes dokumentációt [itt](https://cubebeaver.hu/curve-net-modeller/documentation) találod.
+Két munkaterület van:
+- Viewport (3D nézetablak): Itt látod a görbéidet és felületeidet
+- Properties (Tulajdonságok): Itt találod a kiválasztott elem tulajdonságait és itt tudsz műveleteket végrehajtani rajtuk.
+
+A részletes dokumentációt [itt](https://docs.cubebeaver.hu) találod. (TBA)
 
 **Boldog szerkesztést!**
 
@@ -162,7 +170,7 @@ Minden parancshoz legyél a projekt gyökérkönyvtárában (ahol a CMakeLists.t
 #### Cmake és vcpkg beállítása
 
 ```
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="[vcpkg root directory]/scripts/buildsystems/vcpkg.cmake"
+cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="[vcpkg gyökér könyvtár]/scripts/buildsystems/vcpkg.cmake"
 ```
 
 Például: `cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"`

@@ -6,6 +6,7 @@
 # Program outputs except examples
 [Oo]utput/[Ss]creenshots/*
 ![Oo]utput/[Ss]creenshots/example.png
+[Oo]utput/save.json
 
 # IDE files
 .vscode/
