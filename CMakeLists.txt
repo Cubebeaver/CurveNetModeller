@@ -146,30 +146,3 @@ add_custom_command(TARGET CurveNetModeller POST_BUILD
         # HOVÁ: Oda, ahová a CurveNetModeller.exe éppen legenerálódott, egy 'output' almappába
         "$<TARGET_FILE_DIR:CurveNetModeller>/output"
 )
-
-
-
-# --- ADDRESS SANITIZER (ASan) BEÁLLÍTÁSOK MSVC-HEZ ---
-if(MSVC)
-    # A CMake alapból hozzáadja az /RTC1 flaget Debug módban, ami összeakad az ASan-nal.
-    # Ez a két sor kigyomlálja ezt a flaget a default beállításokból.
-    string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    string(REPLACE "/RTCc" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-
-    # Csak Debug profil esetén kapcsoljuk be
-    if(CMAKE_BUILD_TYPE MATCHES "Debug")
-        message(STATUS "[ASan] AddressSanitizer bekapcsolva a Debug profilhoz!")
-
-        # A célpontod neve (cseréld le a sajátodra, ha nem CurveNetModeller!)
-        set(TARGET_NAME CurveNetModeller)
-
-        # Bekapcsoljuk magát az ASan-t
-        target_compile_options(${TARGET_NAME} PRIVATE /fsanitize=address)
-
-        # Bekapcsoljuk a debug szimbólumokat, hogy pontos fájlnevet és sorszámot kapjunk hiba esetén
-        target_compile_options(${TARGET_NAME} PRIVATE /Zi)
-
-        # A linkernek is tudnia kell az ASan-ról
-        target_link_options(${TARGET_NAME} PRIVATE /INCREMENTAL:NO)
-    endif()
-endif()

@@ -1,6 +1,6 @@
 # Curve-net modeller
 
-A magyar válozatért görgess lejjebb... // For the hungarian version scroll down...
+> [**Magyar változatért görgess lejjebb // Hungarian version follows below**](#görbe-háló-modellező)
 
 ## Introduction
 
@@ -31,17 +31,18 @@ Detalied documentation can be found [here](https://docs.cubebeaver.hu). (TBA)
 
 # For developers
 
-## Used tools
+## Used tools and licenses
 
 This project uses cmake as the build system and vcpkg as the package manager
 
 Used packages:
- - GLFW (window manager)
- - glad (OpenGL binging)
- - glm (math library for OpenGL)
- - ImGUI (UI framework)
- - Cereal (serialization)
- - GTest (Unit testing framework)
+ - [GLFW](https://www.glfw.org/) (Zlib License) - Window manager.
+ - [GLAD](https://github.com/Dav1dde/glad) (MIT License) - OpenGL binding.
+ - [GLM](https://github.com/g-truc/glm) (Happy Bunny / MIT License) - Math library for OpenGL.
+ - [Dear ImGui](https://github.com/ocornut/imgui) (MIT License) - UI framework.
+ - [stb_image](https://github.com/nothings/stb) (Public Domain / MIT) - Image loader.
+ - [cereal](https://uscilab.github.io/cereal/) (BSD License) - Serialization.
+ - [Google Test](https://github.com/google/googletest) (BSD License) - Unit testing framework.
 
 
 
@@ -111,11 +112,13 @@ cmake --build build --config Release ; if ($?) { .\build\Release\CurveNetModelle
 
 
 
+&nbsp;
+
+&nbsp;
+
+> **Magyar változat // Hungarian version**
 
 
-
-
-# ~ Magyar változat ~
 
 # Görbe-háló modellező
 
@@ -149,19 +152,18 @@ A részletes dokumentációt [itt](https://docs.cubebeaver.hu) találod. (TBA)
 
 # Fejlesztőknek
 
-## Felhasznált eszközök
+## Felhasznált eszközök és licencek
 
 Ez a projekt Cmake-et használ build rendszernek, és vcpkg-t csomagkezelőnek.
 
 Felhasznált csomagok:
- - GLFW (ablakkezelő)
- - glad (OpenGL kötés)
- - glm (matematikai könyvtár OpenGL-hez)
- - ImGUI (kezelőfelület)
- - Cereal (szerializáció)
- - GTest (egységtesztelő keretrendszer)
-
-
+ - [GLFW](https://www.glfw.org/) (Zlib License) - Ablakkezelő.
+ - [GLAD](https://github.com/Dav1dde/glad) (MIT License) - OpenGL kötés.
+ - [GLM](https://github.com/g-truc/glm) (Happy Bunny / MIT License) - Matematikai könyvtár OpenGL-hez.
+ - [Dear ImGui](https://github.com/ocornut/imgui) (MIT License) - Kezelőfelület.
+ - [stb_image](https://github.com/nothings/stb) (Public Domain / MIT) - Képbetöltés.
+ - [cereal](https://uscilab.github.io/cereal/) (BSD License) - Szerializáció.
+ - [Google Test](https://github.com/google/googletest) (BSD License) - Egységtesztelő keretrendszer.
 
 ## Fordítás és futtatás
 
