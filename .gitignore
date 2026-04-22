@@ -2,6 +2,7 @@
 [Bb]uild/
 [Oo]ut/
 [Bb]in/
+/*.zip
 
 # Program outputs except examples
 [Oo]utput/[Ss]creenshots/*

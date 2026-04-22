@@ -163,9 +163,6 @@ void Save(const CurveMesh& scene) {
 // }
 
 int main() {
-#ifndef NDEBUG
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
     GLFWwindow* mainWindow;
 
     if (GLFW_INIT(&mainWindow) || mainWindow == nullptr) {
@@ -267,9 +264,6 @@ int main() {
     glfwDestroyWindow(mainWindow);
     glfwTerminate();
 
-#ifndef NDEBUG
-    _CrtDumpMemoryLeaks();
-#endif
     return 0;
 }
 
