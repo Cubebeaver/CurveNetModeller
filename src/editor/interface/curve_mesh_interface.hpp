@@ -1,6 +1,9 @@
 #pragma once
 #include "i_interface.hpp"
 #include "object_interface.hpp"
+#include "command/add_node_to_curve_command.hpp"
+#include "command/command_history.hpp"
+#include "command/remove_node_from_curve_command.hpp"
 #include "editor/controller/curve_mesh_controller.h"
 
 class CurveMeshInterface : public ObjectInterface {
@@ -24,13 +27,17 @@ public:
                     if (ImGui::Button("Add node after selection")) {
                         int idx = e->IndexOf(n);
                         auto lastPos = n->GetPoints()[0]->GetPosition();
-                        e->AddNodeAt(std::make_shared<BezierNode>(lastPos + glm::vec3(1, 0, 0), HandleMode::Aligned), idx);
+                        auto newNode = std::make_shared<BezierNode>(lastPos + glm::vec3(1, 0, 0), HandleMode::Aligned);
+
+                        CommandHistory::Do<AddNodeToCurveCommand>(e, newNode, idx);
                     }
 
                     if (ImGui::Button("Remove selected node")) {
-                        e->RemoveNode(n);
+                        CommandHistory::Do<RemoveNodeFromCurveCommand>(e, n);
+
                         if (e->GetNodes().empty()) {
                             controller.lock()->GetModel()->RemoveEdge(e);
+                            //TODO Command + composite
                         }
                     }
                 }
@@ -39,34 +46,40 @@ public:
             if (auto e = c->GetActiveEdge().lock()) {
                 if (ImGui::Button("Extrude selected edge")) {
                     c->ExtrudeSelectedEdge();
+                    //TODO Command
                 }
             }
 
             if (c->GetSelectedNode().size() >= 2) {
                 if (ImGui::Button("Merge selected nodes")) {
                     c->MergeNodes();
+                    //TODO Command
                 }
             }
 
             if (!c->GetSelectedNode().empty()) {
                 if (ImGui::Button("Split selected nodes")) {
                     c->SplitNodes();
+                    //TODO Command
                 }
             }
 
             if (c->GetSelectedEdge().size() == 4) {
                 if (ImGui::Button("Fill with Coons surface")) {
                     c->FillCoons();
+                    //TODO Command
                 }
             }
 
             ImGui::SeparatorText("Add");
             if (ImGui::Button("Add new curve")) {
                 c->AddNewCurve();
+                //TODO Command
             }
 
             if (ImGui::Button("Add new surface")) {
                 c->AddNewSurface();
+                //TODO Command
             }
 
         }

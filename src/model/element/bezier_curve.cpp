@@ -15,7 +15,7 @@ void BezierCurve::AddNode(std::shared_ptr<BezierNode> node) {
 }
 
 void BezierCurve::AddNodeAt(std::shared_ptr<BezierNode> node, int index) {
-    if (index < 0 || index >= static_cast<int>(Nodes.size())) return;
+    if (index < 0 || index > static_cast<int>(Nodes.size())) return;
 
     Nodes.insert(Nodes.begin() + index, node);
     node->BezierNodeChanged.AddListener(this, &BezierCurve::OnChange);

@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <iostream>
 
+#include "command/command_history.hpp"
 #include "gl_engine/framebuffer.hpp"
 #include "gl_engine/camera.hpp"
 using namespace gl_engine;
@@ -90,6 +91,17 @@ public:
                 }
             } else {
                 ImGui::SetMouseCursor(ImGuiMouseCursor_::ImGuiMouseCursor_Arrow);
+            }
+
+            // UNDO REDO
+            if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && !ImGui::IsKeyDown(ImGuiKey_LeftShift) && ImGui::IsKeyPressed(ImGuiKey_Z)) {
+                CommandHistory::Undo();
+                std::cout << "UNDO" << std::endl;
+            }
+            else if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_Y))
+                  || (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_LeftShift) && ImGui::IsKeyPressed(ImGuiKey_Z))) {
+                CommandHistory::Redo();
+                std::cout << "REDO" << std::endl;
             }
 
             
