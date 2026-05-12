@@ -44,7 +44,8 @@ Used packages:
  - [cereal](https://uscilab.github.io/cereal/) (BSD License) - Serialization.
  - [Google Test](https://github.com/google/googletest) (BSD License) - Unit testing framework.
 
-
+Used resources:
+- [FreeStylized.com](https://freestylized.com/) (CC0 with limitations) - Textures and skyboxes
 
 ## Building and running
 
@@ -164,6 +165,9 @@ Felhasznált csomagok:
  - [stb_image](https://github.com/nothings/stb) (Public Domain / MIT) - Képbetöltés.
  - [cereal](https://uscilab.github.io/cereal/) (BSD License) - Szerializáció.
  - [Google Test](https://github.com/google/googletest) (BSD License) - Egységtesztelő keretrendszer.
+
+Felhasznált anyagok:
+ - [FreeStylized.com](https://freestylized.com/) (Módosított CC0 licenc) - Textúrák és skyboxok
 
 ## Fordítás és futtatás
 
