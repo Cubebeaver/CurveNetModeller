@@ -30,9 +30,9 @@ public:
     const std::vector<std::shared_ptr<CoonsSurface>>& GetSurfaces() const { return surfaces; }
 
     void AddEdge(std::shared_ptr<BezierCurve> edge);
-    void RemoveEdge(std::weak_ptr<BezierCurve> edge);
+    void RemoveEdge(std::shared_ptr<BezierCurve> edge);
     void AddSurface(std::shared_ptr<CoonsSurface> surface);
-    void RemoveSurface(std::weak_ptr<CoonsSurface> surface);
+    void RemoveSurface(std::shared_ptr<CoonsSurface> surface);
 
     void AddNewCoonsSurface();
 

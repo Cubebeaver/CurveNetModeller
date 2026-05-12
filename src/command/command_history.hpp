@@ -6,6 +6,8 @@
 
 #include "i_command.hpp"
 
+#define COMMAND_HISTORY_MAX_SIZE 100
+
 class CommandHistory {
 private:
     std::list<std::shared_ptr<ICommand>> undoList;
@@ -16,6 +18,22 @@ private:
 public:
     CommandHistory(const CommandHistory&) = delete;
     CommandHistory& operator=(const CommandHistory&) = delete;
+
+    static CommandHistory& GetInstance() {
+        static CommandHistory instance;
+        return instance;
+    }
+
+    std::list<std::shared_ptr<ICommand>> GetUndoList() {
+        return undoList;
+    }
+    std::list<std::shared_ptr<ICommand>> GetRedoList() {
+        return redoList;
+    }
+
+    static void Add(std::shared_ptr<ICommand> command) {
+        GetInstance().add_impl(command);
+    }
 
     static void Do(std::shared_ptr<ICommand> command) {
         GetInstance().do_impl(command);
@@ -28,24 +46,27 @@ public:
     static void Undo() {
         GetInstance().undo_impl();
     }
+
     static void Redo() {
         GetInstance().redo_impl();
     }
 
 
 protected:
-    static CommandHistory& GetInstance() {
-        static CommandHistory instance;
-        return instance;
+
+    void add_impl(std::shared_ptr<ICommand> command) {
+        undoList.push_back(command);
+
+        if (!redoList.empty()) redoList.clear();
+        if (undoList.size() > COMMAND_HISTORY_MAX_SIZE) undoList.pop_front();
     }
 
     void do_impl(std::shared_ptr<ICommand> command) {
-        if (command->Execute()) {
-            undoList.push_back(command);
-
-            if (!redoList.empty()) redoList.clear();
-
-            if (undoList.size() > 100) undoList.pop_front();
+        try {
+            command->Execute();
+            add_impl(command);
+        } catch (const std::exception& e) {
+            std::cerr << "Command failed: " << e.what() << std::endl;
         }
     }
 

@@ -16,13 +16,11 @@ public:
         idx = curve->IndexOf(node);
     }
 
-    virtual bool Execute() override {
+    virtual void Execute() override {
         curve->RemoveNodeAt(idx);
-        return true;
     }
 
-    virtual bool Undo() override {
+    virtual void Undo() override {
         curve->AddNodeAt(node, idx);
-        return true;
     }
 };

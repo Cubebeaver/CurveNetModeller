@@ -14,13 +14,11 @@ public:
     AddNodeToCurveCommand(std::shared_ptr<BezierCurve> curve, std::shared_ptr<BezierNode> node, int idx)
         : curve(curve), node(node), idx(idx) { }
 
-    virtual bool Execute() override {
+    virtual void Execute() override {
         curve->AddNodeAt(node, idx);
-        return true;
     }
 
-    virtual bool Undo() override {
+    virtual void Undo() override {
         curve->RemoveNodeAt(idx);
-        return true;
     }
 };

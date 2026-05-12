@@ -3,6 +3,8 @@
 #include "object_interface.hpp"
 #include "command/add_node_to_curve_command.hpp"
 #include "command/command_history.hpp"
+#include "command/composite_command.hpp"
+#include "command/remove_curve_from_curve_mesh_command.hpp"
 #include "command/remove_node_from_curve_command.hpp"
 #include "editor/controller/curve_mesh_controller.h"
 
@@ -33,12 +35,14 @@ public:
                     }
 
                     if (ImGui::Button("Remove selected node")) {
-                        CommandHistory::Do<RemoveNodeFromCurveCommand>(e, n);
+                        auto composite = CompositeCommand::Create();
+                        composite->ExecuteAdd<RemoveNodeFromCurveCommand>(e, n);
 
                         if (e->GetNodes().empty()) {
-                            controller.lock()->GetModel()->RemoveEdge(e);
-                            //TODO Command + composite
+                            composite->ExecuteAdd<RemoveCurveFromCurveMesh>(c->GetModel(), e);
                         }
+
+                        CommandHistory::Add(composite);
                     }
                 }
             }

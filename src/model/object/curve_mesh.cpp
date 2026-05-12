@@ -11,11 +11,9 @@ void CurveMesh::AddEdge(std::shared_ptr<BezierCurve> edge) {
     CurveMeshChanged.Invoke();
 }
 
-void CurveMesh::RemoveEdge(std::weak_ptr<BezierCurve> edge) {
-    auto e = edge.lock();
-    if (!e) return;
-
-    edges.erase(std::remove(edges.begin(), edges.end(), e), edges.end());
+void CurveMesh::RemoveEdge(std::shared_ptr<BezierCurve> edge) {
+    edges.erase(std::remove(edges.begin(), edges.end(), edge), edges.end());
+    edge->CurveChanged.RemoveListener(this, &CurveMesh::OnEdgeChanged);
     CurveMeshChanged.Invoke();
 }
 
@@ -25,11 +23,9 @@ void CurveMesh::AddSurface(std::shared_ptr<CoonsSurface> surface) {
     CurveMeshChanged.Invoke();
 }
 
-void CurveMesh::RemoveSurface(std::weak_ptr<CoonsSurface> surface) {
-    auto s = surface.lock();
-    if (!s) return;
-
-    surfaces.erase(std::remove(surfaces.begin(), surfaces.end(), s), surfaces.end());
+void CurveMesh::RemoveSurface(std::shared_ptr<CoonsSurface> surface) {
+    surfaces.erase(std::remove(surfaces.begin(), surfaces.end(), surface), surfaces.end());
+    surface->CoonsSurfaceChanged.RemoveListener(this, &CurveMesh::OnSurfaceChanged);
     CurveMeshChanged.Invoke();
 }
 
