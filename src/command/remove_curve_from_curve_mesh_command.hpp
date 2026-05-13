@@ -5,13 +5,13 @@
 #include "model/object/curve_mesh.h"
 
 
-class RemoveCurveFromCurveMesh : public ICommand {
+class RemoveCurveFromCurveMeshCommand : public ICommand {
 private:
     std::shared_ptr<CurveMesh> curveMesh;
     std::shared_ptr<BezierCurve> curve;
 
 public:
-    RemoveCurveFromCurveMesh(std::shared_ptr<CurveMesh> curveMesh, std::shared_ptr<BezierCurve> curve)
+    RemoveCurveFromCurveMeshCommand(std::shared_ptr<CurveMesh> curveMesh, std::shared_ptr<BezierCurve> curve)
         : curveMesh(curveMesh), curve(curve) { }
 
     virtual void Execute() override {

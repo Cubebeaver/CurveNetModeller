@@ -39,7 +39,7 @@ public:
                         composite->ExecuteAdd<RemoveNodeFromCurveCommand>(e, n);
 
                         if (e->GetNodes().empty()) {
-                            composite->ExecuteAdd<RemoveCurveFromCurveMesh>(c->GetModel(), e);
+                            composite->ExecuteAdd<RemoveCurveFromCurveMeshCommand>(c->GetModel(), e);
                         }
 
                         CommandHistory::Add(composite);

@@ -9,7 +9,7 @@ public:
 
     Scene() { }
 
-    void Add(const std::shared_ptr<Object>& obj) {
+    void Add(const std::shared_ptr<Object> obj) {
         objects.push_back(obj);
     }
 };

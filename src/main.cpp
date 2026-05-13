@@ -194,13 +194,14 @@ int main() {
     );
     cam.Init();
 
-
     std::shared_ptr<Viewport> viewport = std::make_shared<Viewport>();
     Workspaces::viewport = viewport;
 
     std::shared_ptr<Properties> properties = std::make_shared<Properties>();
     Workspaces::properties = properties;
 
+
+    //std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 
 
     std::shared_ptr<CurveMeshController> curveMeshController = std::make_shared<CurveMeshController>();

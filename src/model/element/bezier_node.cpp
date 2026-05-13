@@ -5,12 +5,12 @@
 #define LeftHandle points[1]
 #define RightHandle points[2]
 
-BezierNode::BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode) 
-    : BezierNode(std::make_shared<Point>(position), std::make_shared<Point>(leftHandle), std::make_shared<Point>(rightHandle), mode) { }
+BezierNode::BezierNode(const glm::vec3& centerHandle, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode) 
+    : BezierNode(std::make_shared<Point>(centerHandle), std::make_shared<Point>(leftHandle), std::make_shared<Point>(rightHandle), mode) { }
 
-BezierNode::BezierNode(std::shared_ptr<Point> position, std::shared_ptr<Point> leftHandle, std::shared_ptr<Point> rightHandle, HandleMode mode)
+BezierNode::BezierNode(std::shared_ptr<Point> centerHandle, std::shared_ptr<Point> leftHandle, std::shared_ptr<Point> rightHandle, HandleMode mode)
     : Mode(mode) {
-    points.push_back(position);
+    points.push_back(centerHandle);
     points.push_back(leftHandle);
     points.push_back(rightHandle);
 
@@ -25,8 +25,8 @@ BezierNode::BezierNode(std::shared_ptr<Point> position, std::shared_ptr<Point> l
 BezierNode::BezierNode(HandleMode mode) 
     : BezierNode(glm::vec3(0, 0, 0), glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), mode) { }
 
-BezierNode::BezierNode(glm::vec3 position, HandleMode mode)
-    : BezierNode(position, position + glm::vec3(-1, 0, 0), position + glm::vec3(1, 0, 0), mode) { }
+BezierNode::BezierNode(glm::vec3 centerHandle, HandleMode mode)
+    : BezierNode(centerHandle, centerHandle + glm::vec3(-1, 0, 0), centerHandle + glm::vec3(1, 0, 0), mode) { }
 
 BezierHandleType BezierNode::GetHandleType(std::weak_ptr<Point> point) const {
     auto p = point.lock();
@@ -38,7 +38,7 @@ BezierHandleType BezierNode::GetHandleType(std::weak_ptr<Point> point) const {
     return BezierHandleType::None;
 }
 
-void BezierNode::SetPosition(const glm::vec3& newPos) {
+void BezierNode::SetCenterHandle(const glm::vec3& newPos) {
     glm::vec3 delta = newPos - CenterHandle->GetPosition();
     CenterHandle->GetPosition() = newPos;
     LeftHandle->GetPosition() += delta;
@@ -48,7 +48,7 @@ void BezierNode::SetPosition(const glm::vec3& newPos) {
 }
 //TODO Amikor kitörlöm a megosztott pont felül az egyik bezierNode-ot,
 //     akkor annak az eventjei bent maradnak, és a törölt this már csak dangling pointer/ref -> crash
-void BezierNode::SetPosition(const std::shared_ptr<Point> newPoint) {
+void BezierNode::SetCenterHandle(const std::shared_ptr<Point> newPoint) {
     CenterHandle->PointChanged.RemoveListener(this, &BezierNode::OnCenterPointChanged);
 
     glm::vec3 delta = newPoint->GetPosition() - CenterHandle->GetPosition();

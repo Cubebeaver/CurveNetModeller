@@ -39,18 +39,18 @@ private:
 public:
     Event<> BezierNodeChanged;
     
-    BezierNode(const glm::vec3& position, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode = HandleMode::Symmetric);
-    BezierNode(std::shared_ptr<Point> position, std::shared_ptr<Point> leftHandle, std::shared_ptr<Point> rightHandle, HandleMode mode = HandleMode::Symmetric);
+    BezierNode(const glm::vec3& centerHandle, const glm::vec3& leftHandle, const glm::vec3& rightHandle, HandleMode mode = HandleMode::Symmetric);
+    BezierNode(std::shared_ptr<Point> centerHandle, std::shared_ptr<Point> leftHandle, std::shared_ptr<Point> rightHandle, HandleMode mode = HandleMode::Symmetric);
     BezierNode(HandleMode mode = HandleMode::Aligned);
-    BezierNode(glm::vec3 position, HandleMode mode = HandleMode::Aligned);
+    BezierNode(glm::vec3 centerHandle, HandleMode mode = HandleMode::Aligned);
 
     BezierHandleType GetHandleType(std::weak_ptr<Point> point) const;
 
     virtual const std::vector<std::shared_ptr<Point>>& GetPoints() const override { return points; }
 
     std::shared_ptr<Point> GetCenterHandle() const { return CenterHandle; }
-    void SetPosition(const glm::vec3& newPos);
-    void SetPosition(const std::shared_ptr<Point> newPoint);
+    void SetCenterHandle(const glm::vec3& newPos);
+    void SetCenterHandle(const std::shared_ptr<Point> newPoint);
     
     std::shared_ptr<Point> GetLeftHandle() const { return LeftHandle; }
     void SetLeftHandle(const glm::vec3& newPos);

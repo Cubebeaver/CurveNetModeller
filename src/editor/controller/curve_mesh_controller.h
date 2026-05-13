@@ -7,6 +7,11 @@
 #include "../../model/object/curve_mesh.h"
 #include "../../model/element/i_Node.hpp"
 #include "../../model/element/point.h"
+#include "command/add_curve_to_curve_mesh_command.hpp"
+#include "command/add_node_to_curve_command.hpp"
+#include "command/composite_command.hpp"
+#include "command/merge_nodes_command.hpp"
+#include "command/split_nodes_command.hpp"
 #include "editor/workspace/viewport.hpp"
 #include "editor/workspace/workspaces.hpp"
 #include "model/constraint/same_point_position_constraint.h"
@@ -52,11 +57,13 @@ public:
 
     void AddNewCurve() {
         auto newEdge = std::make_shared<BezierCurve>();
+        auto n1 = std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(-1.5f, -0.5f, 0.0f), glm::vec3(-0.5f, 0.5f, 0.0f), HandleMode::Aligned);
+        auto n2 = std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, 0.0f), glm::vec3( 0.5f,  0.0f, 0.0f), glm::vec3( 1.5f, 0.0f, 0.0f), HandleMode::Aligned);
 
-        newEdge->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(-1.5f, -0.5f, 0.0f), glm::vec3(-0.5f, 0.5f, 0.0f), HandleMode::Aligned));
-        newEdge->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, 0.0f), glm::vec3( 0.5f,  0.0f, 0.0f), glm::vec3( 1.5f, 0.0f, 0.0f), HandleMode::Aligned));
-
-        curveMesh->AddEdge(newEdge);
+        CommandHistory::Add(CompositeCommand::Create()
+        ->ExecuteAdd<AddCurveToCurveMeshCommand>(curveMesh, newEdge)
+        ->ExecuteAdd<AddNodeToCurveCommand>(newEdge, n1, 0)
+        ->ExecuteAdd<AddNodeToCurveCommand>(newEdge, n2, 1));
     }
 
     void AddExistingCurve(std::shared_ptr<BezierCurve> curve) {
@@ -74,15 +81,15 @@ public:
 
         auto d1 = std::make_shared<BezierCurve>();
         d1->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(-1.0f, 0.0f, -1.5f), glm::vec3(-1.0f, 0.0f, -0.5f), HandleMode::Aligned));
-        d1->GetNodes()[0]->SetPosition(c1->GetNodes()[0]->GetCenterHandle());
+        d1->GetNodes()[0]->SetCenterHandle(c1->GetNodes()[0]->GetCenterHandle());
         d1->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f,  1.0f), glm::vec3(-1.0f, 0.0f,  0.5f), glm::vec3(-1.0f, 0.0f,  1.5f), HandleMode::Aligned));
-        d1->GetNodes()[1]->SetPosition(c2->GetNodes()[0]->GetCenterHandle());
+        d1->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[0]->GetCenterHandle());
 
         auto d2 = std::make_shared<BezierCurve>();
         d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, -1.0f), glm::vec3( 1.0f, 0.0f, -1.5f), glm::vec3( 1.0f, 0.0f, -0.5f), HandleMode::Aligned));
-        d2->GetNodes()[0]->SetPosition(c1->GetNodes()[1]->GetCenterHandle());
+        d2->GetNodes()[0]->SetCenterHandle(c1->GetNodes()[1]->GetCenterHandle());
         d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f,  1.0f), glm::vec3( 1.0f, 0.0f,  0.5f), glm::vec3( 1.0f, 0.0f,  1.5f), HandleMode::Aligned));
-        d2->GetNodes()[1]->SetPosition(c2->GetNodes()[1]->GetCenterHandle());
+        d2->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[1]->GetCenterHandle());
 
         auto newSurface = std::make_shared<CoonsSurface>(c1, c2, d1, d2);
         curveMesh->AddSurface(newSurface);
@@ -118,15 +125,15 @@ public:
 
         auto d1 = std::make_shared<BezierCurve>();
         d1->AddNode(std::make_shared<BezierNode>(c10Pos, c10Pos + offset * -0.25f, c10Pos + offset * 0.25f, HandleMode::Aligned));
-        d1->GetNodes()[0]->SetPosition(c1->GetNodes()[0]->GetCenterHandle());
+        d1->GetNodes()[0]->SetCenterHandle(c1->GetNodes()[0]->GetCenterHandle());
         d1->AddNode(std::make_shared<BezierNode>(c20Pos, c20Pos + offset * -0.25f, c20Pos + offset * 0.25f, HandleMode::Aligned));
-        d1->GetNodes()[1]->SetPosition(c2->GetNodes()[0]->GetCenterHandle());
+        d1->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[0]->GetCenterHandle());
 
         auto d2 = std::make_shared<BezierCurve>();
         d2->AddNode(std::make_shared<BezierNode>(c11Pos, c11Pos + offset * -0.25f, c11Pos + offset * 0.25f, HandleMode::Aligned));
-        d2->GetNodes()[0]->SetPosition(c1->GetNodes()[1]->GetCenterHandle());
+        d2->GetNodes()[0]->SetCenterHandle(c1->GetNodes()[1]->GetCenterHandle());
         d2->AddNode(std::make_shared<BezierNode>(c21Pos, c21Pos + offset * -0.25f, c21Pos + offset * 0.25f, HandleMode::Aligned));
-        d2->GetNodes()[1]->SetPosition(c2->GetNodes()[1]->GetCenterHandle());
+        d2->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[1]->GetCenterHandle());
 
         auto newSurface = std::make_shared<CoonsSurface>(c1, c2, d1, d2);
         curveMesh->AddSurface(newSurface);
@@ -141,29 +148,27 @@ public:
         auto active = GetActiveNode().lock();
         if (!active) return;
 
+        auto cmd = CompositeCommand::Create();
         for (auto o : selectedNodes) {
             auto other = o.lock();
             if (!other) continue;
 
-            other->SetPosition(active->GetCenterHandle());
+            cmd->ExecuteAdd<MergeNodesCommand>(other, active);
         }
+
+        CommandHistory::Add(cmd);
     }
 
     void SplitNodes() {
-        for (auto n : selectedNodes) {
-            auto ns = n.lock();
-            if (!ns) continue;
-            auto ps = ns->GetCenterHandle();
+        auto cmd = CompositeCommand::Create();
 
-            for (auto c : curveMesh->GetEdges()) {
-                for (auto cn : c->GetNodes()) {
-                    auto cps = cn->GetCenterHandle();
-                    if (ps == cps && ns != cn) {
-                        cn->SetPosition(std::make_shared<Point>(ps->GetPosition()));
-                    }
-                }
+        for (auto n : selectedNodes) {
+            if (auto ns = n.lock()) {
+                cmd->ExecuteAdd<SplitNodesCommand>(curveMesh, ns);
             }
         }
+
+        CommandHistory::Add(cmd);
     }
 
     void FillCoons() {

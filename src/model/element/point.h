@@ -34,6 +34,8 @@ public:
     Point() : Point(glm::vec3(0, 0, 0)) { }
     Point(float x, float y, float z) : Point(glm::vec3(x, y, z)) { }
 
+    Point(const Point& other) = default;
+
     const glm::vec3& GetPosition() const { return position; }
     glm::vec3& GetPosition() { return position; }
     void SetPosition(const glm::vec3& newPos) {

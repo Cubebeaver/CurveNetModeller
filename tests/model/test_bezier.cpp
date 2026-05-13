@@ -35,7 +35,7 @@ TEST(BezierNodeTest, MoveCenterUpdatesHandles) {
     
     // A bal handle alapból (-1, 0, 0).
     // Ha eltoljuk a közepét (+5, +5, 0)-val...
-    node.SetPosition(glm::vec3(5.0f, 5.0f, 0.0f));
+    node.SetCenterHandle(glm::vec3(5.0f, 5.0f, 0.0f));
 
     // ...akkor a bal handle is tolódik: (-1+5, 0+5, 0) = (4, 5, 0)
     EXPECT_NEAR(node.GetLeftHandle()->GetPosition().x, 4.0, 0.001f);

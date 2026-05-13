@@ -4,20 +4,20 @@
 #include "model/object/curve_mesh.h"
 
 
-class AddCurveToCurveMesh : public ICommand {
+class AddCurveToCurveMeshCommand : public ICommand {
 private:
     std::shared_ptr<CurveMesh> curveMesh;
     std::shared_ptr<BezierCurve> curve;
 
 public:
-    AddCurveToCurveMesh(std::shared_ptr<CurveMesh> curveMesh, std::shared_ptr<BezierCurve> curve)
+    AddCurveToCurveMeshCommand(std::shared_ptr<CurveMesh> curveMesh, std::shared_ptr<BezierCurve> curve)
         : curveMesh(curveMesh), curve(curve) { }
 
     virtual void Execute() override {
         curveMesh->AddEdge(curve);
     }
 
-    virtual bool Undo() override {
+    virtual void Undo() override {
         curveMesh->RemoveEdge(curve);
     }
 };
