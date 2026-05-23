@@ -4,14 +4,14 @@
 #include "model/element/bezier_curve.h"
 
 
-class AddNodeToCurveCommand : public ICommand {
+class AddNodeToBezierCurveCommand : public ICommand {
 private:
     std::shared_ptr<BezierCurve> curve;
     std::shared_ptr<BezierNode> node;
     int idx;
 
 public:
-    AddNodeToCurveCommand(std::shared_ptr<BezierCurve> curve, std::shared_ptr<BezierNode> node, int idx)
+    AddNodeToBezierCurveCommand(std::shared_ptr<BezierCurve> curve, std::shared_ptr<BezierNode> node, int idx)
         : curve(curve), node(node), idx(idx) { }
 
     virtual void Execute() override {

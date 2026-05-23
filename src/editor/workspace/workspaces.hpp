@@ -1,8 +1,8 @@
 #pragma once
 #include <memory>
 
-#include "properties.hpp"
 #include "viewport.hpp"
+#include "properties.hpp"
 
 class Workspaces {
 public:

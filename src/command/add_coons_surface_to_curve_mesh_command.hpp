@@ -6,20 +6,20 @@
 #include "model/object/curve_mesh.h"
 
 
-class RemoveSurfaceFromCurveMeshCommand : public ICommand {
+class AddCoonsSurfaceToCurveMeshCommand : public ICommand {
 private:
     std::shared_ptr<CurveMesh> curveMesh;
     std::shared_ptr<CoonsSurface> surface;
 
 public:
-    RemoveSurfaceFromCurveMeshCommand(std::shared_ptr<CurveMesh> curveMesh, std::shared_ptr<CoonsSurface> surface)
+    AddCoonsSurfaceToCurveMeshCommand(std::shared_ptr<CurveMesh> curveMesh, std::shared_ptr<CoonsSurface> surface)
         : curveMesh(curveMesh), surface(surface) { }
 
     virtual void Execute() override {
-        curveMesh->RemoveSurface(surface);
+        curveMesh->AddSurface(surface);
     }
 
-    virtual bool Undo() override {
-        curveMesh->AddSurface(surface);
+    virtual void Undo() override {
+        curveMesh->RemoveSurface(surface);
     }
 };

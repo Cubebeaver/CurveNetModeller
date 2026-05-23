@@ -5,6 +5,18 @@ CurveMesh::CurveMesh() : Object() {
 
 }
 
+void CurveMesh::AddPoint(std::shared_ptr<Point> point) {
+    points.push_back(point);
+    point->PointChanged.AddListener(this, &CurveMesh::OnPointChanged);
+    CurveMeshChanged.Invoke();
+}
+
+void CurveMesh::RemovePoint(std::shared_ptr<Point> point) {
+    points.erase(std::remove(points.begin(), points.end(), point), points.end());
+    point->PointChanged.RemoveListener(this, &CurveMesh::OnPointChanged);
+    CurveMeshChanged.Invoke();
+}
+
 void CurveMesh::AddEdge(std::shared_ptr<BezierCurve> edge) {
     edges.push_back(edge);
     edge->CurveChanged.AddListener(this, &CurveMesh::OnEdgeChanged);
@@ -29,6 +41,9 @@ void CurveMesh::RemoveSurface(std::shared_ptr<CoonsSurface> surface) {
     CurveMeshChanged.Invoke();
 }
 
+void CurveMesh::OnPointChanged(glm::vec3 offset) {
+    CurveMeshChanged.Invoke();
+}
 void CurveMesh::OnEdgeChanged() {
     CurveMeshChanged.Invoke();
 }

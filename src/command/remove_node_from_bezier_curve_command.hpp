@@ -4,14 +4,14 @@
 #include "model/element/bezier_curve.h"
 
 
-class RemoveNodeFromCurveCommand : public ICommand {
+class RemoveNodeFromBezierCurveCommand : public ICommand {
 private:
     std::shared_ptr<BezierCurve> curve;
     std::shared_ptr<BezierNode> node;
     int idx;
 
 public:
-    RemoveNodeFromCurveCommand(std::shared_ptr<BezierCurve> curve, std::shared_ptr<BezierNode> node)
+    RemoveNodeFromBezierCurveCommand(std::shared_ptr<BezierCurve> curve, std::shared_ptr<BezierNode> node)
         : curve(curve), node(node) {
         idx = curve->IndexOf(node);
     }

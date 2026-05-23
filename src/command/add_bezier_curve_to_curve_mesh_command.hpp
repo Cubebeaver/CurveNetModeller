@@ -1,24 +1,25 @@
 #pragma once
 
 #include "i_command.hpp"
-#include "model/element/bezier_curve.h"
 #include "model/object/curve_mesh.h"
 
 
-class RemoveCurveFromCurveMeshCommand : public ICommand {
+class AddBezierCurveToCurveMeshCommand : public ICommand {
 private:
     std::shared_ptr<CurveMesh> curveMesh;
     std::shared_ptr<BezierCurve> curve;
 
 public:
-    RemoveCurveFromCurveMeshCommand(std::shared_ptr<CurveMesh> curveMesh, std::shared_ptr<BezierCurve> curve)
+    AddBezierCurveToCurveMeshCommand(std::shared_ptr<CurveMesh> curveMesh, std::shared_ptr<BezierCurve> curve)
         : curveMesh(curveMesh), curve(curve) { }
 
     virtual void Execute() override {
-        curveMesh->RemoveEdge(curve);
+        curveMesh->AddEdge(curve);
     }
 
     virtual void Undo() override {
-        curveMesh->AddEdge(curve);
+        curveMesh->RemoveEdge(curve);
     }
 };
+
+//using RemoveCurveFromCurveMesh = InverseCommand<AddCurveToCurveMesh>;

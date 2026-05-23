@@ -18,6 +18,7 @@
 
 class CurveMesh : public Object {
 private:
+    std::vector<std::shared_ptr<Point>> points;
     std::vector<std::shared_ptr<BezierCurve>> edges;
     std::vector<std::shared_ptr<CoonsSurface>> surfaces;
 
@@ -26,9 +27,12 @@ public:
 
     CurveMesh();
 
+    const std::vector<std::shared_ptr<Point>>& GetPoints() const { return points; }
     const std::vector<std::shared_ptr<BezierCurve>>& GetEdges() const { return edges; }
     const std::vector<std::shared_ptr<CoonsSurface>>& GetSurfaces() const { return surfaces; }
 
+    void AddPoint(std::shared_ptr<Point> point);
+    void RemovePoint(std::shared_ptr<Point> point);
     void AddEdge(std::shared_ptr<BezierCurve> edge);
     void RemoveEdge(std::shared_ptr<BezierCurve> edge);
     void AddSurface(std::shared_ptr<CoonsSurface> surface);
@@ -44,6 +48,7 @@ public:
     }
 
 private:
+    void OnPointChanged(glm::vec3 offset);
     void OnEdgeChanged();
     void OnSurfaceChanged();
 };

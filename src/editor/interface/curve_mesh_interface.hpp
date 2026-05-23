@@ -1,11 +1,11 @@
 #pragma once
 #include "i_interface.hpp"
 #include "object_interface.hpp"
-#include "command/add_node_to_curve_command.hpp"
+#include "command/add_node_to_bezier_curve_command.hpp"
 #include "command/command_history.hpp"
 #include "command/composite_command.hpp"
-#include "command/remove_curve_from_curve_mesh_command.hpp"
-#include "command/remove_node_from_curve_command.hpp"
+#include "command/remove_bezier_curve_from_curve_mesh_command.hpp"
+#include "command/remove_node_from_bezier_curve_command.hpp"
 #include "editor/controller/curve_mesh_controller.h"
 
 class CurveMeshInterface : public ObjectInterface {
@@ -31,18 +31,26 @@ public:
                         auto lastPos = n->GetPoints()[0]->GetPosition();
                         auto newNode = std::make_shared<BezierNode>(lastPos + glm::vec3(1, 0, 0), HandleMode::Aligned);
 
-                        CommandHistory::Do<AddNodeToCurveCommand>(e, newNode, idx);
+                        auto cmd = CompositeCommand::Create()
+                        ->ExecuteAdd<AddNodeToBezierCurveCommand>(e, newNode, idx)
+                        ->ExecuteAdd<AddPointToCurveMeshCommand>(c->GetModel(), newNode->GetCenterHandle())
+                        ->ExecuteAdd<AddPointToCurveMeshCommand>(c->GetModel(), newNode->GetLeftHandle())
+                        ->ExecuteAdd<AddPointToCurveMeshCommand>(c->GetModel(), newNode->GetRightHandle());
+                        CommandHistory::Add(cmd);
                     }
 
                     if (ImGui::Button("Remove selected node")) {
-                        auto composite = CompositeCommand::Create();
-                        composite->ExecuteAdd<RemoveNodeFromCurveCommand>(e, n);
+                        auto cmd = CompositeCommand::Create();
+                        cmd->ExecuteAdd<RemoveNodeFromBezierCurveCommand>(e, n);
+                        cmd->ExecuteAdd<RemovePointToCurveMeshCommand>(c->GetModel(), n->GetCenterHandle());
+                        cmd->ExecuteAdd<RemovePointToCurveMeshCommand>(c->GetModel(), n->GetLeftHandle());
+                        cmd->ExecuteAdd<RemovePointToCurveMeshCommand>(c->GetModel(), n->GetRightHandle());
 
                         if (e->GetNodes().empty()) {
-                            composite->ExecuteAdd<RemoveCurveFromCurveMeshCommand>(c->GetModel(), e);
+                            cmd->ExecuteAdd<RemoveBezierCurveFromCurveMeshCommand>(c->GetModel(), e);
                         }
 
-                        CommandHistory::Add(composite);
+                        CommandHistory::Add(cmd);
                     }
                 }
             }
@@ -57,14 +65,12 @@ public:
             if (c->GetSelectedNode().size() >= 2) {
                 if (ImGui::Button("Merge selected nodes")) {
                     c->MergeNodes();
-                    //TODO Command
                 }
             }
 
             if (!c->GetSelectedNode().empty()) {
                 if (ImGui::Button("Split selected nodes")) {
                     c->SplitNodes();
-                    //TODO Command
                 }
             }
 
@@ -78,7 +84,6 @@ public:
             ImGui::SeparatorText("Add");
             if (ImGui::Button("Add new curve")) {
                 c->AddNewCurve();
-                //TODO Command
             }
 
             if (ImGui::Button("Add new surface")) {
@@ -86,6 +91,11 @@ public:
                 //TODO Command
             }
 
+            ImGui::SeparatorText("Statistics");
+            ImGui::Text("Points: %lld -- (selected: %lld)",   c->GetModel()->GetPoints().size(),   c->GetSelectedPoint().size());
+            ImGui::Text("Edges: %lld -- (selected: %lld)",    c->GetModel()->GetEdges().size(),    c->GetSelectedEdge().size());
+            ImGui::Text("Surfaces: %lld -- (selected: %lld)", c->GetModel()->GetSurfaces().size(), c->GetSelectedSurface().size());
+            ImGui::Text("Selected Nodes: %lld",               c->GetSelectedNode().size());
         }
     };
 

@@ -35,10 +35,12 @@ public:
         viewportBuffer->Unbind();
     }
 
-    void Draw() const {
+    void Draw() {
         ImGui::SetNextWindowSize(ImVec2(720, 720), ImGuiCond_FirstUseEver);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Viewport");
-        
+        ImGui::PopStyleVar();
+
         bool hovered = ImGui::IsWindowHovered();
 
         if (hovered) {
@@ -119,7 +121,15 @@ public:
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         viewportBuffer->UpdateSize(viewportPanelSize.x, viewportPanelSize.y);
         ImGui::Image((ImTextureID)viewportBuffer->colorBuffer, ImVec2(viewportPanelSize.x, viewportPanelSize.y), ImVec2(0, 1), ImVec2(1, 0));
-        
+
+        ImGui::SetCursorPos(ImVec2(5, 20));
+        ImGui::BeginChild("Overlay", ImVec2(320, 36), ImGuiChildFlags_Borders);
+        ImGui::Text("Selection mode (TBA): ");
+        ImGui::SameLine(); ImGui::Button("Point");
+        ImGui::SameLine(); ImGui::Button("Edge");
+        ImGui::SameLine(); ImGui::Button("Surface");
+        ImGui::EndChild();
+
         ImGui::End();
     }
 };

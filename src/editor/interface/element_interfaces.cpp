@@ -8,17 +8,17 @@ void ElementInterface::DrawTransformInterface(std::shared_ptr<Transform> transfo
     ImGui::SeparatorText("Transform");
 
     auto pos = transform->GetPosition();
-    ImGui::DragFloat3("Position", &pos.x);
+    ImGui::DragFloat3("Position", &pos.x, 0.01f);
     transform->SetPosition(pos);
     //TODO Command + csak a végén
 
     auto rot = transform->GetRotation();
-    ImGui::DragFloat3("Rotattion", &rot.x);
+    ImGui::DragFloat3("Rotattion", &rot.x, 0.01f);
     transform->SetRotation(rot);
     //TODO Command + csak a végén
 
     auto scale = transform->GetScale();
-    ImGui::DragFloat3("Scale", &scale.x);
+    ImGui::DragFloat3("Scale", &scale.x, 0.01f);
     transform->SetScale(scale);
     //TODO Command + csak a végén
 }
@@ -29,7 +29,7 @@ void ElementInterface::DrawPointInterface(std::shared_ptr<Point> point) {
     ImGui::SeparatorText("Point");
 
     auto pos = point->GetPosition();
-    ImGui::DragFloat3("Location", &pos.x);
+    ImGui::DragFloat3("Location", &pos.x, 0.01f);
     point->SetPosition(pos);
     //TODO Command + csak a végén
 }
@@ -65,10 +65,10 @@ void ElementInterface::DrawBezierCurveInterface(std::shared_ptr<BezierCurve> cur
     if (ImGui::Button("Add Node to end")) {
         glm::vec3 lastPos;
         if (!curve->GetNodes().empty()) {
-            auto lastPos = curve->GetNodes().back()->GetPoints()[0]->GetPosition();
+            lastPos = curve->GetNodes().back()->GetPoints()[0]->GetPosition();
         }
         curve->AddNode(std::make_shared<BezierNode>(lastPos + glm::vec3(1, 0, 0), HandleMode::Aligned));
-        //TODO Command
+        //TODO Command + Add points to curveMesh
     }
     if (ImGui::Button("Remove Last Node")) {
         curve->RemoveNodeLast();

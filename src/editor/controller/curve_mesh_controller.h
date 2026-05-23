@@ -7,11 +7,13 @@
 #include "../../model/object/curve_mesh.h"
 #include "../../model/element/i_Node.hpp"
 #include "../../model/element/point.h"
-#include "command/add_curve_to_curve_mesh_command.hpp"
-#include "command/add_node_to_curve_command.hpp"
+#include "command/add_bezier_curve_to_curve_mesh_command.hpp"
+#include "command/add_node_to_bezier_curve_command.hpp"
+#include "command/add_point_to_curve_mesh_command.hpp"
 #include "command/composite_command.hpp"
-#include "command/merge_nodes_command.hpp"
-#include "command/split_nodes_command.hpp"
+#include "command/merge_bezier_nodes_command.hpp"
+#include "command/remove_point_from_curve_mesh_command.hpp"
+#include "command/split_bezier_nodes_command.hpp"
 #include "editor/workspace/viewport.hpp"
 #include "editor/workspace/workspaces.hpp"
 #include "model/constraint/same_point_position_constraint.h"
@@ -30,18 +32,14 @@ private:
     std::vector<std::unique_ptr<CurveView>> curveViews;
     std::vector<std::unique_ptr<CoonsSurfaceView>> surfaceViews;
 
-    std::weak_ptr<Viewport> vp;
-
 public:
     CurveMeshController() {
         curveMesh = std::make_shared<CurveMesh>();
 
         curveMesh->CurveMeshChanged.AddListener(this, &CurveMeshController::SyncViews);
 
-        vp = Workspaces::viewport;
-
-        vp.lock()->OnClick.AddListener(this, &CurveMeshController::OnClick);
-        vp.lock()->OnDrag.AddListener(this, &CurveMeshController::OnDrag);
+        Workspaces::viewport.lock()->OnClick.AddListener(this, &CurveMeshController::OnClick);
+        Workspaces::viewport.lock()->OnDrag.AddListener(this, &CurveMeshController::OnDrag);
     }
 
     std::shared_ptr<CurveMesh> GetModel() { return curveMesh; }
@@ -62,13 +60,20 @@ public:
         auto n2 = std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, 0.0f), glm::vec3( 0.5f,  0.0f, 0.0f), glm::vec3( 1.5f, 0.0f, 0.0f), HandleMode::Aligned);
 
         CommandHistory::Add(CompositeCommand::Create()
-        ->ExecuteAdd<AddCurveToCurveMeshCommand>(curveMesh, newEdge)
-        ->ExecuteAdd<AddNodeToCurveCommand>(newEdge, n1, 0)
-        ->ExecuteAdd<AddNodeToCurveCommand>(newEdge, n2, 1));
+        ->ExecuteAdd<AddBezierCurveToCurveMeshCommand>(curveMesh, newEdge)
+        ->ExecuteAdd<AddPointToCurveMeshCommand>(curveMesh, n1->GetCenterHandle())
+        ->ExecuteAdd<AddPointToCurveMeshCommand>(curveMesh, n1->GetLeftHandle())
+        ->ExecuteAdd<AddPointToCurveMeshCommand>(curveMesh, n1->GetRightHandle())
+        ->ExecuteAdd<AddNodeToBezierCurveCommand>(newEdge, n1, 0)
+        ->ExecuteAdd<AddPointToCurveMeshCommand>(curveMesh, n2->GetCenterHandle())
+        ->ExecuteAdd<AddPointToCurveMeshCommand>(curveMesh, n2->GetLeftHandle())
+        ->ExecuteAdd<AddPointToCurveMeshCommand>(curveMesh, n2->GetRightHandle())
+        ->ExecuteAdd<AddNodeToBezierCurveCommand>(newEdge, n2, 1));
     }
 
     void AddExistingCurve(std::shared_ptr<BezierCurve> curve) {
         curveMesh->AddEdge(curve);
+        //TODO Command
     }
 
     void AddNewSurface() {
@@ -95,14 +100,44 @@ public:
         auto newSurface = std::make_shared<CoonsSurface>(c1, c2, d1, d2);
         curveMesh->AddSurface(newSurface);
 
+        curveMesh->AddPoint(c1->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(c1->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(c1->GetNodes()[0]->GetRightHandle());
+        curveMesh->AddPoint(c1->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(c1->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(c1->GetNodes()[1]->GetRightHandle());
         curveMesh->AddEdge(c1);
+
+        curveMesh->AddPoint(c2->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(c2->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(c2->GetNodes()[0]->GetRightHandle());
+        curveMesh->AddPoint(c2->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(c2->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(c2->GetNodes()[1]->GetRightHandle());
         curveMesh->AddEdge(c2);
+
+        //curveMesh->AddPoint(d1->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(d1->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(d1->GetNodes()[0]->GetRightHandle());
+        //curveMesh->AddPoint(d1->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(d1->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(d1->GetNodes()[1]->GetRightHandle());
         curveMesh->AddEdge(d1);
+
+        //curveMesh->AddPoint(d2->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(d2->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(d2->GetNodes()[0]->GetRightHandle());
+        //curveMesh->AddPoint(d2->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(d2->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(d2->GetNodes()[1]->GetRightHandle());
         curveMesh->AddEdge(d2);
+
+        //TODO Command
     }
 
     void AddExistingSurface(std::shared_ptr<CoonsSurface> surface) {
         curveMesh->AddSurface(surface);
+        //TODO Command
     }
 
     void ExtrudeSelectedEdge() {
@@ -140,9 +175,31 @@ public:
         curveMesh->AddSurface(newSurface);
 
         //curveMesh->AddEdge(c1);
+        curveMesh->AddPoint(c2->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(c2->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(c2->GetNodes()[0]->GetRightHandle());
+        curveMesh->AddPoint(c2->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(c2->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(c2->GetNodes()[1]->GetRightHandle());
         curveMesh->AddEdge(c2);
+
+        curveMesh->AddPoint(d1->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(d1->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(d1->GetNodes()[0]->GetRightHandle());
+        curveMesh->AddPoint(d1->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(d1->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(d1->GetNodes()[1]->GetRightHandle());
         curveMesh->AddEdge(d1);
+
+        curveMesh->AddPoint(d2->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(d2->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(d2->GetNodes()[0]->GetRightHandle());
+        curveMesh->AddPoint(d2->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(d2->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(d2->GetNodes()[1]->GetRightHandle());
         curveMesh->AddEdge(d2);
+
+        //TODO Command
     }
 
     void MergeNodes() {
@@ -154,7 +211,8 @@ public:
             auto other = o.lock();
             if (!other) continue;
 
-            cmd->ExecuteAdd<MergeNodesCommand>(other, active);
+            cmd->ExecuteAdd<MergeBezierNodesCommand>(other, active);
+            cmd->ExecuteAdd<RemovePointToCurveMeshCommand>(curveMesh, other->GetCenterHandle());
         }
 
         CommandHistory::Add(cmd);
@@ -165,7 +223,7 @@ public:
 
         for (auto n : selectedNodes) {
             if (auto ns = n.lock()) {
-                cmd->ExecuteAdd<SplitNodesCommand>(curveMesh, ns);
+                cmd->ExecuteAdd<SplitBezierNodesCommand>(curveMesh, ns);
             }
         }
 
@@ -183,6 +241,7 @@ public:
         if (!c1 || !c2 || !d1 || !d2) return;
 
         curveMesh->AddSurface(std::make_shared<CoonsSurface>(c1, c2, d1, d2));
+        //TODO Command
     }
 
     void Present() {
@@ -275,24 +334,27 @@ private:
         std::weak_ptr<BezierNode> cn;
         std::weak_ptr<BezierCurve> ce;
 
-        for (const auto& curve : curveMesh->GetEdges()) {
-            for (const auto& node : curve->GetNodes()) {
-                for (const auto p : node->GetPoints()) {
-                    float d = Camera::activeCamera->DistanceToRay(p->GetPosition(), position);
-                    if (d < closestDistance) {
-                        cp = p;
-                        cn = node;
-                        ce = curve;
-                        closestDistance = d;
+        for (const auto p : curveMesh->GetPoints()) {
+            float d = Camera::activeCamera->DistanceToRay(p->GetPosition(), position);
+            if (d < closestDistance) {
+                cp = p;
+                closestDistance = d;
+            }
+        }
+
+        //TODO Edge egy surface selection mode, meg a bezier node az egyfajta constraint legyen,
+        //     és így majd az oldalak csúcsánál is a tanget plane-ek is ilyen constraint legyen
+        for (const auto c : curveMesh->GetEdges()) {
+            for (const auto n : c->GetNodes()) {
+                for (const auto p : n->GetPoints()) {
+                    if (p == cp.lock()) {
+                        ce = c;
+                        cn = n;
                     }
                 }
             }
         }
 
-        //TODO hacky hacky, inkább a curve_mesh object modellbe kéne eltárolni minden pontot :/
-        // for (const auto& surface : curveMesh->GetSurfaces()) {
-        //     const auto& bs = dynamic_cast<const BezierSurface&>(surface);
-        // }
 
         if (closestDistance < 0.1f) {
             auto cps = cp.lock();
@@ -306,11 +368,11 @@ private:
                 selectedSurfaces.clear();
             }
 
-            if (std::find_if(selectedPoints.begin(), selectedPoints.end(), [&](const std::weak_ptr<Point>& p) { return p.lock() == cps; }) == selectedPoints.end())
+            if (cps && std::find_if(selectedPoints.begin(), selectedPoints.end(), [&](const std::weak_ptr<Point>& p) { return p.lock() == cps; }) == selectedPoints.end())
                 selectedPoints.push_back(cp);
-            if (std::find_if(selectedNodes.begin(), selectedNodes.end(), [&](const std::weak_ptr<BezierNode>& n) { return n.lock() == cns; }) == selectedNodes.end())
+            if (cns && std::find_if(selectedNodes.begin(), selectedNodes.end(), [&](const std::weak_ptr<BezierNode>& n) { return n.lock() == cns; }) == selectedNodes.end())
                 selectedNodes.push_back(cn);
-            if (std::find_if(selectedEdges.begin(), selectedEdges.end(), [&](const std::weak_ptr<BezierCurve>& e) { return e.lock() == ces; }) == selectedEdges.end())
+            if (ces && std::find_if(selectedEdges.begin(), selectedEdges.end(), [&](const std::weak_ptr<BezierCurve>& e) { return e.lock() == ces; }) == selectedEdges.end())
                 selectedEdges.push_back(ce);
         }
         else /* too far away */ {
@@ -368,3 +430,18 @@ private:
         }
     }
 };
+
+
+// for (const auto& curve : curveMesh->GetEdges()) {
+//     for (const auto& node : curve->GetNodes()) {
+//         for (const auto p : node->GetPoints()) {
+//             float d = Camera::activeCamera->DistanceToRay(p->GetPosition(), position);
+//             if (d < closestDistance) {
+//                 cp = p;
+//                 cn = node;
+//                 ce = curve;
+//                 closestDistance = d;
+//             }
+//         }
+//     }
+// }

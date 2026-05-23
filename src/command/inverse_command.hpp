@@ -15,7 +15,7 @@ public:
         command.undo();
     }
 
-    virtual bool Undo() override {
+    virtual void Undo() override {
         command.execute();
     }
 };

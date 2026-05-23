@@ -5,7 +5,7 @@
 #include "model/element/bezier_node.h"
 
 
-class MergeNodesCommand : public ICommand {
+class MergeBezierNodesCommand : public ICommand {
 private:
     std::shared_ptr<BezierNode> nodeToReplace;
     std::shared_ptr<BezierNode> targetNode;
@@ -13,7 +13,7 @@ private:
     std::shared_ptr<Point> targetPoint;
 
 public:
-    MergeNodesCommand(std::shared_ptr<BezierNode> nodeToReplace, std::shared_ptr<BezierNode> targetNode)
+    MergeBezierNodesCommand(std::shared_ptr<BezierNode> nodeToReplace, std::shared_ptr<BezierNode> targetNode)
         : nodeToReplace(nodeToReplace), targetNode(targetNode) {
         pointToReplace = nodeToReplace->GetCenterHandle();
         targetPoint    = targetNode->GetCenterHandle();

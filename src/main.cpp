@@ -205,7 +205,6 @@ int main() {
 
     std::shared_ptr<CurveMeshController> curveMeshController = std::make_shared<CurveMeshController>();
     curveMeshController->AddNewCurve();
-    curveMeshController->GetModel()->GetEdges()[0]->AddNode(std::make_shared<BezierNode>(glm::vec3(2, -1, 0)));
     curveMeshController->AddNewSurface();
 
     scene->Add(curveMeshController->GetModel());

@@ -82,6 +82,8 @@ public:
     }
 
     void UpdateFrameSize(int x, int y) {
+        if (screenWidth == x && screenHeight == y) return;
+
         screenWidth = x;
         screenHeight = y;
         aspect = static_cast<float>(x) / static_cast<float>(y);
