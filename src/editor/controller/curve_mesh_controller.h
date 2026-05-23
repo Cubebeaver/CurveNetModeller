@@ -15,6 +15,7 @@
 #include "editor/workspace/viewport.hpp"
 #include "editor/workspace/workspaces.hpp"
 #include "model/constraint/same_point_position_constraint.h"
+#include "model/element/bezier_surface.h"
 
 class CurveMeshController {
 private:
@@ -287,6 +288,11 @@ private:
                 }
             }
         }
+
+        //TODO hacky hacky, inkább a curve_mesh object modellbe kéne eltárolni minden pontot :/
+        // for (const auto& surface : curveMesh->GetSurfaces()) {
+        //     const auto& bs = dynamic_cast<const BezierSurface&>(surface);
+        // }
 
         if (closestDistance < 0.1f) {
             auto cps = cp.lock();

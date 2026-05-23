@@ -30,20 +30,6 @@ glm::vec3 CoonsSurface::Evaluate(float u, float v) const {
     return S1_uv + S2_uv - S12_uv;
 }
 
-glm::vec3 CoonsSurface::EvaluateNormal(float u, float v) const {
-    const float dx = 0.01f;
-
-    glm::vec3 c = Evaluate(u, v);
-    glm::vec3 du = Evaluate(u + dx, v);
-    glm::vec3 dv = Evaluate(u, v + dx);
-
-    glm::vec3 du_dx = du - c;
-    glm::vec3 dv_dx = dv - c;
-
-    glm::vec3 normal = glm::normalize(glm::cross(dv_dx, du_dx));
-    return normal;
-}
-
 std::vector<glm::vec3> CoonsSurface::GetRenderPoints(int resolution) const {
     std::vector<glm::vec3> surfacePoints;
     surfacePoints.reserve(resolution * resolution);
