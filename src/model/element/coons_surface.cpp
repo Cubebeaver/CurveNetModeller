@@ -30,32 +30,6 @@ glm::vec3 CoonsSurface::Evaluate(float u, float v) const {
     return S1_uv + S2_uv - S12_uv;
 }
 
-std::vector<glm::vec3> CoonsSurface::GetRenderPoints(int resolution) const {
-    std::vector<glm::vec3> surfacePoints;
-    surfacePoints.reserve(resolution * resolution);
-    for (int i = 0; i < resolution; i++) {
-        for (int j = 0; j < resolution; j++) {
-            surfacePoints.push_back(Evaluate(static_cast<float>(i) / (resolution - 1), static_cast<float>(j) / (resolution - 1)));
-        }
-    }
-    return surfacePoints;
-}
-
-std::vector<glm::vec3> CoonsSurface::GetRenderNormals(int resolution) const {
-    std::vector<glm::vec3> surfaceNormals;
-    surfaceNormals.reserve(resolution * resolution);
-    for (int i = 0; i < resolution; i++) {
-        for (int j = 0; j < resolution; j++) {
-            float u = static_cast<float>(i) / (resolution - 1);
-            float v = static_cast<float>(j) / (resolution - 1);
-
-            glm::vec3 normal = EvaluateNormal(u, v);
-            surfaceNormals.push_back(normal);
-        }
-    }
-    return surfaceNormals;
-}
-
 CoonsSurface::~CoonsSurface() {
     c1->CurveChanged.RemoveListener(this, &CoonsSurface::OnCurveChanged);
     c2->CurveChanged.RemoveListener(this, &CoonsSurface::OnCurveChanged);

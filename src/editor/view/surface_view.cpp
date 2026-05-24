@@ -1,10 +1,10 @@
-#include "coons_surface_view.h"
+#include "surface_view.h"
 
 using namespace gl_engine;
 
 int GetIndex(int i, int j, int res) { return i * res + j; }
 
-CoonsSurfaceView::CoonsSurfaceView() {
+SurfaceView::SurfaceView() {
     std::vector<float> emptyVerts;
     std::vector<GLuint> emptyIdxs;
     mesh = std::make_unique<Mesh>(emptyVerts, emptyIdxs);
@@ -16,9 +16,9 @@ CoonsSurfaceView::CoonsSurfaceView() {
     material->SetVec4("color", glm::vec4(.1f, .2f, .3f, 1));
 }
 
-void CoonsSurfaceView::Update(const CoonsSurface& surfaceModel, int resolution) {
-    const std::vector<glm::vec3>& points = surfaceModel.GetRenderPoints(resolution);
-    const std::vector<glm::vec3>& normals = surfaceModel.GetRenderNormals(resolution);
+void SurfaceView::Update(const ISurface& surfaceModel, int resolution) {
+    const std::vector<glm::vec3>& points = GenRenderPoints(surfaceModel, resolution);
+    const std::vector<glm::vec3>& normals = GenRenderNormals(surfaceModel, resolution);
 
     if (points.size() != normals.size()) std::cout << "[-] Na itt valami nagyon félrement ¯\\_(ツ)_/¯" << std::endl;
 
@@ -59,10 +59,40 @@ void CoonsSurfaceView::Update(const CoonsSurface& surfaceModel, int resolution) 
     mesh->Replace(verts, idxs);
 }
 
-void CoonsSurfaceView::Draw() {
+void SurfaceView::Draw() {
     material->Bind();
     material->SetMat4("Model", glm::mat4(1.0f));
     material->SetMat4("View", Camera::activeCamera->matView);
     material->SetMat4("Projection", Camera::activeCamera->matProjection);
     mesh->Draw(GL_TRIANGLES);
+}
+
+std::vector<glm::vec3> SurfaceView::GenRenderPoints(const ISurface& surface, int resolution) {
+    std::vector<glm::vec3> surfacePoints;
+    surfacePoints.reserve(resolution * resolution);
+    for (int i = 0; i < resolution; i++) {
+        for (int j = 0; j < resolution; j++) {
+            float u = static_cast<float>(i) / (resolution - 1);
+            float v = static_cast<float>(j) / (resolution - 1);
+
+            surfacePoints.push_back(surface.Evaluate(u, v));
+        }
+    }
+
+    return surfacePoints;
+}
+
+std::vector<glm::vec3> SurfaceView::GenRenderNormals(const ISurface& surface, int resolution) {
+    std::vector<glm::vec3> surfaceNormals;
+    surfaceNormals.reserve(resolution * resolution);
+    for (int i = 0; i < resolution; i++) {
+        for (int j = 0; j < resolution; j++) {
+            float u = static_cast<float>(i) / (resolution - 1);
+            float v = static_cast<float>(j) / (resolution - 1);
+
+            glm::vec3 normal = surface.EvaluateNormal(u, v);
+            surfaceNormals.push_back(normal);
+        }
+    }
+    return surfaceNormals;
 }

@@ -37,6 +37,7 @@ set(MODEL_SOURCES
         src/model/element/bezier_curve.cpp
         src/model/element/bezier_node.cpp
         src/model/element/coons_surface.cpp
+        src/model/element/bezier_surface.cpp
         src/model/element/point.cpp
         src/model/object/object.cpp
         src/model/object/curve_mesh.cpp
@@ -51,7 +52,7 @@ set(APP_SOURCES
         src/editor/controller/curve_mesh_controller.cpp
         src/editor/interface/element_interfaces.cpp
         src/editor/view/bezier_node_view.cpp
-        src/editor/view/coons_surface_view.cpp
+        src/editor/view/surface_view.cpp
         src/editor/view/curve_curvature_comb_view.cpp
         src/editor/view/curve_view.cpp
         src/editor/view/floor_grid.cpp

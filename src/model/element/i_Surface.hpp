@@ -2,9 +2,12 @@
 
 #include <glm/glm.hpp>
 
+#include <cereal/types/polymorphic.hpp>
 
 class ISurface : IElement {
 public:
+    Event<> CoonsSurfaceChanged;
+
     virtual glm::vec3 Evaluate(float u, float v) const = 0;
 
     /**

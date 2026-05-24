@@ -3,7 +3,7 @@
 
 #include "editor/view/bezier_node_view.h"
 #include "editor/view/curve_view.h"
-#include "editor/view/coons_surface_view.h"
+#include "editor/view/surface_view.h"
 #include "../../model/object/curve_mesh.h"
 #include "../../model/element/i_Node.hpp"
 #include "../../model/element/point.h"
@@ -30,7 +30,7 @@ private:
 
     std::vector<std::unique_ptr<BezierNodeView>> nodeViews;
     std::vector<std::unique_ptr<CurveView>> curveViews;
-    std::vector<std::unique_ptr<CoonsSurfaceView>> surfaceViews;
+    std::vector<std::unique_ptr<SurfaceView>> surfaceViews;
 
 public:
     CurveMeshController() {
@@ -76,7 +76,7 @@ public:
         //TODO Command
     }
 
-    void AddNewSurface() {
+    void AddNewCoonsSurface() {
         auto c1 = std::make_shared<BezierCurve>();
         c1->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(-1.5f, 0.0f, -1.0f), glm::vec3(-0.5f, 0.0f, -1.0f), HandleMode::Aligned));
         c1->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, -1.0f), glm::vec3( 0.5f, 0.0f, -1.0f), glm::vec3( 1.5f, 0.0f, -1.0f), HandleMode::Aligned));
@@ -133,6 +133,19 @@ public:
         curveMesh->AddEdge(d2);
 
         //TODO Command
+    }
+
+    void AddNewBezierSurface() {
+        auto s = std::make_shared<BezierSurface>(4, 4);
+
+        auto ps = s->GetPoints();
+        for (int i = 0; i < ps.size(); ++i) {
+            for (int j = 0; j < ps[i].size(); ++j) {
+                curveMesh->AddPoint(ps[i][j]);
+            }
+        }
+
+        curveMesh->AddSurface(s);
     }
 
     void AddExistingSurface(std::shared_ptr<CoonsSurface> surface) {
@@ -295,7 +308,7 @@ private:
         if (surfaceViews.size() != curveMesh->GetSurfaces().size()) {
             surfaceViews.clear();
             for (const auto& surface : curveMesh->GetSurfaces()) {
-                auto surfaceView = std::make_unique<CoonsSurfaceView>();
+                auto surfaceView = std::make_unique<SurfaceView>();
                 surfaceView->Update(*surface);
                 surfaceViews.push_back(std::move(surfaceView));
             }

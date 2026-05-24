@@ -18,16 +18,11 @@ public:
     std::shared_ptr<BezierCurve> d1;
     std::shared_ptr<BezierCurve> d2;
 
-    Event<> CoonsSurfaceChanged;
-
     CoonsSurface() { }
     CoonsSurface(std::shared_ptr<BezierCurve> c1, std::shared_ptr<BezierCurve> c2,
                  std::shared_ptr<BezierCurve> d1, std::shared_ptr<BezierCurve> d2);
 
     glm::vec3 Evaluate(float u, float v) const override;
-
-    std::vector<glm::vec3> GetRenderPoints(int resolution) const;
-    std::vector<glm::vec3> GetRenderNormals(int resolution) const;
 
     virtual ~CoonsSurface() override;
 

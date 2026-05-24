@@ -29,13 +29,13 @@ void CurveMesh::RemoveEdge(std::shared_ptr<BezierCurve> edge) {
     CurveMeshChanged.Invoke();
 }
 
-void CurveMesh::AddSurface(std::shared_ptr<CoonsSurface> surface) {
+void CurveMesh::AddSurface(std::shared_ptr<ISurface> surface) {
     surfaces.push_back(surface);
     surface->CoonsSurfaceChanged.AddListener(this, &CurveMesh::OnSurfaceChanged);
     CurveMeshChanged.Invoke();
 }
 
-void CurveMesh::RemoveSurface(std::shared_ptr<CoonsSurface> surface) {
+void CurveMesh::RemoveSurface(std::shared_ptr<ISurface> surface) {
     surfaces.erase(std::remove(surfaces.begin(), surfaces.end(), surface), surfaces.end());
     surface->CoonsSurfaceChanged.RemoveListener(this, &CurveMesh::OnSurfaceChanged);
     CurveMeshChanged.Invoke();

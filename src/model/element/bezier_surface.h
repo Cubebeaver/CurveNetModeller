@@ -20,8 +20,14 @@ public:
     virtual glm::vec3 EvaluateNormal(float u, float v) const override;
     glm::vec3 EvaluateDeCasteljau(float u, float v) const;
 
+    template<class Archive>
+    void serialize(Archive& archive) {
+        archive(CEREAL_NVP(controlPoints));
+    }
 private:
     int BinomialCoefficient(int n, int k) const;
     float Bernstein(int n, int i, float t) const;
     glm::vec3 DeCasteljau1D(std::vector<glm::vec3> points, float t) const;
+
+    void OnPointChanged(glm::vec3 offset);
 };

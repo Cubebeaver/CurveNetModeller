@@ -41,11 +41,22 @@
 #include "editor/interface/global_actions_interface.hpp"
 #include "model/element/coons_surface.h"
 #include "util/screenshot.hpp"
-#include "editor/view/coons_surface_view.h"
+#include "editor/view/surface_view.h"
 
 #include "editor/view/floor_grid.h"
 #include "editor/view/skybox.h"
 #include "editor/workspace/model_to_interface.hpp"
+
+// CEREAL
+#include <cereal/types/polymorphic.hpp>
+
+// Regisztráljuk a konkrét osztályokat
+CEREAL_REGISTER_TYPE(CoonsSurface)
+CEREAL_REGISTER_TYPE(BezierSurface)
+
+// Opcionális: Ha azt akarod, hogy a JSON-ban szép neve legyen, ne "CoonsSurface"
+CEREAL_REGISTER_POLYMORPHIC_RELATION(ISurface, CoonsSurface)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(ISurface, BezierSurface)
 
 
 static int Width = 1280, Height = 720;
@@ -204,8 +215,6 @@ int main() {
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 
     std::shared_ptr<CurveMeshController> curveMeshController = std::make_shared<CurveMeshController>();
-    curveMeshController->AddNewCurve();
-    curveMeshController->AddNewSurface();
 
     scene->Add(curveMeshController->GetModel());
 

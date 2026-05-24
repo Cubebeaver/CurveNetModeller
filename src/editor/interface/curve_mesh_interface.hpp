@@ -86,8 +86,13 @@ public:
                 c->AddNewCurve();
             }
 
-            if (ImGui::Button("Add new surface")) {
-                c->AddNewSurface();
+            if (ImGui::Button("Add new coons surface")) {
+                c->AddNewCoonsSurface();
+                //TODO Command
+            }
+
+            if (ImGui::Button("Add new bezier surface")) {
+                c->AddNewBezierSurface();
                 //TODO Command
             }
 
