@@ -33,10 +33,9 @@ private:
     std::vector<std::unique_ptr<SurfaceView>> surfaceViews;
 
 public:
-    CurveMeshController() {
-        curveMesh = std::make_shared<CurveMesh>();
-
-        curveMesh->CurveMeshChanged.AddListener(this, &CurveMeshController::SyncViews);
+    CurveMeshController() : CurveMeshController(std::make_shared<CurveMesh>()) { }
+    CurveMeshController(std::shared_ptr<CurveMesh> existing) : curveMesh(existing) {
+        existing->CurveMeshChanged.AddListener(this, &CurveMeshController::SyncViews);
 
         Workspaces::viewport.lock()->OnClick.AddListener(this, &CurveMeshController::OnClick);
         Workspaces::viewport.lock()->OnDrag.AddListener(this, &CurveMeshController::OnDrag);
@@ -53,6 +52,10 @@ public:
     std::weak_ptr<BezierCurve> GetActiveEdge() { if (!selectedEdges.empty()) return selectedEdges.back(); else return { }; }
     std::weak_ptr<BezierNode> GetActiveNode() { if (!selectedNodes.empty()) return selectedNodes.back(); else return { }; }
     std::weak_ptr<Point> GetActivePoint() { if (!selectedPoints.empty()) return selectedPoints.back(); else return { }; }
+
+    void ForceSyncViews() {
+        SyncViews();
+    }
 
     void AddNewCurve() {
         auto newEdge = std::make_shared<BezierCurve>();

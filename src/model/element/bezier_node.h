@@ -65,7 +65,7 @@ public:
     void SetMode(HandleMode newMode);
 
     //TODO Az eventekről leiratkozni
-    //TODO AZ eventek ne lambdák legyenek, hanem valami konkrétabbak
+    //     AZ eventek ne lambdák legyenek, hanem valami konkrétabbak
     virtual ~BezierNode() override;
 
     template<class Archive>

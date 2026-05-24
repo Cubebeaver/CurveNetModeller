@@ -44,7 +44,7 @@ public:
 
     template<class Archive>
     void serialize(Archive& archive) {
-        archive(CEREAL_NVP(edges), CEREAL_NVP(surfaces));
+        archive(CEREAL_NVP(points), CEREAL_NVP(edges), CEREAL_NVP(surfaces));
     }
 
 private:

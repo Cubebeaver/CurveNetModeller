@@ -48,6 +48,9 @@
 #include "editor/workspace/model_to_interface.hpp"
 
 // CEREAL
+#include <cereal/archives/json.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
 #include <cereal/types/polymorphic.hpp>
 
 // Regisztráljuk a konkrét osztályokat
@@ -140,7 +143,7 @@ int IMGUI_INIT(GLFWwindow* window) {
     return 0;
 }
 
-void Save(const CurveMesh& scene) {
+void Save(const std::shared_ptr<CurveMesh>& scene) {
     std::ofstream fs("output/save.json");
 
     if (!fs.is_open()) {
@@ -161,19 +164,31 @@ void Save(const CurveMesh& scene) {
     std::cout << "[+] Successfully saved to output/save.json" << std::endl;
 }
 
-// CoonsSurface LoadSurface() {
-//     std::ifstream fs("output/save.json");
-//
-//     std::cout << ReadAllText("output/save.json") << std::endl;
-//
-//     CoonsSurface loaded;
-//     cereal::JSONInputArchive archive(fs);
-//     archive(cereal::make_nvp("SaveData", loaded)); // A varázslat itt történik!
-//
-//     return loaded;
-// }
+std::shared_ptr<CurveMesh> Load() {
+    std::ifstream fs("output/save.json");
 
-int main() {
+    if (!fs.is_open()) {
+        throw std::runtime_error("Could not open save file");
+        return nullptr;
+    }
+
+    // Létrehozunk egy üres shared_ptr-t
+    std::shared_ptr<CurveMesh> loadedMesh;
+
+    {
+        // Kapcsolunk egy belső hatókört {} az archívumnak.
+        // Így biztos, hogy az archívum bezáródik, mielőtt a függvény visszatér.
+        cereal::JSONInputArchive archive(fs);
+
+        // A Cereal látja, hogy ez egy shared_ptr.
+        // Automatikusan lefoglalja a memóriát a heapen, és beolvassa az adatokat!
+        archive(cereal::make_nvp("SaveData", loadedMesh));
+    }
+
+    return loadedMesh;
+}
+
+int main(int argc, char** argv) {
     GLFWwindow* mainWindow;
 
     if (GLFW_INIT(&mainWindow) || mainWindow == nullptr) {
@@ -214,7 +229,25 @@ int main() {
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 
-    std::shared_ptr<CurveMeshController> curveMeshController = std::make_shared<CurveMeshController>();
+    std::shared_ptr<CurveMeshController> curveMeshController;
+
+#ifdef ENABLE_LOAD
+    std::shared_ptr<CurveMesh> cm;
+
+    try {
+        cm = Load();
+        curveMeshController = std::make_shared<CurveMeshController>(cm);
+    }
+    catch (...) {
+        std::cout << "Could not open saved file, starting clean." << std::endl;
+    }
+#endif
+
+    if (!curveMeshController) {
+        curveMeshController = std::make_shared<CurveMeshController>();
+    }
+
+    curveMeshController->ForceSyncViews();
 
     scene->Add(curveMeshController->GetModel());
 
@@ -263,7 +296,7 @@ int main() {
         glfwSwapBuffers(mainWindow);
     }
 
-    Save(*curveMeshController->GetModel());
+    Save(curveMeshController->GetModel());
 
     // ------------------------------------------------------------------
     // 6. Takarítás (Erőforrások felszabadítása)

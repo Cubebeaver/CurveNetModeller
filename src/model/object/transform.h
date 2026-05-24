@@ -13,7 +13,7 @@
 
 
 //TODO - Itt lehetne ilyen dirty-zőset csinálni, hogy ha a world matrixot is eltároljuk,
-//todo   és csak akkor számítjuk újra ha változott valami
+//       és csak akkor számítjuk újra ha változott valami
 class Transform : public std::enable_shared_from_this<Transform> {
 private:
     std::weak_ptr<Transform> Parent;

@@ -59,6 +59,8 @@ set(APP_SOURCES
         src/editor/view/render_point_generator.cpp
         src/editor/view/skybox.cpp
         src/util/stb_implementation.cpp
+        src/editor/view/bezier_surface_view.cpp
+        src/editor/view/bezier_surface_view.h
 )
 
 # Az OpenGL motorhoz tartozó fáljok (Shaderek, Objectek)
