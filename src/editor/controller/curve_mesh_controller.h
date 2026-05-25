@@ -14,6 +14,7 @@
 #include "command/merge_bezier_nodes_command.hpp"
 #include "command/remove_point_from_curve_mesh_command.hpp"
 #include "command/split_bezier_nodes_command.hpp"
+#include "editor/view/bezier_surface_view.h"
 #include "editor/workspace/viewport.hpp"
 #include "editor/workspace/workspaces.hpp"
 #include "model/constraint/same_point_position_constraint.h"
@@ -31,6 +32,8 @@ private:
     std::vector<std::unique_ptr<BezierNodeView>> nodeViews;
     std::vector<std::unique_ptr<CurveView>> curveViews;
     std::vector<std::unique_ptr<SurfaceView>> surfaceViews;
+    //TODO ezt ne így pls
+    std::vector<std::unique_ptr<BezierSurfaceView>> beziersurfaceViews;
 
 public:
     CurveMeshController() : CurveMeshController(std::make_shared<CurveMesh>()) { }
@@ -275,6 +278,12 @@ public:
         for (const auto& surfaceView : surfaceViews) {
             surfaceView->Draw();
         }
+
+        //TODO Hacky
+        // Bezier surfaces
+        for (const auto& surfaceView : beziersurfaceViews) {
+            surfaceView->Draw();
+        }
     }
 
 private:
@@ -317,13 +326,33 @@ private:
             }
         }
 
+        //TODO Hacky hacky, ez ne így legyen, hanem csináljuk már meg a model-view registry-t pls
+        // Bezier surface
+        int bezierSurfaceCount = 0;
+        for (const auto& surface : curveMesh->GetSurfaces()) {
+            const std::shared_ptr<BezierSurface> bs = std::dynamic_pointer_cast<BezierSurface>(surface);
+            if (bs) bezierSurfaceCount++;
+        }
+
+        if (beziersurfaceViews.size() != bezierSurfaceCount) {
+            beziersurfaceViews.clear();
+            for (const auto& surface : curveMesh->GetSurfaces()) {
+                const std::shared_ptr<BezierSurface> bs = std::dynamic_pointer_cast<BezierSurface>(surface);
+                if (bs) {
+                    auto surfaceView = std::make_unique<BezierSurfaceView>();
+                    surfaceView->Update(*bs);
+                    beziersurfaceViews.push_back(std::move(surfaceView));
+                }
+            }
+        }
+
         // UPDATE ELEMENTS
         // Node views
-        int n = 0;
+        int n_node = 0;
         for (const auto& modelCurve : curveMesh->GetEdges()) {
             for (const auto& node : modelCurve->GetNodes()) {
-                nodeViews[n]->Update(*node);
-                n++;
+                nodeViews[n_node]->Update(*node);
+                n_node++;
             }
         }
 
@@ -337,6 +366,17 @@ private:
         auto& surfaces = curveMesh->GetSurfaces();
         for (int i = 0; i < surfaces.size(); i++) {
             surfaceViews[i]->Update(*surfaces[i], 10);
+        }
+
+        //TODO Hacky
+        // Bezier surfaces
+        int n_bs = 0;
+        for (int i = 0; i < surfaces.size(); i++) {
+            const std::shared_ptr<BezierSurface> bs = std::dynamic_pointer_cast<BezierSurface>(surfaces[i]);
+            if (bs) {
+                beziersurfaceViews[i]->Update(*bs);
+                n_bs++;
+            }
         }
     }
 
