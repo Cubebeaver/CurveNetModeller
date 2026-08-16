@@ -45,6 +45,8 @@ public:
     [[nodiscard]] std::vector<glm::vec3> GenerateRenderCameraNormals(int resolution = 50, glm::vec3 cam = glm::vec3(0, 0, 1)) const;
     [[nodiscard]] std::vector<float> GenerateRenderCurvatures(int resolution = 50) const;
 
+    void InitializeAfterLoad() override;
+
     template<class Archive>
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(Nodes));

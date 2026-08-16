@@ -2,7 +2,7 @@
 #include "i_Element.hpp"
 #include "point.h"
 
-class INode : IElement {
+class INode : public IElement {
 public:
     //TODO
     virtual const std::vector<std::shared_ptr<Point>>& GetPoints() const = 0;

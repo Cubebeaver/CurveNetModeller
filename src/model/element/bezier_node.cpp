@@ -109,6 +109,12 @@ BezierNode::~BezierNode() {
     RightHandle->PointChanged.RemoveListener(this, &BezierNode::OnRightPointChanged);
 }
 
+void BezierNode::InitializeAfterLoad() {
+    CenterHandle->PointChanged.AddListener(this, &BezierNode::OnCenterPointChanged);
+    LeftHandle->PointChanged.AddListener(this, &BezierNode::OnLeftPointChanged);
+    RightHandle->PointChanged.AddListener(this, &BezierNode::OnRightPointChanged);
+}
+
 
 void BezierNode::EnforceMode(bool isLeftChanged) {
     if (Mode == HandleMode::Free) return;

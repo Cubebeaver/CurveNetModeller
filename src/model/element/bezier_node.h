@@ -68,6 +68,8 @@ public:
     //     AZ eventek ne lambdák legyenek, hanem valami konkrétabbak
     virtual ~BezierNode() override;
 
+    void InitializeAfterLoad() override;
+
     template<class Archive>
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(points));

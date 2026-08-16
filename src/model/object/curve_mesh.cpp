@@ -41,6 +41,23 @@ void CurveMesh::RemoveSurface(std::shared_ptr<ISurface> surface) {
     CurveMeshChanged.Invoke();
 }
 
+void CurveMesh::InitializeAfterLoad() {
+    for (auto& point : points) {
+        point->PointChanged.AddListener(this, &CurveMesh::OnPointChanged);
+        point->InitializeAfterLoad();
+    }
+
+    for (auto& edge : edges) {
+        edge->CurveChanged.AddListener(this, &CurveMesh::OnEdgeChanged);
+        edge->InitializeAfterLoad();
+    }
+
+    for (auto& face : surfaces) {
+        face->CoonsSurfaceChanged.AddListener(this, &CurveMesh::OnSurfaceChanged);
+        face->InitializeAfterLoad();
+    }
+}
+
 void CurveMesh::OnPointChanged(glm::vec3 offset) {
     CurveMeshChanged.Invoke();
 }

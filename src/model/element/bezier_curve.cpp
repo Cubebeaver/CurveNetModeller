@@ -285,6 +285,15 @@ std::vector<float> BezierCurve::GenerateRenderCurvatures(int resolution) const {
     return renderPoints;
 }
 
+void BezierCurve::InitializeAfterLoad() {
+    for (auto& node : Nodes) {
+        node->BezierNodeChanged.AddListener(this, &BezierCurve::OnChange);
+        //TODO Ez így lehet nem a legjobb, de majd elv. úgyis ez csak egy contraint lesz???
+        //TODO Ha mégse, akkor
+        node->InitializeAfterLoad();
+    }
+}
+
 BezierCurve::~BezierCurve() {
     for (auto& node : Nodes) {
         node->BezierNodeChanged.RemoveListener(this, &BezierCurve::OnChange);

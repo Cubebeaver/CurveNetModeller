@@ -4,7 +4,7 @@
 
 #include <cereal/types/polymorphic.hpp>
 
-class ISurface : IElement {
+class ISurface : public IElement {
 public:
     Event<> CoonsSurfaceChanged;
 

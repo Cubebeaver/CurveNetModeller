@@ -12,6 +12,8 @@ private:
 public:
     Object() : transform(std::make_shared<Transform>()) { }
 
+    virtual void InitializeAfterLoad() = 0;
+
     std::shared_ptr<Transform> GetTransform() const { return transform; }
 
     virtual ~Object() = default;

@@ -188,6 +188,8 @@ std::shared_ptr<CurveMesh> Load() {
     return loadedMesh;
 }
 
+#define ENABLE_LOAD
+
 int main(int argc, char** argv) {
     GLFWwindow* mainWindow;
 
@@ -237,6 +239,7 @@ int main(int argc, char** argv) {
     try {
         cm = Load();
         curveMeshController = std::make_shared<CurveMeshController>(cm);
+        curveMeshController->GetModel()->InitializeAfterLoad();
     }
     catch (...) {
         std::cout << "Could not open saved file, starting clean." << std::endl;

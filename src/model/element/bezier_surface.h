@@ -9,6 +9,7 @@ class BezierSurface : public ISurface {
 public:
     // A kontrollpontok rácsa (N x M-es mátrix)
     // i (sorok) felelnek meg az 'u' iránynak, j (oszlopok) a 'v' iránynak
+    int N = 0, M = 0;
     std::vector<std::vector<std::shared_ptr<Point>>> controlPoints;
 
     const std::vector<std::vector<std::shared_ptr<Point>>>& GetPoints() const { return controlPoints; }
@@ -19,6 +20,8 @@ public:
     virtual glm::vec3 Evaluate(float u, float v) const override;
     virtual glm::vec3 EvaluateNormal(float u, float v) const override;
     glm::vec3 EvaluateDeCasteljau(float u, float v) const;
+
+    void InitializeAfterLoad() override;
 
     template<class Archive>
     void serialize(Archive& archive) {

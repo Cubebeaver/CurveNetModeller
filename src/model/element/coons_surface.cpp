@@ -37,6 +37,13 @@ CoonsSurface::~CoonsSurface() {
     d2->CurveChanged.RemoveListener(this, &CoonsSurface::OnCurveChanged);
 }
 
+void CoonsSurface::InitializeAfterLoad() {
+    this->c1->CurveChanged.AddListener(this, &CoonsSurface::OnCurveChanged);
+    this->c2->CurveChanged.AddListener(this, &CoonsSurface::OnCurveChanged);
+    this->d1->CurveChanged.AddListener(this, &CoonsSurface::OnCurveChanged);
+    this->d2->CurveChanged.AddListener(this, &CoonsSurface::OnCurveChanged);
+}
+
 void CoonsSurface::OnCurveChanged() {
     CoonsSurfaceChanged.Invoke();
 }

@@ -26,6 +26,8 @@ public:
 
     virtual ~CoonsSurface() override;
 
+    void InitializeAfterLoad() override;
+
     template<class Archive>
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(c1), CEREAL_NVP(c2), CEREAL_NVP(d1), CEREAL_NVP(d2));

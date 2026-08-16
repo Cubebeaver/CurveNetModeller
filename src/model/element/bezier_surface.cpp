@@ -3,6 +3,9 @@
 #include "bezier_curve.h"
 
 BezierSurface::BezierSurface(int N, int M) {
+    this->N = N;
+    this->M = M;
+
     controlPoints.resize(N);
     for (int i = 0; i < N; ++i) {
         controlPoints[i].resize(M);
@@ -109,6 +112,14 @@ glm::vec3 BezierSurface::EvaluateDeCasteljau(float u, float v) const {
 
     // 2. lépés: A kapott oszlopon lefuttatjuk a de Casteljau-t az 'u' paraméterrel
     return DeCasteljau1D(columnPoints, u);
+}
+
+void BezierSurface::InitializeAfterLoad() {
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < M; ++j) {
+            controlPoints[i][j]->PointChanged.AddListener(this, &BezierSurface::OnPointChanged);
+        }
+    }
 }
 
 // --- SEGÉDFÜGGVÉNYEK ---

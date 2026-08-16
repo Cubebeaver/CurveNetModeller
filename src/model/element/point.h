@@ -69,6 +69,8 @@ public:
 
     //OBSERVER_FUNC_HPP
 
+    void InitializeAfterLoad() override { }
+
     template<class Archive>
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(position));
