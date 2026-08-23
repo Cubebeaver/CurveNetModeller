@@ -69,7 +69,7 @@ public:
                 OnDrag.Invoke(glm::vec2(totalDelta.x, totalDelta.y), glm::vec2(delta.x, delta.y), glm::vec2(relativeX, relativeY), ImGuiMouseButton_Right);
 
                 // Camera controls
-                ImGui::SetMouseCursor(ImGuiMouseCursor_::ImGuiMouseCursor_None);
+                ImGui::SetMouseCursor(ImGuiMouseCursor_::ImGuiMouseCursor_Hand);
 
                 Camera::activeCamera->Rotate(Camera::activeCamera->fieldOfView * -delta.y / viewportBuffer->Height, delta.x / viewportBuffer->Height, 0);
                 
@@ -91,8 +91,29 @@ public:
                 if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_E)) {
                     Camera::activeCamera->Translate(glm::vec3(0, 1, 0) * 0.1f);
                 }
+            } else if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle)) {
+                ImVec2 delta = ImGui::GetIO().MouseDelta;
+
+                ImGui::SetMouseCursor(ImGuiMouseCursor_::ImGuiMouseCursor_Hand);
+
+                Camera::activeCamera->Translate((-normalize(Camera::activeCamera->right()) * delta.x + normalize(Camera::activeCamera->up()) * delta.y) * 0.01f);
             } else {
                 ImGui::SetMouseCursor(ImGuiMouseCursor_::ImGuiMouseCursor_Arrow);
+            }
+
+            if (ImGui::IsKeyPressed(ImGuiKey_Keypad1)) {
+                Camera::activeCamera->SetRotation(0, 0, 0);
+            }
+            if (ImGui::IsKeyPressed(ImGuiKey_Keypad3)) {
+                Camera::activeCamera->SetRotation(0, std::numbers::pi_v<float>/2, 0);
+            }
+            if (ImGui::IsKeyPressed(ImGuiKey_Keypad7)) {
+                Camera::activeCamera->SetRotation(std::numbers::pi_v<float>/2, 0, 0);
+            }
+            if (ImGui::IsKeyPressed(ImGuiKey_Keypad9)) {
+                Camera::activeCamera->position = -Camera::activeCamera->position;
+                Camera::activeCamera->direction = -Camera::activeCamera->direction;
+                Camera::activeCamera->UpdateView();
             }
 
             // UNDO REDO

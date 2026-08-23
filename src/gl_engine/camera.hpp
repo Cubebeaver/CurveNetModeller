@@ -47,6 +47,16 @@ public:
     glm::vec3 rotation;
     glm::vec3 direction;
 
+    glm::vec3 forward() const {
+        return direction;
+    }
+    glm::vec3 right() const {
+        return glm::cross(direction, glm::vec3(0, 1, 0));
+    }
+    glm::vec3 up() const {
+        return glm::cross(right(), direction);
+    }
+
     float fieldOfView;
     float nearClippingPlane;
     float farClippingPlane;
