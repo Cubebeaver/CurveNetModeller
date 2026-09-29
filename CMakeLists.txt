@@ -61,6 +61,7 @@ set(APP_SOURCES
         src/util/stb_implementation.cpp
         src/editor/view/bezier_surface_view.cpp
         src/editor/view/bezier_surface_view.h
+        src/editor/view/curve_rotation_minimizing_frame_view.cpp
 )
 
 # Az OpenGL motorhoz tartozó fáljok (Shaderek, Objectek)

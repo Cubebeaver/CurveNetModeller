@@ -15,6 +15,8 @@
 #include "command/remove_point_from_curve_mesh_command.hpp"
 #include "command/split_bezier_nodes_command.hpp"
 #include "editor/view/bezier_surface_view.h"
+#include "editor/view/curve_curvature_comb_view.h"
+#include "editor/view/curve_rotation_minimizing_frame_view.h"
 #include "editor/workspace/viewport.hpp"
 #include "editor/workspace/workspaces.hpp"
 #include "model/constraint/same_point_position_constraint.h"
@@ -34,6 +36,11 @@ private:
     std::vector<std::unique_ptr<SurfaceView>> surfaceViews;
     //TODO ezt ne így pls
     std::vector<std::unique_ptr<BezierSurfaceView>> beziersurfaceViews;
+
+    //DEBUG
+    std::vector<std::unique_ptr<CurveCurvatureCombView>> curveCurvatureCombViews;
+    std::vector<std::unique_ptr<CurveRotationMinimizingFrameView>> curveRotationMinimizingFrameViews;
+    //DEBUG
 
 public:
     CurveMeshController() : CurveMeshController(std::make_shared<CurveMesh>()) { }
@@ -64,6 +71,10 @@ public:
         auto newEdge = std::make_shared<BezierCurve>();
         auto n1 = std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(-1.5f, -0.5f, 0.0f), glm::vec3(-0.5f, 0.5f, 0.0f), HandleMode::Aligned);
         auto n2 = std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, 0.0f), glm::vec3( 0.5f,  0.0f, 0.0f), glm::vec3( 1.5f, 0.0f, 0.0f), HandleMode::Aligned);
+
+        //DEBUG
+        curveRotationMinimizingFrameViews.push_back(std::make_unique<CurveRotationMinimizingFrameView>(newEdge));
+        //DEBUG
 
         CommandHistory::Add(CompositeCommand::Create()
         ->ExecuteAdd<AddBezierCurveToCurveMeshCommand>(curveMesh, newEdge)
@@ -284,6 +295,16 @@ public:
         for (const auto& surfaceView : beziersurfaceViews) {
             surfaceView->Draw();
         }
+
+        //DEBUG
+        for (const auto& v : curveCurvatureCombViews) {
+            v->Draw();
+        }
+
+        for (const auto& v : curveRotationMinimizingFrameViews) {
+            v->Draw();
+        }
+        //DEBUG
     }
 
 private:
