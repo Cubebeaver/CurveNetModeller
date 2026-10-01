@@ -22,6 +22,7 @@ find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(tinyfiledialogs CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
@@ -99,6 +100,7 @@ target_link_libraries(CurveNetModeller PRIVATE
     glm::glm
     imgui::imgui
     OpenGL::GL
+    tinyfiledialogs::tinyfiledialogs
     cereal::cereal
 )
 

@@ -144,7 +144,7 @@ int IMGUI_INIT(GLFWwindow* window) {
 }
 
 void Save(const std::shared_ptr<CurveMesh>& scene) {
-    std::ofstream fs("output/save.json");
+    std::ofstream fs("output/save.cnm");
 
     if (!fs.is_open()) {
         std::cout << "[-] Failed to open output file" << std::endl;
@@ -161,11 +161,11 @@ void Save(const std::shared_ptr<CurveMesh>& scene) {
     }
 
     fs.close();
-    std::cout << "[+] Successfully saved to output/save.json" << std::endl;
+    std::cout << "[+] Successfully saved to output/save.cnm" << std::endl;
 }
 
 std::shared_ptr<CurveMesh> Load() {
-    std::ifstream fs("output/save.json");
+    std::ifstream fs("output/save.cnm");
 
     if (!fs.is_open()) {
         throw std::runtime_error("Could not open save file");
