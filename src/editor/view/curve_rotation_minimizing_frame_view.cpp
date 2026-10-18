@@ -4,7 +4,7 @@ using namespace gl_engine;
 
 CurveRotationMinimizingFrameView::CurveRotationMinimizingFrameView(std::shared_ptr<BezierCurve> c)
     : curveModel(c) {
-    rmf = std::make_unique<RotationMinimizingFrame>(c, glm::vec3(0, 1, 0));
+    rmf = std::make_unique<RotationMinimizingFrame>(c, glm::vec3(0, 1, 0), glm::vec3(0, 0, 1));
     c->CurveChanged.AddListener(this, &CurveRotationMinimizingFrameView::OnChanged);
 
     std::vector<float> emptyVerts;
@@ -16,30 +16,33 @@ CurveRotationMinimizingFrameView::CurveRotationMinimizingFrameView(std::shared_p
     material->SetVec4("color", glm::vec4(0, 1, 0.5f, 1));
 }
 
-void CurveRotationMinimizingFrameView::Update(int resolution, float length) {
-    const std::vector<RMFFrame> frames = rmf->GenerateFrames(50);
+std::ostream& operator << (std::ostream& lhs, const glm::vec3& rhs) {
+    lhs << "(" << rhs.x << ", " << rhs.y << ", " << rhs.z << ")";
+    return lhs;
+}
 
-    const std::vector<glm::vec3>& points = curveModel->GenerateRenderPoints(resolution);
+void CurveRotationMinimizingFrameView::Update(int resolution, float length) {
+    const std::vector<RMFFrame> frames = rmf->GenerateFrames(resolution);
 
     std::vector<float> verts;
     verts.reserve(frames.size() * 3 * 2);
     std::vector<GLuint> idxs;
     idxs.reserve(frames.size() * 2);
 
-    for (int i = 0; i < frames.size(); i++) {
-        verts.push_back(frames[i].position.x);
-        verts.push_back(frames[i].position.y);
-        verts.push_back(frames[i].position.z);
+    for (const auto & frame : frames) {
+        verts.push_back(frame.position.x);
+        verts.push_back(frame.position.y);
+        verts.push_back(frame.position.z);
     }
-    for (int i = 0; i < points.size(); i++) {
-        verts.push_back(frames[i].position.x + frames[i].r.x * length);
-        verts.push_back(frames[i].position.y + frames[i].r.y * length);
-        verts.push_back(frames[i].position.z + frames[i].r.z * length);
+    for (const auto & frame : frames) {
+        verts.push_back(frame.position.x + frame.r.x * length);
+        verts.push_back(frame.position.y + frame.r.y * length);
+        verts.push_back(frame.position.z + frame.r.z * length);
     }
 
-    for (int i = 0; i < points.size(); i++) {
+    for (int i = 0; i < frames.size(); i++) {
         idxs.push_back(i);
-        idxs.push_back(i + points.size());
+        idxs.push_back(i + frames.size());
     }
 
     mesh->Replace(verts, idxs);

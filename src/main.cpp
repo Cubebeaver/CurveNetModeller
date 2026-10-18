@@ -36,6 +36,7 @@
 #include "editor/controller/bezier_curve_controller.hpp"
 
 // Util
+#include <tinyfiledialogs.h>
 #include "editor/controller/curve_mesh_controller.h"
 #include "editor/interface/curve_mesh_interface.hpp"
 #include "editor/interface/global_actions_interface.hpp"
@@ -214,8 +215,8 @@ int main(int argc, char** argv) {
 
 
     PerspectiveCamera cam(
-        glm::vec3(0, 0, 5),
-        glm::vec3(std::numbers::pi_v<float>, std::numbers::pi_v<float>, 0),
+        glm::vec3(8, 5, 8),
+        glm::vec3(std::numbers::pi_v<float> * 0.85f, std::numbers::pi_v<float> * 0.75f, 0),
         1,
         0.1f,
         100.0f
@@ -299,7 +300,15 @@ int main(int argc, char** argv) {
         glfwSwapBuffers(mainWindow);
     }
 
-    Save(curveMeshController->GetModel());
+    int res = tinyfd_messageBox("Do you want to save?",
+                                "Do you want to save your document?\n"
+                                "If you select no, all work will be lost, this cannot be undone.",
+                                "yesno",
+                                "question",
+                                1);
+    if (res) {
+        Save(curveMeshController->GetModel());
+    }
 
     // ------------------------------------------------------------------
     // 6. Takarítás (Erőforrások felszabadítása)
