@@ -20,6 +20,7 @@ class CurveMesh : public Object {
 private:
     std::vector<std::shared_ptr<Point>> points;
     std::vector<std::shared_ptr<BezierCurve>> edges;
+    std::vector<std::shared_ptr<HalfEdge>> halfEdges;
     std::vector<std::shared_ptr<ISurface>> surfaces;
 
 public:
@@ -29,12 +30,16 @@ public:
 
     const std::vector<std::shared_ptr<Point>>& GetPoints() const { return points; }
     const std::vector<std::shared_ptr<BezierCurve>>& GetEdges() const { return edges; }
+    const std::vector<std::shared_ptr<HalfEdge>>& GetHalfEdges() const { return halfEdges; }
     const std::vector<std::shared_ptr<ISurface>>& GetSurfaces() const { return surfaces; }
+
 
     void AddPoint(std::shared_ptr<Point> point);
     void RemovePoint(std::shared_ptr<Point> point);
     void AddEdge(std::shared_ptr<BezierCurve> edge);
     void RemoveEdge(std::shared_ptr<BezierCurve> edge);
+    void AddHalfEdge(std::shared_ptr<HalfEdge> halfEdge);
+    void RemoveHalfEdge(std::shared_ptr<HalfEdge> halfEdge);
     void AddSurface(std::shared_ptr<ISurface> surface);
     void RemoveSurface(std::shared_ptr<ISurface> surface);
 

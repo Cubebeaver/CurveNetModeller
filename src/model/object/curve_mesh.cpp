@@ -41,6 +41,18 @@ void CurveMesh::RemoveSurface(std::shared_ptr<ISurface> surface) {
     CurveMeshChanged.Invoke();
 }
 
+void CurveMesh::AddHalfEdge(std::shared_ptr<HalfEdge> halfEdge) {
+    halfEdges.push_back(halfEdge);
+    halfEdge->HalfEdgeChanged.AddListener(this, &CurveMesh::OnSurfaceChanged);
+    CurveMeshChanged.Invoke();
+}
+
+void CurveMesh::RemoveHalfEdge(std::shared_ptr<HalfEdge> halfEdge) {
+    halfEdges.erase(std::remove(halfEdges.begin(), halfEdges.end(), halfEdge), halfEdges.end());
+    halfEdge->HalfEdgeChanged.RemoveListener(this, &CurveMesh::OnSurfaceChanged);
+    CurveMeshChanged.Invoke();
+}
+
 void CurveMesh::InitializeAfterLoad() {
     for (auto& point : points) {
         point->PointChanged.AddListener(this, &CurveMesh::OnPointChanged);

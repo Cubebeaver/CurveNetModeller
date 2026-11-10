@@ -55,10 +55,14 @@
 #include <cereal/types/polymorphic.hpp>
 
 // Regisztráljuk a konkrét osztályokat
+CEREAL_REGISTER_TYPE(BezierCurve)
+
 CEREAL_REGISTER_TYPE(CoonsSurface)
 CEREAL_REGISTER_TYPE(BezierSurface)
 
 // Opcionális: Ha azt akarod, hogy a JSON-ban szép neve legyen, ne "CoonsSurface"
+CEREAL_REGISTER_POLYMORPHIC_RELATION(ICurve, BezierCurve)
+
 CEREAL_REGISTER_POLYMORPHIC_RELATION(ISurface, CoonsSurface)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(ISurface, BezierSurface)
 

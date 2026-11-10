@@ -27,6 +27,7 @@ private:
     std::shared_ptr<CurveMesh> curveMesh;
 
     std::vector<std::weak_ptr<CoonsSurface>> selectedSurfaces;
+    std::vector<std::weak_ptr<HalfEdge>> selectedHalfEdges;
     std::vector<std::weak_ptr<BezierCurve>> selectedEdges;
     std::vector<std::weak_ptr<BezierNode>> selectedNodes;
     std::vector<std::weak_ptr<Point>> selectedPoints;
@@ -54,11 +55,13 @@ public:
     std::shared_ptr<CurveMesh> GetModel() { return curveMesh; }
 
     std::vector<std::weak_ptr<CoonsSurface>>& GetSelectedSurface() { return selectedSurfaces; }
+    std::vector<std::weak_ptr<HalfEdge>>& GetSelectedHalfEdge() { return selectedHalfEdges; }
     std::vector<std::weak_ptr<BezierCurve>>& GetSelectedEdge() { return selectedEdges; }
     std::vector<std::weak_ptr<BezierNode>>& GetSelectedNode() { return selectedNodes; }
     std::vector<std::weak_ptr<Point>>& GetSelectedPoint() { return selectedPoints; }
 
     std::weak_ptr<CoonsSurface> GetActiveSurface() { if (!selectedSurfaces.empty()) return selectedSurfaces.back(); else return { }; }
+    std::weak_ptr<HalfEdge> GetActiveHalfEdge() { if (!selectedHalfEdges.empty()) return selectedHalfEdges.back(); else return { }; }
     std::weak_ptr<BezierCurve> GetActiveEdge() { if (!selectedEdges.empty()) return selectedEdges.back(); else return { }; }
     std::weak_ptr<BezierNode> GetActiveNode() { if (!selectedNodes.empty()) return selectedNodes.back(); else return { }; }
     std::weak_ptr<Point> GetActivePoint() { if (!selectedPoints.empty()) return selectedPoints.back(); else return { }; }
@@ -114,7 +117,12 @@ public:
         d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f,  1.0f), glm::vec3( 1.0f, 0.0f,  0.5f), glm::vec3( 1.0f, 0.0f,  1.5f), HandleMode::Aligned));
         d2->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[1]->GetCenterHandle());
 
-        auto newSurface = std::make_shared<CoonsSurface>(c1, c2, d1, d2);
+        auto he_c1 = std::make_shared<HalfEdge>(c1);
+        auto he_c2 = std::make_shared<HalfEdge>(c2);
+        auto he_d1 = std::make_shared<HalfEdge>(d1);
+        auto he_d2 = std::make_shared<HalfEdge>(d2);
+
+        auto newSurface = std::make_shared<CoonsSurface>(he_c1, he_c2, he_d1, he_d2);
         curveMesh->AddSurface(newSurface);
 
         curveMesh->AddPoint(c1->GetNodes()[0]->GetCenterHandle());
@@ -148,6 +156,11 @@ public:
         curveMesh->AddPoint(d2->GetNodes()[1]->GetLeftHandle());
         curveMesh->AddPoint(d2->GetNodes()[1]->GetRightHandle());
         curveMesh->AddEdge(d2);
+
+        curveMesh->AddHalfEdge(he_c1);
+        curveMesh->AddHalfEdge(he_c2);
+        curveMesh->AddHalfEdge(he_d1);
+        curveMesh->AddHalfEdge(he_d2);
 
         //TODO Command
     }
@@ -201,7 +214,12 @@ public:
         d2->AddNode(std::make_shared<BezierNode>(c21Pos, c21Pos + offset * -0.25f, c21Pos + offset * 0.25f, HandleMode::Aligned));
         d2->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[1]->GetCenterHandle());
 
-        auto newSurface = std::make_shared<CoonsSurface>(c1, c2, d1, d2);
+        auto he_c1 = std::make_shared<HalfEdge>(c1);
+        auto he_c2 = std::make_shared<HalfEdge>(c2);
+        auto he_d1 = std::make_shared<HalfEdge>(d1);
+        auto he_d2 = std::make_shared<HalfEdge>(d2);
+
+        auto newSurface = std::make_shared<CoonsSurface>(he_c1, he_c2, he_d1, he_d2);
         curveMesh->AddSurface(newSurface);
 
         //curveMesh->AddEdge(c1);
@@ -228,6 +246,11 @@ public:
         curveMesh->AddPoint(d2->GetNodes()[1]->GetLeftHandle());
         curveMesh->AddPoint(d2->GetNodes()[1]->GetRightHandle());
         curveMesh->AddEdge(d2);
+
+        curveMesh->AddHalfEdge(he_c1);
+        curveMesh->AddHalfEdge(he_c2);
+        curveMesh->AddHalfEdge(he_d1);
+        curveMesh->AddHalfEdge(he_d2);
 
         //TODO Command
     }
@@ -270,7 +293,12 @@ public:
 
         if (!c1 || !c2 || !d1 || !d2) return;
 
-        curveMesh->AddSurface(std::make_shared<CoonsSurface>(c1, c2, d1, d2));
+        auto he_c1 = std::make_shared<HalfEdge>(c1);
+        auto he_c2 = std::make_shared<HalfEdge>(c2);
+        auto he_d1 = std::make_shared<HalfEdge>(d1);
+        auto he_d2 = std::make_shared<HalfEdge>(d2);
+
+        curveMesh->AddSurface(std::make_shared<CoonsSurface>(he_c1, he_c2, he_d1, he_d2));
         //TODO Command
     }
 
@@ -380,7 +408,7 @@ private:
         // Curve views
         auto& edges = curveMesh->GetEdges();
         for (int i = 0; i < edges.size(); i++) {
-            curveViews[i]->Update(*edges[i], 10);
+            curveViews[i]->Update(*edges[i], 50);
         }
 
         // Surface views

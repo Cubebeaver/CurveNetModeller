@@ -21,12 +21,12 @@ private:
 public:
     CurveRotationMinimizingFrameView(std::shared_ptr<BezierCurve> c);
 
-    void Update(int resolution = 50, float length = 1.0f);
+    void Update(int resolution = 50, float length = 0.1f);
 
     void Draw();
 
 private:
     void OnChanged() {
-        Update(50, 1.0f);
+        Update(50, 0.1f);
     }
 };
