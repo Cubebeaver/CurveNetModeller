@@ -20,7 +20,12 @@ TEST(CoonsSurfaceTest, EvaluatePoint) {
     d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 2,  1, -3), glm::vec3( 2, -1, -1)));
     d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 2, -1,  1), glm::vec3( 2,  1,  3)));
 
-    CoonsSurface coons(c1, c2, d1, d2);
+    auto c1_he = std::make_shared<HalfEdge>(c1);
+    auto c2_he = std::make_shared<HalfEdge>(c2);
+    auto d1_he = std::make_shared<HalfEdge>(d1);
+    auto d2_he = std::make_shared<HalfEdge>(d2);
+
+    CoonsSurface coons(c1_he, c2_he, d1_he, d2_he);
 
     auto pos_center = coons.Evaluate(0.5f, 0.5f);
     EXPECT_NEAR(pos_center.x, 0.0f, 0.001);
@@ -53,7 +58,12 @@ TEST(CoonsSurfaceTest, EvaluateNormal) {
     d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0, -2), glm::vec3( 2,  1, -3), glm::vec3( 2, -1, -1)));
     d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 2,  0,  2), glm::vec3( 2, -1,  1), glm::vec3( 2,  1,  3)));
 
-    CoonsSurface coons(c1, c2, d1, d2);
+    auto c1_he = std::make_shared<HalfEdge>(c1);
+    auto c2_he = std::make_shared<HalfEdge>(c2);
+    auto d1_he = std::make_shared<HalfEdge>(d1);
+    auto d2_he = std::make_shared<HalfEdge>(d2);
+
+    CoonsSurface coons(c1_he, c2_he, d1_he, d2_he);
 
     auto norm_center = coons.EvaluateNormal(0.5f, 0.5f);
     EXPECT_NEAR(norm_center.x, 0.0f, 0.01);
