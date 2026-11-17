@@ -118,8 +118,8 @@ public:
         d2->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[1]->GetCenterHandle());
 
         auto he_c1 = std::make_shared<HalfEdge>(c1);
-        auto he_c2 = std::make_shared<HalfEdge>(c2);
-        auto he_d1 = std::make_shared<HalfEdge>(d1);
+        auto he_c2 = std::make_shared<HalfEdge>(c2, true);
+        auto he_d1 = std::make_shared<HalfEdge>(d1, true);
         auto he_d2 = std::make_shared<HalfEdge>(d2);
 
         auto newSurface = std::make_shared<CoonsSurface>(he_c1, he_c2, he_d1, he_d2);
@@ -189,6 +189,14 @@ public:
         auto c1 = GetActiveEdge().lock();
         if (!c1) return;
 
+        bool reversed = true;
+        for (auto he : curveMesh->GetHalfEdges()) {
+            if (he->curve.lock() == c1) {
+                if (he->from > he->to) reversed = false;
+                break;
+            }
+        }
+
         auto c10 = c1->GetNodes()[0];
         auto c11 = c1->GetNodes().back();
 
@@ -216,21 +224,24 @@ public:
         d2->AddNode(std::make_shared<BezierNode>(c21Pos, c21Pos + offset * -0.25f, c21Pos + offset * 0.25f, HandleMode::Aligned));
         d2->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[1]->GetCenterHandle());
 
-        auto he_c1 = std::make_shared<HalfEdge>(c1);
-        auto he_c2 = std::make_shared<HalfEdge>(c2);
-        auto he_d1 = std::make_shared<HalfEdge>(d1);
-        auto he_d2 = std::make_shared<HalfEdge>(d2);
+        auto heBottom = std::make_shared<HalfEdge>(c1,  reversed);
+        auto heTop    = std::make_shared<HalfEdge>(c2, !reversed);
+        auto heRight  = std::make_shared<HalfEdge>(d1, !reversed);
+        auto heLeft   = std::make_shared<HalfEdge>(d2,  reversed);
 
-        auto newSurface = std::make_shared<CoonsSurface>(he_c1, he_c2, he_d1, he_d2);
+        auto newSurface = std::make_shared<CoonsSurface>(heBottom, heTop, heLeft, heRight);
         curveMesh->AddSurface(newSurface);
 
+        curveMesh->AddHalfEdge(heBottom);
         //curveMesh->AddEdge(c1);
+
         curveMesh->AddPoint(c2->GetNodes()[0]->GetCenterHandle());
         curveMesh->AddPoint(c2->GetNodes()[0]->GetLeftHandle());
         curveMesh->AddPoint(c2->GetNodes()[0]->GetRightHandle());
         curveMesh->AddPoint(c2->GetNodes()[1]->GetCenterHandle());
         curveMesh->AddPoint(c2->GetNodes()[1]->GetLeftHandle());
         curveMesh->AddPoint(c2->GetNodes()[1]->GetRightHandle());
+        curveMesh->AddHalfEdge(heTop);
         curveMesh->AddEdge(c2);
 
         curveMesh->AddPoint(d1->GetNodes()[0]->GetCenterHandle());
@@ -239,6 +250,7 @@ public:
         curveMesh->AddPoint(d1->GetNodes()[1]->GetCenterHandle());
         curveMesh->AddPoint(d1->GetNodes()[1]->GetLeftHandle());
         curveMesh->AddPoint(d1->GetNodes()[1]->GetRightHandle());
+        curveMesh->AddHalfEdge(heLeft);
         curveMesh->AddEdge(d1);
 
         curveMesh->AddPoint(d2->GetNodes()[0]->GetCenterHandle());
@@ -247,12 +259,9 @@ public:
         curveMesh->AddPoint(d2->GetNodes()[1]->GetCenterHandle());
         curveMesh->AddPoint(d2->GetNodes()[1]->GetLeftHandle());
         curveMesh->AddPoint(d2->GetNodes()[1]->GetRightHandle());
+        curveMesh->AddHalfEdge(heRight);
         curveMesh->AddEdge(d2);
 
-        curveMesh->AddHalfEdge(he_c1);
-        curveMesh->AddHalfEdge(he_c2);
-        curveMesh->AddHalfEdge(he_d1);
-        curveMesh->AddHalfEdge(he_d2);
 
         //TODO Command
     }

@@ -97,10 +97,11 @@ public:
             }
 
             ImGui::SeparatorText("Statistics");
-            ImGui::Text("Points: %lld -- (selected: %lld)",   c->GetModel()->GetPoints().size(),   c->GetSelectedPoint().size());
-            ImGui::Text("Edges: %lld -- (selected: %lld)",    c->GetModel()->GetEdges().size(),    c->GetSelectedEdge().size());
-            ImGui::Text("Surfaces: %lld -- (selected: %lld)", c->GetModel()->GetSurfaces().size(), c->GetSelectedSurface().size());
-            ImGui::Text("Selected Nodes: %lld",               c->GetSelectedNode().size());
+            ImGui::Text("Points: %lld -- (selected: %lld)",    c->GetModel()->GetPoints().size(),    c->GetSelectedPoint().size());
+            ImGui::Text("Edges: %lld -- (selected: %lld)",     c->GetModel()->GetEdges().size(),     c->GetSelectedEdge().size());
+            ImGui::Text("HalfEdges: %lld -- (selected: %lld)", c->GetModel()->GetHalfEdges().size(), c->GetSelectedHalfEdge().size());
+            ImGui::Text("Surfaces: %lld -- (selected: %lld)",  c->GetModel()->GetSurfaces().size(),  c->GetSelectedSurface().size());
+            ImGui::Text("Selected Nodes: %lld",                c->GetSelectedNode().size());
         }
     };
 

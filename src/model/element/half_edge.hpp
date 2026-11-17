@@ -10,14 +10,27 @@ public:
     //      akkor ennek kell majd életben tartania az eredetit.
     //      VAGY INKÁBB WEAK!!! mert a curve mesh az eredetit fogja eltárolni, max a felület akar majd
     std::weak_ptr<ICurve> curve;
-    float from = 0;
-    float to = 1;
+    float from = 0.0f;
+    float to = 1.0f;
 
     Event<> HalfEdgeChanged;
 
     HalfEdge() = default;
     HalfEdge(std::shared_ptr<ICurve> curve, float from = 0.0f, float to = 1.0f)
         : curve(curve), from(from), to(to) {
+        curve->CurveChanged.AddListener(this, &HalfEdge::OnCurveChanged);
+    }
+    HalfEdge(std::shared_ptr<ICurve> curve, bool reversed)
+        : curve(curve) {
+        if (!reversed) /* normal */ {
+            from = 0.0f;
+            to = 1.0f;
+        }
+        else /* if reversed */ {
+            from = 1.0f;
+            to = 0.0f;
+        }
+
         curve->CurveChanged.AddListener(this, &HalfEdge::OnCurveChanged);
     }
 

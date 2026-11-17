@@ -12,8 +12,8 @@ CoonsSurface::CoonsSurface(
 
 glm::vec3 CoonsSurface::Evaluate(float u, float v) const {
     const auto& S_u0 = bottom->EvaluatePosition(u);
-    const auto& S_u1 = top->EvaluatePosition(u);
-    const auto& S_0v = left->EvaluatePosition(v);
+    const auto& S_u1 = top->EvaluatePosition(1 - u);
+    const auto& S_0v = left->EvaluatePosition(1 - v);
     const auto& S_1v = right->EvaluatePosition(v);
 
     const auto& S1_uv = (1 - v) * S_u0 + v * S_u1;
@@ -21,8 +21,8 @@ glm::vec3 CoonsSurface::Evaluate(float u, float v) const {
 
     const auto& S_00 = bottom->EvaluatePosition(0);
     const auto& S_10 = bottom->EvaluatePosition(1);
-    const auto& S_01 = top->EvaluatePosition(0);
-    const auto& S_11 = top->EvaluatePosition(1);
+    const auto& S_01 = top->EvaluatePosition(1);
+    const auto& S_11 = top->EvaluatePosition(0);
 
     const auto& S12_uv = (1 - v) * ((1 - u) * S_00 + u * S_10)
                              + v * ((1 - u) * S_01 + u * S_11);
