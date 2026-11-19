@@ -155,5 +155,5 @@ glm::vec3 BezierSurface::DeCasteljau1D(std::vector<glm::vec3> points, float t) c
 }
 
 void BezierSurface::OnPointChanged(glm::vec3 offset) {
-    CoonsSurfaceChanged.Invoke();
+    SurfaceChanged.Invoke();
 }

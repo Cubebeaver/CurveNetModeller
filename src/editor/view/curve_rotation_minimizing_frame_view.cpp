@@ -2,9 +2,9 @@
 
 using namespace gl_engine;
 
-CurveRotationMinimizingFrameView::CurveRotationMinimizingFrameView(std::shared_ptr<BezierCurve> c)
+CurveRotationMinimizingFrameView::CurveRotationMinimizingFrameView(std::shared_ptr<ICurve> c)
     : curveModel(c) {
-    rmf = std::make_unique<RotationMinimizingFrame>(c, glm::vec3(0, 1, 0), glm::vec3(0, 0, 1));
+    rmf = std::make_unique<RotationMinimizingFrame>(c, glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
     c->CurveChanged.AddListener(this, &CurveRotationMinimizingFrameView::OnChanged);
 
     std::vector<float> emptyVerts;

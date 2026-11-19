@@ -1,6 +1,9 @@
+#pragma once
+
 #include <glm/vec3.hpp>
 
 #include "i_Curve.hpp"
+#include "half_edge.hpp"
 #include "i_Element.hpp"
 
 // A keretet (frame) reprezentáló struktúra az algoritmus alapján
@@ -45,6 +48,96 @@ public:
         : curve(std::move(c)), startNormal(initialNormal), endNormal(finalNormal), useEndNormal(true) {}
 
     std::vector<RMFFrame> GenerateFrames(int resolution) const {
+        return GenerateFrames(curve, startNormal, endNormal, resolution, useEndNormal);
+    }
+
+    static std::vector<RMFFrame> GenerateFrames(std::shared_ptr<ICurve> curve, glm::vec3 startNormal, glm::vec3 endNormal, int resolution, bool useEndNormal = true) {
+        if (!curve || resolution < 2) return {};
+
+        std::vector<RMFFrame> frames(resolution);
+        std::vector<float> arcLengths(resolution, 0.0f); // Ívhosszak tárolása a sima csavarodáshoz
+        float t_step = 1.0f / (resolution - 1);
+
+        glm::vec3 x0 = curve->EvaluatePosition(0.0f);
+        glm::vec3 t0 = glm::normalize(curve->EvaluateVelocity(0.0f));
+        glm::vec3 r0 = OrthonormalizeNormal(startNormal, t0);
+        glm::vec3 s0 = glm::cross(t0, r0);
+
+        frames[0] = { x0, r0, s0, t0 };
+
+        // 1. FÁZIS: Standard Double Reflection RMF
+        for (int i = 0; i < resolution - 1; ++i) {
+            float t_next = (i + 1) * t_step;
+
+            glm::vec3 x_next = curve->EvaluatePosition(t_next);
+            glm::vec3 t_next_vec = glm::normalize(curve->EvaluateVelocity(t_next));
+
+            const glm::vec3& x_curr = frames[i].position;
+            const glm::vec3& t_curr = frames[i].t;
+            const glm::vec3& r_curr = frames[i].r;
+
+            glm::vec3 v1 = x_next - x_curr;
+            float c1 = glm::dot(v1, v1);
+
+            // Kumulatív ívhossz frissítése
+            arcLengths[i + 1] = arcLengths[i] + std::sqrt(c1);
+
+            if (c1 < 1e-6f) {
+                frames[i + 1] = { x_next, r_curr, glm::cross(t_next_vec, r_curr), t_next_vec };
+                continue;
+            }
+
+            glm::vec3 r_i_L = r_curr - (2.0f / c1) * glm::dot(v1, r_curr) * v1;
+            glm::vec3 t_i_L = t_curr - (2.0f / c1) * glm::dot(v1, t_curr) * v1;
+
+            glm::vec3 v2 = t_next_vec - t_i_L;
+            float c2 = glm::dot(v2, v2);
+
+            glm::vec3 r_next = (c2 < 1e-6f)
+                ? r_i_L
+                : r_i_L - (2.0f / c2) * glm::dot(v2, r_i_L) * v2;
+
+            r_next = glm::normalize(r_next);
+            glm::vec3 s_next = glm::cross(t_next_vec, r_next);
+
+            frames[i + 1] = { x_next, r_next, s_next, t_next_vec };
+        }
+
+        // 2. FÁZIS: Vég-normálvektor korrekció (ha meg van adva)
+        if (useEndNormal && arcLengths.back() > 1e-6f) {
+            const RMFFrame& lastFrame = frames.back();
+
+            // A kívánt endNormal bevetítése az utolsó érintő normálsíkjába
+            glm::vec3 r_target = OrthonormalizeNormal(endNormal, lastFrame.t);
+
+            // Előjeles szögeltérés az RMF utolsó bázisában (r_n, s_n)
+            float cosTheta = glm::dot(r_target, lastFrame.r);
+            float sinTheta = glm::dot(r_target, lastFrame.s);
+            float totalAngle = std::atan2(sinTheta, cosTheta);
+
+            float totalLength = arcLengths.back();
+
+            // Szögeltérés elosztása az ívhossz mentén
+            for (int i = 1; i < resolution; ++i) {
+                float weight = arcLengths[i] / totalLength; // Vagy simán: (float)i / (resolution - 1)
+                float angle = weight * totalAngle;
+
+                float c = std::cos(angle);
+                float s = std::sin(angle);
+
+                glm::vec3 r_old = frames[i].r;
+                glm::vec3 s_old = frames[i].s;
+
+                // Forgatás a lokális (r, s) síkban t_i körül
+                frames[i].r = c * r_old + s * s_old;
+                frames[i].s = -s * r_old + c * s_old;
+            }
+        }
+
+        return frames;
+    }
+
+    static std::vector<RMFFrame> GenerateFrames(std::shared_ptr<HalfEdge> curve, glm::vec3 startNormal, glm::vec3 endNormal, int resolution, bool useEndNormal = true) {
         if (!curve || resolution < 2) return {};
 
         std::vector<RMFFrame> frames(resolution);

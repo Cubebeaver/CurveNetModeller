@@ -15,18 +15,22 @@ private:
     std::unique_ptr<gl_engine::Mesh> mesh;
     std::unique_ptr<gl_engine::Material> material;
 
-    std::shared_ptr<BezierCurve> curveModel;
+    std::shared_ptr<ICurve> curveModel;
     std::unique_ptr<RotationMinimizingFrame> rmf;
 
 public:
-    CurveRotationMinimizingFrameView(std::shared_ptr<BezierCurve> c);
+    CurveRotationMinimizingFrameView(std::shared_ptr<ICurve> c);
 
     void Update(int resolution = 50, float length = 0.1f);
 
     void Draw();
 
+    ~CurveRotationMinimizingFrameView() {
+        curveModel->CurveChanged.RemoveListener(this, &CurveRotationMinimizingFrameView::OnChanged);
+    }
+
 private:
     void OnChanged() {
-        Update(50, 0.1f);
+        Update();
     }
 };

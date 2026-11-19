@@ -91,6 +91,11 @@ public:
                 //TODO Command
             }
 
+            if (ImGui::Button("Add new bicubic coons surface")) {
+                c->AddNewBicubicCoonsSurface();
+                //TODO Command
+            }
+
             if (ImGui::Button("Add new bezier surface")) {
                 c->AddNewBezierSurface();
                 //TODO Command

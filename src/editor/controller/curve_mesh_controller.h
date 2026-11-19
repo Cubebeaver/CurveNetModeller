@@ -21,6 +21,7 @@
 #include "editor/workspace/workspaces.hpp"
 #include "model/constraint/same_point_position_constraint.h"
 #include "model/element/bezier_surface.h"
+#include "model/element/bicubic_coons.hpp"
 
 class CurveMeshController {
 private:
@@ -76,7 +77,7 @@ public:
         auto n2 = std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, 0.0f), glm::vec3( 0.5f,  0.0f, 0.0f), glm::vec3( 1.5f, 0.0f, 0.0f), HandleMode::Aligned);
 
         //DEBUG
-        curveRotationMinimizingFrameViews.push_back(std::make_unique<CurveRotationMinimizingFrameView>(newEdge));
+        //curveRotationMinimizingFrameViews.push_back(std::make_unique<CurveRotationMinimizingFrameView>(newEdge));
         //DEBUG
 
         CommandHistory::Add(CompositeCommand::Create()
@@ -123,6 +124,75 @@ public:
         auto he_d2 = std::make_shared<HalfEdge>(d2);
 
         auto newSurface = std::make_shared<CoonsSurface>(he_c1, he_c2, he_d1, he_d2);
+        curveMesh->AddSurface(newSurface);
+
+        curveMesh->AddPoint(c1->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(c1->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(c1->GetNodes()[0]->GetRightHandle());
+        curveMesh->AddPoint(c1->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(c1->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(c1->GetNodes()[1]->GetRightHandle());
+        curveMesh->AddEdge(c1);
+
+        curveMesh->AddPoint(c2->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(c2->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(c2->GetNodes()[0]->GetRightHandle());
+        curveMesh->AddPoint(c2->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(c2->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(c2->GetNodes()[1]->GetRightHandle());
+        curveMesh->AddEdge(c2);
+
+        //curveMesh->AddPoint(d1->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(d1->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(d1->GetNodes()[0]->GetRightHandle());
+        //curveMesh->AddPoint(d1->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(d1->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(d1->GetNodes()[1]->GetRightHandle());
+        curveMesh->AddEdge(d1);
+
+        //curveMesh->AddPoint(d2->GetNodes()[0]->GetCenterHandle());
+        curveMesh->AddPoint(d2->GetNodes()[0]->GetLeftHandle());
+        curveMesh->AddPoint(d2->GetNodes()[0]->GetRightHandle());
+        //curveMesh->AddPoint(d2->GetNodes()[1]->GetCenterHandle());
+        curveMesh->AddPoint(d2->GetNodes()[1]->GetLeftHandle());
+        curveMesh->AddPoint(d2->GetNodes()[1]->GetRightHandle());
+        curveMesh->AddEdge(d2);
+
+        curveMesh->AddHalfEdge(he_c1);
+        curveMesh->AddHalfEdge(he_c2);
+        curveMesh->AddHalfEdge(he_d1);
+        curveMesh->AddHalfEdge(he_d2);
+
+        //TODO Command
+    }
+
+    void AddNewBicubicCoonsSurface() {
+        auto c1 = std::make_shared<BezierCurve>();
+        c1->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(-1.5f, 0.0f, -1.0f), glm::vec3(-0.5f, 0.0f, -1.0f), HandleMode::Aligned));
+        c1->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, -1.0f), glm::vec3( 0.5f, 0.0f, -1.0f), glm::vec3( 1.5f, 0.0f, -1.0f), HandleMode::Aligned));
+
+        auto c2 = std::make_shared<BezierCurve>();
+        c2->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f,  1.0f), glm::vec3(-1.5f, 0.0f,  1.0f), glm::vec3(-0.5f, 0.0f,  1.0f), HandleMode::Aligned));
+        c2->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f,  1.0f), glm::vec3( 0.5f, 0.0f,  1.0f), glm::vec3( 1.5f, 0.0f,  1.0f), HandleMode::Aligned));
+
+        auto d1 = std::make_shared<BezierCurve>();
+        d1->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(-1.0f, 0.0f, -1.5f), glm::vec3(-1.0f, 0.0f, -0.5f), HandleMode::Aligned));
+        d1->GetNodes()[0]->SetCenterHandle(c1->GetNodes()[0]->GetCenterHandle());
+        d1->AddNode(std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f,  1.0f), glm::vec3(-1.0f, 0.0f,  0.5f), glm::vec3(-1.0f, 0.0f,  1.5f), HandleMode::Aligned));
+        d1->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[0]->GetCenterHandle());
+
+        auto d2 = std::make_shared<BezierCurve>();
+        d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, -1.0f), glm::vec3( 1.0f, 0.0f, -1.5f), glm::vec3( 1.0f, 0.0f, -0.5f), HandleMode::Aligned));
+        d2->GetNodes()[0]->SetCenterHandle(c1->GetNodes()[1]->GetCenterHandle());
+        d2->AddNode(std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f,  1.0f), glm::vec3( 1.0f, 0.0f,  0.5f), glm::vec3( 1.0f, 0.0f,  1.5f), HandleMode::Aligned));
+        d2->GetNodes()[1]->SetCenterHandle(c2->GetNodes()[1]->GetCenterHandle());
+
+        auto he_c1 = std::make_shared<HalfEdge>(c1);
+        auto he_c2 = std::make_shared<HalfEdge>(c2, true);
+        auto he_d1 = std::make_shared<HalfEdge>(d1, true);
+        auto he_d2 = std::make_shared<HalfEdge>(d2);
+
+        auto newSurface = std::make_shared<BicubicCoonsSurface>(he_c1, he_c2, he_d1, he_d2);
         curveMesh->AddSurface(newSurface);
 
         curveMesh->AddPoint(c1->GetNodes()[0]->GetCenterHandle());
@@ -369,10 +439,12 @@ private:
         // Curve views
         if (curveViews.size() != curveMesh->GetEdges().size()) {
             curveViews.clear();
+            curveRotationMinimizingFrameViews.clear();
             for (const auto& curve : curveMesh->GetEdges()) {
-                auto nodeView = std::make_unique<CurveView>();
-                nodeView->Update(*curve);
-                curveViews.push_back(std::move(nodeView));
+                auto curveView = std::make_unique<CurveView>();
+                curveView->Update(*curve);
+                curveViews.push_back(std::move(curveView));
+                curveRotationMinimizingFrameViews.push_back(std::make_unique<CurveRotationMinimizingFrameView>(curve));
             }
         }
 

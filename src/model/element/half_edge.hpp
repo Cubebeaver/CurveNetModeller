@@ -1,6 +1,7 @@
 #pragma once
 
 #include "i_Curve.hpp"
+#include "util/math_helper.hpp"
 
 #include <cereal/cereal.hpp>
 
@@ -38,21 +39,35 @@ public:
 
     }
 
-    void InitializeAfterLoad() { }
+    void InitializeAfterLoad() { curve.lock()->CurveChanged.AddListener(this, &HalfEdge::OnCurveChanged); }
     glm::vec3 EvaluatePosition(float t) const  {
-        float newT = Lerp(from, to, t);
+        float newT = std::lerp(from, to, t);
 
         if (auto s = curve.lock()) return s->EvaluatePosition(newT);
         else return glm::vec3(0.0f);
     }
+    glm::vec3 EvaluateVelocity(float t) const {
+        float newT = std::lerp(from, to, t);
+
+        float scale = (to - from);
+        if (auto s = curve.lock()) return scale * s->EvaluateVelocity(newT);
+        else return glm::vec3(0.0f);
+    }
+    glm::vec3 EvaluateAcceleration(float t) const {
+        float newT = std::lerp(from, to, t);
+
+        float scale = (to - from);
+        if (auto s = curve.lock()) return scale * scale * s->EvaluateAcceleration(newT);
+        else return glm::vec3(0.0f);
+    }
     float EvaluateCurveCurvature(float t) const {
-        float newT = Lerp(from, to, t);
+        float newT = std::lerp(from, to, t);
 
         if (auto s = curve.lock()) return s->EvaluateCurveCurvature(newT);
         else return 0.0f;
     }
     glm::vec3 EvaluateCurvePrincipalNormal(float t) const {
-        float newT = Lerp(from, to, t);
+        float newT = std::lerp(from, to, t);
 
         if (auto s = curve.lock()) return s->EvaluateCurvePrincipalNormal(newT);
         else return glm::vec3(0.0f);
@@ -63,12 +78,8 @@ public:
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(curve), CEREAL_NVP(from), CEREAL_NVP(to));
     }
-private:
-    template<typename T>
-    T static Lerp(T a, T b, T t) {
-        return a + (b - a) * t;
-    }
 
+private:
     void OnCurveChanged() {
         HalfEdgeChanged.Invoke();
     }

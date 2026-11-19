@@ -45,5 +45,5 @@ void CoonsSurface::InitializeAfterLoad() {
 }
 
 void CoonsSurface::OnHalfEdgeChanged() {
-    CoonsSurfaceChanged.Invoke();
+    SurfaceChanged.Invoke();
 }

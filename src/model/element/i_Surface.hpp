@@ -6,7 +6,7 @@
 
 class ISurface : public IElement {
 public:
-    Event<> CoonsSurfaceChanged;
+    Event<> SurfaceChanged;
 
     virtual glm::vec3 Evaluate(float u, float v) const = 0;
 
