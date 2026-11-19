@@ -8,8 +8,8 @@
 namespace Hermite {
     inline float F0(float t) { return 1.0f - 3.0f * t * t + 2.0f * t * t * t; } // Pozíció t=0
     inline float F1(float t) { return 3.0f * t * t - 2.0f * t * t * t; }        // Pozíció t=1
-    inline float G0(float t) { return t - 2.0f * t * t + t * t * t; }         // Derivált t=0
-    inline float G1(float t) { return -t * t + t * t * t; }                 // Derivált t=1
+    inline float G0(float t) { return t - 2.0f * t * t + t * t * t; }           // Derivált t=0
+    inline float G1(float t) { return -t * t + t * t * t; }                     // Derivált t=1
 }
 
 // RMF mintavételezése egy előre kiszámolt tömbből lineáris interpolációval
@@ -101,6 +101,7 @@ public:
     glm::vec3 Evaluate(float u, float v) const override {
         //! Lehet hogy jobb oldali körüljárás kéne??? mert úgy az RMF binprmálja pont kifele mutat :(
         //  vagy beszorozhatunk minden binormált -1-el hogy befele mutasson :)
+        // Haha valójában jobbos körüljárás van, mert én hülye fejjel lefele raktam össze a dolgokat xddd
         if (!bottom || !top || !left || !right) return glm::vec3(0.0f);
 
         // --- 1. Keresztirányú deriváltak (Normal Fence) kiszámítása az RMF projekcióval ---
@@ -108,13 +109,13 @@ public:
         // A) S_v(u, 0) - Bottom határ menti kerítés (u mentén interpolálva)
         RMFFrame fB0 = GetFrameForHalfEdge(*bottom, cachedRmfBottom, 0.0f);
         RMFFrame fB1 = GetFrameForHalfEdge(*bottom, cachedRmfBottom, 1.0f);
-        glm::vec3 velLeftStart  = left->EvaluateVelocity(0.0f); // D0'(0)                                               ROSSZ?? 1-ben és *-1 ???? de ez lehet nem kell
-        glm::vec3 velRightStart = right->EvaluateVelocity(0.0f); // D1'(0)                                              OK
+        glm::vec3 tB0 = -left->EvaluateVelocity(1.0f); // D0'(0)
+        glm::vec3 tB1 =  right->EvaluateVelocity(0.0f); // D1'(0)
 
-        float alphaB0 = glm::dot(velLeftStart, fB0.t);
-        float betaB0  = glm::dot(velLeftStart, fB0.s);
-        float alphaB1 = glm::dot(velRightStart, fB1.t);
-        float betaB1  = glm::dot(velRightStart, fB1.s);
+        float alphaB0 = glm::dot(tB0, fB0.t);
+        float betaB0  = glm::dot(tB0, fB0.s);
+        float alphaB1 = glm::dot(tB1, fB1.t);
+        float betaB1  = glm::dot(tB1, fB1.s);
 
         float alphaB = (1.0f - u) * alphaB0 + u * alphaB1;
         float betaB  = (1.0f - u) * betaB0  + u * betaB1;
@@ -124,13 +125,13 @@ public:
         // B) S_v(u, 1) - Top határ menti kerítés (u mentén interpolálva)
         RMFFrame fT0 = GetFrameForHalfEdge(*top, cachedRmfTop, 0.0f);
         RMFFrame fT1 = GetFrameForHalfEdge(*top, cachedRmfTop, 1.0f);
-        glm::vec3 velLeftEnd  = left->EvaluateVelocity(1.0f);  // D0'(1)                                                ROSSZ?? 1-ban
-        glm::vec3 velRightEnd = right->EvaluateVelocity(1.0f); // D1'(1)                                                ROSSZ???? *-1?????
+        glm::vec3 tT0 = -right->EvaluateVelocity(0.0f); // D0'(1)
+        glm::vec3 tT1 =  left->EvaluateVelocity(1.0f);  // D1'(1)
 
-        float alphaT0 = glm::dot(velLeftEnd, fT0.t);
-        float betaT0  = glm::dot(velLeftEnd, fT0.s);
-        float alphaT1 = glm::dot(velRightEnd, fT1.t);
-        float betaT1  = glm::dot(velRightEnd, fT1.s);
+        float alphaT0 = glm::dot(tT1, fT0.t);
+        float betaT0  = glm::dot(tT1, fT0.s);
+        float alphaT1 = glm::dot(tT0, fT1.t);
+        float betaT1  = glm::dot(tT0, fT1.s);
 
         float alphaT = (1.0f - u) * alphaT0 + u * alphaT1;
         float betaT  = (1.0f - u) * betaT0  + u * betaT1;
@@ -140,13 +141,13 @@ public:
         // C) S_u(0, v) - Left határ menti kerítés (v mentén interpolálva)
         RMFFrame fL0 = GetFrameForHalfEdge(*left, cachedRmfLeft, 0.0f);
         RMFFrame fL1 = GetFrameForHalfEdge(*left, cachedRmfLeft, 1.0f);
-        glm::vec3 velBottomStart = bottom->EvaluateVelocity(0.0f); // C0'(0)                                            // ROSSZ??? 1-ben és *-1????
-        glm::vec3 velTopStart    = top->EvaluateVelocity(0.0f);    // C1'(0)                                            // OK
+        glm::vec3 tL0 = -top->EvaluateVelocity(1.0f);    // C0'(0)
+        glm::vec3 tL1 =  bottom->EvaluateVelocity(0.0f); // C1'(0)
 
-        float alphaL0 = glm::dot(velBottomStart, fL0.t);
-        float betaL0  = glm::dot(velBottomStart, fL0.s);
-        float alphaL1 = glm::dot(velTopStart, fL1.t);
-        float betaL1  = glm::dot(velTopStart, fL1.s);
+        float alphaL0 = glm::dot(tL1, fL0.t);
+        float betaL0  = glm::dot(tL1, fL0.s);
+        float alphaL1 = glm::dot(tL0, fL1.t);
+        float betaL1  = glm::dot(tL0, fL1.s);
 
         float alphaL = (1.0f - v) * alphaL0 + v * alphaL1;
         float betaL  = (1.0f - v) * betaL0  + v * betaL1;
@@ -156,13 +157,13 @@ public:
         // D) S_u(1, v) - Right határ menti kerítés (v mentén interpolálva)
         RMFFrame fR0 = GetFrameForHalfEdge(*right, cachedRmfRight, 0.0f);
         RMFFrame fR1 = GetFrameForHalfEdge(*right, cachedRmfRight, 1.0f);
-        glm::vec3 velBottomEnd = bottom->EvaluateVelocity(1.0f); // C0'(1)                                              // ROSSZ?? *-1??
-        glm::vec3 velTopEnd    = top->EvaluateVelocity(1.0f);    // C1'(1)                                              // ROSSZ?? 0-ban?
+        glm::vec3 tR0 = -bottom->EvaluateVelocity(1.0f); // C0'(1)
+        glm::vec3 tR1 =  top->EvaluateVelocity(0.0f);    // C1'(1)
 
-        float alphaR0 = glm::dot(velBottomEnd, fR0.t);
-        float betaR0  = glm::dot(velBottomEnd, fR0.s);
-        float alphaR1 = glm::dot(velTopEnd, fR1.t);
-        float betaR1  = glm::dot(velTopEnd, fR1.s);
+        float alphaR0 = glm::dot(tR0, fR0.t);
+        float betaR0  = glm::dot(tR0, fR0.s);
+        float alphaR1 = glm::dot(tR1, fR1.t);
+        float betaR1  = glm::dot(tR1, fR1.s);
 
         float alphaR = (1.0f - v) * alphaR0 + v * alphaR1;
         float betaR  = (1.0f - v) * betaR0  + v * betaR1;
@@ -173,12 +174,12 @@ public:
 
         // R1(u, v): u-irányú szalag
         glm::vec3 C0_u = bottom->EvaluatePosition(u);
-        glm::vec3 C1_u = top->EvaluatePosition(u);
+        glm::vec3 C1_u = top->EvaluatePosition(1 - u);
         glm::vec3 R1 = C0_u * Hermite::F0(v) + C1_u * Hermite::F1(v) +
                        Sv_u0 * Hermite::G0(v) + Sv_u1 * Hermite::G1(v);
 
         // R2(u, v): v-irányú szalag
-        glm::vec3 D0_v = left->EvaluatePosition(v);
+        glm::vec3 D0_v = left->EvaluatePosition(1 - v);
         glm::vec3 D1_v = right->EvaluatePosition(v);
         glm::vec3 R2 = D0_v * Hermite::F0(u) + D1_v * Hermite::F1(u) +
                        Su_0v * Hermite::G0(u) + Su_1v * Hermite::G1(u);
@@ -192,15 +193,15 @@ public:
         glm::vec3 P11 = top->EvaluatePosition(1.0f);
 
         // Sarokderiváltak (Zero-twist feltételezés: S_uv = 0)
-        glm::vec3 Sv00 = velLeftStart;   // S_v(0,0)
-        glm::vec3 Sv10 = velRightStart;  // S_v(1,0)
-        glm::vec3 Sv01 = velLeftEnd;     // S_v(0,1)
-        glm::vec3 Sv11 = velRightEnd;    // S_v(1,1)
+        glm::vec3 Sv00 = tB0;   // S_v(0,0)
+        glm::vec3 Sv10 = tB1;  // S_v(1,0)
+        glm::vec3 Sv01 = tT0;     // S_v(0,1)
+        glm::vec3 Sv11 = tT1;    // S_v(1,1)
 
-        glm::vec3 Su00 = velBottomStart; // S_u(0,0)
-        glm::vec3 Su10 = velBottomEnd;   // S_u(1,0)
-        glm::vec3 Su01 = velTopStart;    // S_u(0,1)
-        glm::vec3 Su11 = velTopEnd;      // S_u(1,1)
+        glm::vec3 Su00 = tL0; // S_u(0,0)
+        glm::vec3 Su10 = tR0;   // S_u(1,0)
+        glm::vec3 Su01 = tL1;    // S_u(0,1)
+        glm::vec3 Su11 = tR1;      // S_u(1,1)
 
         glm::vec3 R12 = Hermite::F0(u) * Hermite::F0(v) * P00 + Hermite::F0(u) * Hermite::F1(v) * P01 +
                         Hermite::F1(u) * Hermite::F0(v) * P10 + Hermite::F1(u) * Hermite::F1(v) * P11 +

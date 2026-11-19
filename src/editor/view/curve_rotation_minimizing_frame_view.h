@@ -13,15 +13,20 @@
 class CurveRotationMinimizingFrameView {
 private:
     std::unique_ptr<gl_engine::Mesh> mesh;
-    std::unique_ptr<gl_engine::Material> material;
+    std::unique_ptr<gl_engine::Material> materialR;
+    std::unique_ptr<gl_engine::Material> materialT;
+    std::unique_ptr<gl_engine::Material> materialS;
 
     std::shared_ptr<ICurve> curveModel;
     std::unique_ptr<RotationMinimizingFrame> rmf;
 
-public:
-    CurveRotationMinimizingFrameView(std::shared_ptr<ICurve> c);
+    bool drawSpace = true;
+    int lastResolution = 10;
 
-    void Update(int resolution = 50, float length = 0.1f);
+public:
+    CurveRotationMinimizingFrameView(std::shared_ptr<ICurve> c, bool drawSpace = true);
+
+    void Update(int resolution = 10, float length = 0.1f);
 
     void Draw();
 

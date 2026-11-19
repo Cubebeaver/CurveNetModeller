@@ -75,8 +75,9 @@ set(GL_ENGINE_SOURCES
 
 # Csak a tesztekhez tartozó fájlok
 set(TEST_SOURCES
-        tests/model/test_bezier.cpp
         tests/model/test_transform.cpp
+        tests/model/test_bezier.cpp
+        tests/model/test_half_edge.cpp
         tests/model/test_coons.cpp
 )
 
