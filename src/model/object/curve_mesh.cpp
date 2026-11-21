@@ -64,6 +64,11 @@ void CurveMesh::InitializeAfterLoad() {
         edge->InitializeAfterLoad();
     }
 
+    for (auto& halfEdge : halfEdges) {
+        halfEdge->HalfEdgeChanged.AddListener(this, &CurveMesh::OnEdgeChanged);
+        halfEdge->InitializeAfterLoad();
+    }
+
     for (auto& face : surfaces) {
         face->SurfaceChanged.AddListener(this, &CurveMesh::OnSurfaceChanged);
         face->InitializeAfterLoad();

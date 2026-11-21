@@ -12,6 +12,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Generál egy compile_commands.json fájlt, amit az IDE-k (pl. VS Code) imádnak az intellisense-hez
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
 
+# Aggresszív optimalizáció Release esetén
+if(MSVC)
+    # Az /O2, /Ob3 és /GL csak Release és RelWithDebInfo módban fut le
+    add_compile_options(
+            $<$<CONFIG:Release,RelWithDebInfo>:/O2>
+            $<$<CONFIG:Release,RelWithDebInfo>:/Ob3>
+            $<$<CONFIG:Release,RelWithDebInfo>:/GL>
+    )
+    add_link_options(
+            $<$<CONFIG:Release,RelWithDebInfo>:/LTCG>
+    )
+endif()
 
 # ==========================================
 # 2. FÜGGŐSÉGEK (DEPENDENCIES) KERESÉSE
@@ -45,6 +57,8 @@ set(MODEL_SOURCES
     src/model/object/transform.cpp
     src/model/constraint/point_on_curve_constraint.cpp
     src/model/constraint/same_point_position_constraint.cpp
+    src/model/element/half_edge.cpp
+    src/model/element/bicubic_coons_surface.cpp
 )
 
 # Csak a főprogramhoz tartozó fájlok (Ablakkezelés, UI)

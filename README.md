@@ -41,6 +41,7 @@ Used packages:
  - [GLM](https://github.com/g-truc/glm) (Happy Bunny / MIT License) - Math library for OpenGL.
  - [Dear ImGui](https://github.com/ocornut/imgui) (MIT License) - UI framework.
  - [stb_image](https://github.com/nothings/stb) (Public Domain / MIT) - Image loader.
+ - [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/) (Zlib License) - Native dialogue boxes.
  - [cereal](https://uscilab.github.io/cereal/) (BSD License) - Serialization.
  - [Google Test](https://github.com/google/googletest) (BSD License) - Unit testing framework.
 
@@ -163,6 +164,7 @@ Felhasznált csomagok:
  - [GLM](https://github.com/g-truc/glm) (Happy Bunny / MIT License) - Matematikai könyvtár OpenGL-hez.
  - [Dear ImGui](https://github.com/ocornut/imgui) (MIT License) - Kezelőfelület.
  - [stb_image](https://github.com/nothings/stb) (Public Domain / MIT) - Képbetöltés.
+ - [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/) (Zlib License) - Natív dialógus ablakok.
  - [cereal](https://uscilab.github.io/cereal/) (BSD License) - Szerializáció.
  - [Google Test](https://github.com/google/googletest) (BSD License) - Egységtesztelő keretrendszer.
 

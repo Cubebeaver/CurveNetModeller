@@ -3,11 +3,10 @@
 
 #include "model/element/bezier_curve.h"
 #include "model/element/bezier_node.h"
-#include "model/element/half_edge.hpp"
+#include "model/element/half_edge.h"
 
 
 
-// Teszteljük, hogy a konstruktor jól állítja-e be az alapértékeket
 TEST(HalfEdgeTest, Initialization) {
     std::shared_ptr<BezierNode> node1 = std::make_shared<BezierNode>(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(-2.0f, 1.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     std::shared_ptr<BezierNode> node2 = std::make_shared<BezierNode>(glm::vec3( 1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3( 2.0f, 1.0f, 0.0f));

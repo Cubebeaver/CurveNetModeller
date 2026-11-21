@@ -18,7 +18,7 @@ private:
     std::unique_ptr<gl_engine::Material> materialS;
 
     std::shared_ptr<ICurve> curveModel;
-    std::unique_ptr<RotationMinimizingFrame> rmf;
+    std::unique_ptr<RMF> rmf;
 
     bool drawSpace = true;
     int lastResolution = 10;

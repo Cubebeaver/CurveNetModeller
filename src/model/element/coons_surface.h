@@ -3,7 +3,7 @@
 #include "bezier_curve.h"
 #include <glm/glm.hpp>
 
-#include "half_edge.hpp"
+#include "half_edge.h"
 #include "i_Surface.hpp"
 
 #include <cereal/archives/json.hpp>

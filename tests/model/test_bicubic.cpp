@@ -3,7 +3,7 @@
 
 #include "model/element/bezier_curve.h"
 #include "model/element/bezier_node.h"
-#include "model/element/bicubic_coons_surface.hpp"
+#include "model/element/bicubic_coons_surface.h"
 
 
 TEST(BicubicCoonsSurfaceTest, CornerEquality) {

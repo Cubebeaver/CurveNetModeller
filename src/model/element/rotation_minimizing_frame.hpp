@@ -3,7 +3,7 @@
 #include <glm/vec3.hpp>
 
 #include "i_Curve.hpp"
-#include "half_edge.hpp"
+#include "half_edge.h"
 #include "i_Element.hpp"
 
 // A keretet (frame) reprezentáló struktúra az algoritmus alapján
@@ -21,7 +21,7 @@ struct RMFFrame {
 //  - Twist Distribution: megmérem a végén az eltérést, és "elcsavarom annyival a végét (lineárisan interpolálva a start fele)"
 //  - Dual RMF Blending: Számolok egyet az elejétől a végéig és a végéről az elejéig, és ezeket quaternióként kezelve SLERP-elek köztük
 //  - Globális energia-minimalizálás: Egyenletrendszer-megoldód módszer, pontosabb és globális, de számításigények
-class RotationMinimizingFrame {
+class RMF {
 private:
     std::shared_ptr<ICurve> curve;
     glm::vec3 startNormal;
@@ -40,11 +40,11 @@ private:
 
 public:
     // Konstruktor csak kezdő normállal
-    RotationMinimizingFrame(std::shared_ptr<ICurve> c, const glm::vec3& initialNormal)
+    RMF(std::shared_ptr<ICurve> c, const glm::vec3& initialNormal)
         : curve(std::move(c)), startNormal(initialNormal), endNormal(0.0f), useEndNormal(false) {}
 
     // Konstruktor kezdő ÉS vég normállal
-    RotationMinimizingFrame(std::shared_ptr<ICurve> c, const glm::vec3& initialNormal, const glm::vec3& finalNormal)
+    RMF(std::shared_ptr<ICurve> c, const glm::vec3& initialNormal, const glm::vec3& finalNormal)
         : curve(std::move(c)), startNormal(initialNormal), endNormal(finalNormal), useEndNormal(true) {}
 
     std::vector<RMFFrame> GenerateFrames(int resolution) const {
@@ -221,5 +221,23 @@ public:
         }
 
         return frames;
+    }
+
+    inline static RMFFrame Sample(const std::vector<RMFFrame>& frames, float curveT) {
+        if (frames.empty()) return RMFFrame();
+        if (frames.size() == 1) return frames[0];
+
+        curveT = glm::clamp(curveT, 0.0f, 1.0f);
+        float scaledT = curveT * static_cast<float>(frames.size() - 1);
+        int idx = static_cast<int>(std::floor(scaledT));
+        int nextIdx = std::min(idx + 1, static_cast<int>(frames.size()) - 1);
+        float factor = scaledT - static_cast<float>(idx);
+
+        RMFFrame result;
+        result.position = glm::mix(frames[idx].position, frames[nextIdx].position, factor);
+        result.r        = glm::normalize(glm::mix(frames[idx].r, frames[nextIdx].r, factor));
+        result.s        = glm::normalize(glm::mix(frames[idx].s, frames[nextIdx].s, factor));
+        result.t        = glm::normalize(glm::mix(frames[idx].t, frames[nextIdx].t, factor));
+        return result;
     }
 };
