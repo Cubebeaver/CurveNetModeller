@@ -11,15 +11,13 @@
 #include "model/element/i_Surface.hpp"
 #include "model/element/rotation_minimizing_frame.hpp"
 
-// --- Hermite bázisfüggvények ---
 namespace Hermite {
-    inline float F0(float t) { return 1.0f - 3.0f * t * t + 2.0f * t * t * t; } // Pozíció t=0
-    inline float F1(float t) { return 3.0f * t * t - 2.0f * t * t * t; }        // Pozíció t=1
-    inline float G0(float t) { return t - 2.0f * t * t + t * t * t; }         // Derivált t=0
-    inline float G1(float t) { return -t * t + t * t * t; }                 // Derivált t=1
+    inline float F0(float t) { return 1.0f - 3.0f * t * t + 2.0f * t * t * t; }
+    inline float F1(float t) { return 3.0f * t * t - 2.0f * t * t * t; }
+    inline float G0(float t) { return t - 2.0f * t * t + t * t * t; }
+    inline float G1(float t) { return -t * t + t * t * t; }
 }
 
-// RMF mintavételezése egy előre kiszámolt tömbből lineáris interpolációval
 inline RMFFrame SampleRMF(const std::vector<RMFFrame>& frames, float curveT) {
     if (frames.empty()) return RMFFrame();
     if (frames.size() == 1) return frames[0];
@@ -39,7 +37,7 @@ inline RMFFrame SampleRMF(const std::vector<RMFFrame>& frames, float curveT) {
 }
 
 
-// --- Bikubikus Coons Felület Osztály ---
+
 class BicubicCoonsSurface : public ISurface {
 private:
     void OnHalfEdgeChanged() {
@@ -48,10 +46,10 @@ private:
     }
 
 public:
-    std::shared_ptr<HalfEdge> bottom; // C0(u), v = 0
-    std::shared_ptr<HalfEdge> top;    // C1(u), v = 1
-    std::shared_ptr<HalfEdge> left;   // D0(v), u = 0
-    std::shared_ptr<HalfEdge> right;  // D1(v), u = 1
+    std::shared_ptr<HalfEdge> bottom; // S(u,0)
+    std::shared_ptr<HalfEdge> top;    // S(u,1)
+    std::shared_ptr<HalfEdge> left;   // S(0,v)
+    std::shared_ptr<HalfEdge> right;  // S(1,v)
 
     int rmfResolution = 50;
     glm::vec3 defaultStartNormal = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -63,7 +61,12 @@ public:
                         int rmfResolution = 50)
         : bottom(bottom), top(top), left(left), right(right), rmfResolution(rmfResolution) {}
 
-    virtual ~BicubicCoonsSurface() override = default;
+    virtual ~BicubicCoonsSurface() override {
+        this->bottom->HalfEdgeChanged.RemoveListener(this, &BicubicCoonsSurface::OnHalfEdgeChanged);
+        this->top->HalfEdgeChanged.RemoveListener(this, &BicubicCoonsSurface::OnHalfEdgeChanged);
+        this->left->HalfEdgeChanged.RemoveListener(this, &BicubicCoonsSurface::OnHalfEdgeChanged);
+        this->right->HalfEdgeChanged.RemoveListener(this, &BicubicCoonsSurface::OnHalfEdgeChanged);
+    };
 
     void InitializeAfterLoad() override {
         this->bottom->HalfEdgeChanged.AddListener(this, &BicubicCoonsSurface::OnHalfEdgeChanged);
@@ -91,7 +94,7 @@ public:
     }
 
 
-    inline glm::vec3 Sv_u0(float u) const {
+    inline glm::vec3 Sv_u0(float u) const { // Bottom
         RMFFrame f0 = SampleRMF(cachedRmfBottom, 0.0f);
         RMFFrame f1 = SampleRMF(cachedRmfBottom, 1.0f);
         glm::vec3 nbourVel0 = -left->EvaluateVelocity(1.0f);
@@ -109,7 +112,7 @@ public:
         return Sv_u0;
     }
 
-    inline glm::vec3 Sv_u1(float u) const {
+    inline glm::vec3 Sv_u1(float u) const { // Top
         RMFFrame f0 = SampleRMF(cachedRmfTop, 1.0f);
         RMFFrame f1 = SampleRMF(cachedRmfTop, 0.0f);
         glm::vec3 nbourVel0  = left->EvaluateVelocity(0.0f);
@@ -127,7 +130,7 @@ public:
         return Sv_u1;
     }
 
-    inline glm::vec3 Su_0v(float v) const {
+    inline glm::vec3 Su_0v(float v) const { // Left
         RMFFrame f0 = SampleRMF(cachedRmfLeft, 1.0f);
         RMFFrame f1 = SampleRMF(cachedRmfLeft, 0.0f);
         glm::vec3 nbourVel0 =  bottom->EvaluateVelocity(0.0f);
@@ -145,7 +148,7 @@ public:
         return Sv_0v;
     }
 
-    inline glm::vec3 Su_1v(float v) const {
+    inline glm::vec3 Su_1v(float v) const { // Right
         RMFFrame f0 = SampleRMF(cachedRmfRight, 0.0f);
         RMFFrame f1 = SampleRMF(cachedRmfRight, 1.0f);
         glm::vec3 nbourVel0 = -bottom->EvaluateVelocity(1.0f);
