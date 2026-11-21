@@ -3,7 +3,7 @@
 #include <glm/vec3.hpp>
 
 #include "i_Curve.hpp"
-#include "half_edge.hpp"
+#include "half_edge.h"
 #include "i_Element.hpp"
 
 // A keretet (frame) reprezentáló struktúra az algoritmus alapján
@@ -21,7 +21,7 @@ struct RMFFrame {
 //  - Twist Distribution: megmérem a végén az eltérést, és "elcsavarom annyival a végét (lineárisan interpolálva a start fele)"
 //  - Dual RMF Blending: Számolok egyet az elejétől a végéig és a végéről az elejéig, és ezeket quaternióként kezelve SLERP-elek köztük
 //  - Globális energia-minimalizálás: Egyenletrendszer-megoldód módszer, pontosabb és globális, de számításigények
-class RotationMinimizingFrame {
+class RMF {
 private:
     std::shared_ptr<ICurve> curve;
     glm::vec3 startNormal;
@@ -40,11 +40,11 @@ private:
 
 public:
     // Konstruktor csak kezdő normállal
-    RotationMinimizingFrame(std::shared_ptr<ICurve> c, const glm::vec3& initialNormal)
+    RMF(std::shared_ptr<ICurve> c, const glm::vec3& initialNormal)
         : curve(std::move(c)), startNormal(initialNormal), endNormal(0.0f), useEndNormal(false) {}
 
     // Konstruktor kezdő ÉS vég normállal
-    RotationMinimizingFrame(std::shared_ptr<ICurve> c, const glm::vec3& initialNormal, const glm::vec3& finalNormal)
+    RMF(std::shared_ptr<ICurve> c, const glm::vec3& initialNormal, const glm::vec3& finalNormal)
         : curve(std::move(c)), startNormal(initialNormal), endNormal(finalNormal), useEndNormal(true) {}
 
     std::vector<RMFFrame> GenerateFrames(int resolution) const {

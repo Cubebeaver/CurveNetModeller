@@ -4,7 +4,7 @@ using namespace gl_engine;
 
 CurveRotationMinimizingFrameView::CurveRotationMinimizingFrameView(std::shared_ptr<ICurve> c, bool drawSpace)
     : curveModel(c), drawSpace(drawSpace) {
-    rmf = std::make_unique<RotationMinimizingFrame>(c, glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
+    rmf = std::make_unique<RMF>(c, glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
     c->CurveChanged.AddListener(this, &CurveRotationMinimizingFrameView::OnChanged);
 
     std::vector<float> emptyVerts;

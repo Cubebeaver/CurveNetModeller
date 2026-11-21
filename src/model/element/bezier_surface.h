@@ -27,6 +27,7 @@ public:
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(controlPoints));
     }
+
 private:
     int BinomialCoefficient(int n, int k) const;
     float Bernstein(int n, int i, float t) const;

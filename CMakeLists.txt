@@ -45,6 +45,7 @@ set(MODEL_SOURCES
     src/model/object/transform.cpp
     src/model/constraint/point_on_curve_constraint.cpp
     src/model/constraint/same_point_position_constraint.cpp
+    src/model/element/half_edge.cpp
 )
 
 # Csak a főprogramhoz tartozó fájlok (Ablakkezelés, UI)

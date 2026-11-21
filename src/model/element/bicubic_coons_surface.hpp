@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "model/element/half_edge.hpp"
+#include "model/element/half_edge.h"
 #include "model/element/i_Curve.hpp"
 #include "model/element/i_Surface.hpp"
 #include "model/element/rotation_minimizing_frame.hpp"
@@ -186,13 +186,13 @@ public:
     // Generálja az RMF kereteket a 4 határgörbére (érdemes meghívni ha a görbék megváltoznak)
     void UpdateRMF() const {
         if (bottom && bottom->curve.lock())
-            cachedRmfBottom = RotationMinimizingFrame::GenerateFrames(bottom, defaultStartNormal, defaultEndNormal, rmfResolution);
+            cachedRmfBottom = RMF::GenerateFrames(bottom, defaultStartNormal, defaultEndNormal, rmfResolution);
         if (top && top->curve.lock())
-            cachedRmfTop = RotationMinimizingFrame::GenerateFrames(top, defaultStartNormal, defaultEndNormal, rmfResolution);
+            cachedRmfTop = RMF::GenerateFrames(top, defaultStartNormal, defaultEndNormal, rmfResolution);
         if (left && left->curve.lock())
-            cachedRmfLeft = RotationMinimizingFrame::GenerateFrames(left, defaultStartNormal, defaultEndNormal, rmfResolution);
+            cachedRmfLeft = RMF::GenerateFrames(left, defaultStartNormal, defaultEndNormal, rmfResolution);
         if (right && right->curve.lock())
-            cachedRmfRight = RotationMinimizingFrame::GenerateFrames(right, defaultStartNormal, defaultEndNormal, rmfResolution);
+            cachedRmfRight = RMF::GenerateFrames(right, defaultStartNormal, defaultEndNormal, rmfResolution);
     }
 
     glm::vec3 Evaluate(float u, float v) const override {
@@ -213,7 +213,6 @@ public:
     }
 
 private:
-    // Gyorsítótár (cache) az RMF keretekhez, hogy ne generálja újra 50 pontot minden Evaluate-nél
     mutable std::vector<RMFFrame> cachedRmfBottom;
     mutable std::vector<RMFFrame> cachedRmfTop;
     mutable std::vector<RMFFrame> cachedRmfLeft;

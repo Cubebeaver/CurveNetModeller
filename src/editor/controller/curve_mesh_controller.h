@@ -453,7 +453,7 @@ private:
             surfaceViews.clear();
             for (const auto& surface : curveMesh->GetSurfaces()) {
                 auto surfaceView = std::make_unique<SurfaceView>();
-                surfaceView->Update(*surface);
+                surfaceView->Update(*surface, 20);
                 surfaceViews.push_back(std::move(surfaceView));
             }
         }
@@ -497,7 +497,7 @@ private:
         // Surface views
         auto& surfaces = curveMesh->GetSurfaces();
         for (int i = 0; i < surfaces.size(); i++) {
-            surfaceViews[i]->Update(*surfaces[i], 10);
+            surfaceViews[i]->Update(*surfaces[i], 20);
         }
 
         //TODO Hacky
