@@ -35,34 +35,34 @@ find_path(STB_INCLUDE_DIR "stb_image.h" REQUIRED)
 # ==========================================
 # Közös kód: Ezt a főprogram és a teszt is használni fogja (az üzleti logika)
 set(MODEL_SOURCES
-        src/model/element/bezier_curve.cpp
-        src/model/element/bezier_node.cpp
-        src/model/element/coons_surface.cpp
-        src/model/element/bezier_surface.cpp
-        src/model/element/point.cpp
-        src/model/object/object.cpp
-        src/model/object/curve_mesh.cpp
-        src/model/object/transform.cpp
-        src/model/constraint/point_on_curve_constraint.cpp
-        src/model/constraint/same_point_position_constraint.cpp
+    src/model/element/bezier_curve.cpp
+    src/model/element/bezier_node.cpp
+    src/model/element/coons_surface.cpp
+    src/model/element/bezier_surface.cpp
+    src/model/element/point.cpp
+    src/model/object/object.cpp
+    src/model/object/curve_mesh.cpp
+    src/model/object/transform.cpp
+    src/model/constraint/point_on_curve_constraint.cpp
+    src/model/constraint/same_point_position_constraint.cpp
 )
 
 # Csak a főprogramhoz tartozó fájlok (Ablakkezelés, UI)
 set(APP_SOURCES
     src/main.cpp
-        src/editor/controller/curve_mesh_controller.cpp
-        src/editor/interface/element_interfaces.cpp
-        src/editor/view/bezier_node_view.cpp
-        src/editor/view/surface_view.cpp
-        src/editor/view/curve_curvature_comb_view.cpp
-        src/editor/view/curve_view.cpp
-        src/editor/view/floor_grid.cpp
-        src/editor/view/render_point_generator.cpp
-        src/editor/view/skybox.cpp
-        src/util/stb_implementation.cpp
-        src/editor/view/bezier_surface_view.cpp
-        src/editor/view/bezier_surface_view.h
-        src/editor/view/curve_rotation_minimizing_frame_view.cpp
+    src/editor/controller/curve_mesh_controller.cpp
+    src/editor/interface/element_interfaces.cpp
+    src/editor/view/bezier_node_view.cpp
+    src/editor/view/surface_view.cpp
+    src/editor/view/curve_curvature_comb_view.cpp
+    src/editor/view/curve_view.cpp
+    src/editor/view/floor_grid.cpp
+    src/editor/view/render_point_generator.cpp
+    src/editor/view/skybox.cpp
+    src/util/stb_implementation.cpp
+    src/editor/view/bezier_surface_view.cpp
+    src/editor/view/bezier_surface_view.h
+    src/editor/view/curve_rotation_minimizing_frame_view.cpp
 )
 
 # Az OpenGL motorhoz tartozó fáljok (Shaderek, Objectek)
@@ -75,11 +75,11 @@ set(GL_ENGINE_SOURCES
 
 # Csak a tesztekhez tartozó fájlok
 set(TEST_SOURCES
-        tests/model/test_transform.cpp
-        tests/model/test_bezier.cpp
-        tests/model/test_half_edge.cpp
-        tests/model/test_coons.cpp
-        tests/model/test_bicubic.cpp
+    tests/model/test_transform.cpp
+    tests/model/test_bezier.cpp
+    tests/model/test_half_edge.cpp
+    tests/model/test_coons.cpp
+    tests/model/test_bicubic.cpp
 )
 
 
@@ -147,10 +147,10 @@ add_custom_command(TARGET CurveNetModeller POST_BUILD
 )
 
 add_custom_command(TARGET CurveNetModeller POST_BUILD
-        # A CMake beépített, operációs rendszer független másoló parancsát használjuk
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        # HONNAN: A projekt gyökerében lévő 'output' mappa
-        "${CMAKE_CURRENT_SOURCE_DIR}/output"
-        # HOVÁ: Oda, ahová a CurveNetModeller.exe éppen legenerálódott, egy 'output' almappába
-        "$<TARGET_FILE_DIR:CurveNetModeller>/output"
+    # A CMake beépített, operációs rendszer független másoló parancsát használjuk
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    # HONNAN: A projekt gyökerében lévő 'output' mappa
+    "${CMAKE_CURRENT_SOURCE_DIR}/output"
+    # HOVÁ: Oda, ahová a CurveNetModeller.exe éppen legenerálódott, egy 'output' almappába
+    "$<TARGET_FILE_DIR:CurveNetModeller>/output"
 )
