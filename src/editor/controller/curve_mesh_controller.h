@@ -506,7 +506,7 @@ private:
         for (int i = 0; i < surfaces.size(); i++) {
             const std::shared_ptr<BezierSurface> bs = std::dynamic_pointer_cast<BezierSurface>(surfaces[i]);
             if (bs) {
-                beziersurfaceViews[i]->Update(*bs);
+                beziersurfaceViews[n_bs]->Update(*bs);
                 n_bs++;
             }
         }
