@@ -21,7 +21,7 @@
 #include "editor/workspace/workspaces.hpp"
 #include "model/constraint/same_point_position_constraint.h"
 #include "model/element/bezier_surface.h"
-#include "model/element/bicubic_coons_old.hpp"
+#include "model/element/bicubic_coons_new.hpp"
 
 class CurveMeshController {
 private:

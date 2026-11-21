@@ -128,7 +128,7 @@ public:
         // A) S_v(u, 0) - Bottom határ menti kerítés (u mentén interpolálva)
         RMFFrame fB0 = GetFrameForHalfEdge(*bottom, cachedRmfBottom, 0.0f);
         RMFFrame fB1 = GetFrameForHalfEdge(*bottom, cachedRmfBottom, 1.0f);
-        glm::vec3 velLeftStart  = -EvaluateHalfEdgeVelocity(*left, 0.1f);  // D0'(0)
+        glm::vec3 velLeftStart  = -EvaluateHalfEdgeVelocity(*left, 1.0f);  // D0'(0)
         glm::vec3 velRightStart = EvaluateHalfEdgeVelocity(*right, 0.0f); // D1'(0)
 
         float alphaB0 = glm::dot(velLeftStart, fB0.t);

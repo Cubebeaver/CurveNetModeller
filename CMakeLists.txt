@@ -79,6 +79,7 @@ set(TEST_SOURCES
         tests/model/test_bezier.cpp
         tests/model/test_half_edge.cpp
         tests/model/test_coons.cpp
+        tests/model/test_bicubic.cpp
 )
 
 
