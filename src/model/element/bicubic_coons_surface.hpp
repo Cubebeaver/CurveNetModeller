@@ -207,6 +207,11 @@ public:
         return S1(u, v) + S2(u, v) - S12(u, v);
     }
 
+    template<class Archive>
+    void serialize(Archive& archive) {
+        archive(CEREAL_NVP(bottom), CEREAL_NVP(right), CEREAL_NVP(top), CEREAL_NVP(left), CEREAL_NVP(rmfResolution));
+    }
+
 private:
     // Gyorsítótár (cache) az RMF keretekhez, hogy ne generálja újra 50 pontot minden Evaluate-nél
     mutable std::vector<RMFFrame> cachedRmfBottom;
