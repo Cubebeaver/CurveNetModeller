@@ -178,7 +178,7 @@ public:
 
     inline glm::vec3 S12(float u, float v) const {
         return Hermite::F0(u) * Hermite::F0(v) * S_u0(0)  + Hermite::G0(u) * Hermite::F0(v) * Su_0v(0) + Hermite::F1(u) * Hermite::F0(v) * S_u0(1)  + Hermite::G1(u) * Hermite::F0(v) * Su_1v(0)
-             + Hermite::F0(v) * Hermite::G0(v) * Sv_u0(0)   /*              Zero twist              */ + Hermite::F1(u) * Hermite::G0(v) * Sv_u0(1)   /*              Zero twist              */
+             + Hermite::F0(u) * Hermite::G0(v) * Sv_u0(0)   /*              Zero twist              */ + Hermite::F1(u) * Hermite::G0(v) * Sv_u0(1)   /*              Zero twist              */
              + Hermite::F0(u) * Hermite::F1(v) * S_u1(0)  + Hermite::G0(u) * Hermite::F1(v) * Su_0v(1) + Hermite::F1(u) * Hermite::F1(v) * S_u1(1)  + Hermite::G1(u) * Hermite::F1(v) * Su_1v(1)
              + Hermite::F0(u) * Hermite::G1(v) * Sv_u1(0)   /*              Zero twist              */ + Hermite::F1(u) * Hermite::G1(v) * Sv_u1(1)   /*              Zero twist              */;
     }
