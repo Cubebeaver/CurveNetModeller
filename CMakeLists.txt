@@ -94,6 +94,7 @@ set(TEST_SOURCES
     tests/model/test_half_edge.cpp
     tests/model/test_coons.cpp
     tests/model/test_bicubic.cpp
+    tests/model/test_n_sided.cpp
 )
 
 
