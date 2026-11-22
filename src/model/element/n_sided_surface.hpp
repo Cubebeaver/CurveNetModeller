@@ -32,13 +32,13 @@ public:
     NSidedSurface(std::vector<std::shared_ptr<HalfEdge>> edges)
                 : edges(edges) {
         if (edges.size() <= 3) throw std::length_error("NSidedSurface has to have at least 4 edges");
-        UpdateParameterSpaceVertices();
+        UpdateDomainVertices();
         // Events
     }
 
-    void InitializeAfterLoad() override { /*Events*/ UpdateParameterSpaceVertices(); }
+    void InitializeAfterLoad() override { /*Events*/ UpdateDomainVertices(); }
 
-    virtual ~NSidedSurface() override { }
+    virtual ~NSidedSurface() override { /*Unsubscribe from events*/ }
 
     int EdgeCount() const {
         return edges.size();
@@ -54,13 +54,13 @@ public:
         else /* if first */ return EdgeCount() - 1;
     }
 
-    bool IsInParameterSpace(float u, float v) const {
-        size_t n = parameterSpaceVertices.size();
+    bool IsInDomain(float u, float v) const {
+        size_t n = cachedDomainVertices.size();
         glm::vec2 point(u, v);
 
         for (size_t i = 0; i < n; ++i) {
-            glm::vec2 a = parameterSpaceVertices[i];
-            glm::vec2 b = parameterSpaceVertices[(i + 1) % n]; // Következő csúcs (az utolsó után az első)
+            glm::vec2 a = cachedDomainVertices[i];
+            glm::vec2 b = cachedDomainVertices[(i + 1) % n]; // Következő csúcs (az utolsó után az első)
 
             glm::vec2 edge = b - a;
             glm::vec2 toPoint = point - a;
@@ -74,22 +74,22 @@ public:
         return true; // Ha minden élnek a bal oldalán van, a sokszögön belül van
     }
 
-    EdgeEnds GetEdgeEndsInParameterSpace(int edgeIdx) const {
-        auto start = parameterSpaceVertices[ edgeIdx];
-        auto end   = parameterSpaceVertices[(edgeIdx + 1) % EdgeCount()];
+    EdgeEnds GetDomainEdgeVerticesInParameterSpace(int edgeIdx) const {
+        auto start = cachedDomainVertices[ edgeIdx];
+        auto end   = cachedDomainVertices[(edgeIdx + 1) % EdgeCount()];
 
         return EdgeEnds(start, end);
     }
 
     LocalParameter GetLocalParameter(int edgeIdx, float u, float v) const {
         // Ha négyzet alakú, akkor a páruzamos egyenesek miatt nem tudnánk metszetet találni
-        if (EdgeCount() == 4) return LocalParameter(u, v);
+        if (EdgeCount() == 4) return LocalParameter(u, v); //! Ez így nem jó!!! El kell forgatniii!!!
         glm::vec2 point(u, v);
 
         // A mostani, és a jobb/bal szomszédok végpontjai (igaz ezekből 2 felesleges, mert egybeesnek, but oh well...)
-        EdgeEnds currEnds  = GetEdgeEndsInParameterSpace(edgeIdx);
-        EdgeEnds nextNbour = GetEdgeEndsInParameterSpace(NextIndex(edgeIdx));
-        EdgeEnds prevNbour = GetEdgeEndsInParameterSpace(PrevIndex(edgeIdx));
+        EdgeEnds currEnds  = GetDomainEdgeVerticesInParameterSpace(edgeIdx);
+        EdgeEnds nextNbour = GetDomainEdgeVerticesInParameterSpace(NextIndex(edgeIdx));
+        EdgeEnds prevNbour = GetDomainEdgeVerticesInParameterSpace(PrevIndex(edgeIdx));
 
         std::cout << "Should be 1/true" << (currEnds.start == prevNbour.end) << std::endl;
         std::cout << "Should be 1/true" << (currEnds.end == nextNbour.start) << std::endl;
@@ -140,9 +140,31 @@ public:
         // TODO utánaszámolni
         // Ne de most sztem ez így tényleg jó, az én matekom alapján biztos,
         // de csak az egyenlő esetre, de sztem a rendes implementáció idő híjján gatya
-        float maxRadius = glm::length(prevNbour.start - distanceAnchor);
-        float distanceToBaseline = glm::length(currectEdgeIntersection - distanceAnchor);
-        d = d / (maxRadius - distanceToBaseline);
+        //! MEGVAN:
+        // A domén másik oldalán kell lennie, ami szögletes, ami meg furcsa,
+        // de végülis ez a logikus, hogy a domén teljes területén 0 és 1 közé esnen a lokál paraméterek
+
+        std::optional<glm::vec2> oppositeIntersection;
+        int nextNextIdx = NextIndex(NextIndex(edgeIdx));
+        for (int i = 0; i < EdgeCount() - 3; i++) {
+            EdgeEnds ee = GetDomainEdgeVerticesInParameterSpace(nextNextIdx);
+            auto intersection = getSegmentLineIntersection(
+                ee.start, ee.end,                      // Segment
+                distanceAnchor, point - distanceAnchor // Line
+            );
+            if (intersection.has_value()) {
+                oppositeIntersection = intersection.value();
+                break;
+            }
+
+            nextNextIdx = NextIndex(nextNextIdx);
+        }
+        if (!oppositeIntersection.has_value()) {
+            std::cout << "parameter outside of parameter space" << std::endl;
+        }
+
+        float maxDistance = glm::length(oppositeIntersection.value() - currectEdgeIntersection);
+        d = d / maxDistance;
 
         // Végre vége
         return {s, d};
@@ -155,25 +177,27 @@ public:
 
 
 private:
-    std::vector<glm::vec2> parameterSpaceVertices;
+    std::vector<glm::vec2> cachedDomainVertices;
 
-    void UpdateParameterSpaceVertices() {
+    void UpdateDomainVertices() {
         constexpr float PI = std::numbers::pi_v<float>;
         int N = EdgeCount();
 
-        parameterSpaceVertices.clear();
-        parameterSpaceVertices.reserve(N);
+        cachedDomainVertices.clear();
+        cachedDomainVertices.reserve(N);
         for (int i = 0; i < N; i++) {
             float t = (2 * PI) * (static_cast<float>(i) / N);
             float u = std::cos(t);
             float v = std::sin(t);
             auto from0to1 = glm::vec2((u + 1) / 2, (v + 1) / 2);
-            parameterSpaceVertices.push_back(from0to1);
+            cachedDomainVertices.push_back(from0to1);
             std::cout << from0to1.x << " psv " << from0to1.y << std::endl;
         }
     }
 
-    void OnHalfEdgeChanged();
+    void OnHalfEdgeChanged() {
+        SurfaceChanged.Invoke();
+    }
 
     // 2D kereszttermék (determináns): a.x * b.y - a.y * b.x
     inline static float cross2D(const glm::vec2& a, const glm::vec2& b) {
@@ -197,6 +221,35 @@ private:
         float t = cross2D(p21, v2) / denom;
 
         return p1 + t * v1;
+    }
+
+    inline static std::optional<glm::vec2> getSegmentLineIntersection(
+        glm::vec2 seg_a,  glm::vec2 seg_b,  // Szakasz végpontjai
+        glm::vec2 line_p, glm::vec2 line_v, // Egyenes két pontja (C és D)
+        float epsilon = 1e-5f               // floating point hibák miatt egy kis engedékenység
+    ) {
+        glm::vec2 v1 = seg_b - seg_a; // Szakasz irányvektora
+        glm::vec2 v2 = line_v;        // Egyenes irányvektora
+
+        float denom = cross2D(v1, v2);
+
+        // Ha ~0, a szakasz és az egyenes párhuzamosak (vagy egybeesnek)
+        if (std::abs(denom) < 1e-6f) {
+            return std::nullopt;
+        }
+
+        glm::vec2 p21 = line_p - seg_a;
+
+        // Csak a szakasz (v1) 't' paraméterét számoljuk ki:
+        float t = cross2D(p21, v2) / denom;
+
+        // Ha t 0 és 1 közé esik, a metszéspont a szakaszon BELÜL van
+        // (Az egyenes paraméterét nem kell vizsgálni, mert az végtelen)
+        if (t >= 0.0f - epsilon && t <= 1.0f + epsilon) {
+            return seg_a + t * v1;
+        }
+
+        return std::nullopt; // Az egyenes metszéspontja a szakasz vonalán kívülre esne
     }
 };
 
