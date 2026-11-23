@@ -6,6 +6,7 @@
 
 #include "half_edge.h"
 #include "i_Surface.hpp"
+#include "rotation_minimizing_frame.hpp"
 
 #include "util/math_helper.hpp"
 
@@ -25,6 +26,10 @@ struct EdgeEnds {
 };
 
 class NSidedSurface : public ISurface {
+    int debugResolution = 50;
+    glm::vec3 debugStartNormal = glm::vec3(0, 1, 0);
+    glm::vec3 debugEndNormal = glm::vec3(0, 1, 0);
+
 public:
     std::vector<std::shared_ptr<HalfEdge>> edges;
 
@@ -33,10 +38,15 @@ public:
                 : edges(edges) {
         if (edges.size() <= 3) throw std::length_error("NSidedSurface has to have at least 4 edges");
         UpdateDomainVertices();
+        UpdateAllRMFs();
         // Events
     }
 
-    void InitializeAfterLoad() override { /*Events*/ UpdateDomainVertices(); }
+    void InitializeAfterLoad() override {
+        // Events
+        UpdateDomainVertices();
+        UpdateAllRMFs();
+    }
 
     virtual ~NSidedSurface() override { /*Unsubscribe from events*/ }
 
@@ -91,29 +101,14 @@ public:
         EdgeEnds nextNbour = GetDomainEdgeVerticesInParameterSpace(NextIndex(edgeIdx));
         EdgeEnds prevNbour = GetDomainEdgeVerticesInParameterSpace(PrevIndex(edgeIdx));
 
-        std::cout << "Should be 1/true" << (currEnds.start == prevNbour.end) << std::endl;
-        std::cout << "Should be 1/true" << (currEnds.end == nextNbour.start) << std::endl;
-
-        std::cout << currEnds.start.x  << " currEnds.start "  << currEnds.start.y << std::endl;
-        std::cout << currEnds.end.x    << " currEnds.end "    << currEnds.end.y   << std::endl;
-        std::cout << prevNbour.start.x << " prevNbour.start " << prevNbour.start.y << std::endl;
-        std::cout << prevNbour.end.x   << " prevNbour.end "   << prevNbour.end.y   << std::endl;
-        std::cout << nextNbour.start.x << " nextNbour.start " << nextNbour.start.y << std::endl;
-        std::cout << nextNbour.end.x   << " nextNbour.end "   << nextNbour.end.y   << std::endl;
-
         // A szomszéd-egyenesek metszete, amihez képest a lokális s és d paramétereket számoljuk
         glm::vec2 distanceAnchor = getLineIntersection(nextNbour.start, nextNbour.end - nextNbour.start,
                                                        prevNbour.start, prevNbour.end - prevNbour.start);
-
-        std::cout << distanceAnchor.x << " da " << distanceAnchor.y << std::endl;
 
         // A jelenlegi (=kiválasztott) egyenes és a distanceAnchor->point vektor
         glm::vec2 distanceVector(point - distanceAnchor);
         glm::vec2 currectEdgeIntersection = getLineIntersection(currEnds.start, currEnds.end - currEnds.start,
                                                                 distanceAnchor, distanceVector);
-
-        std::cout << distanceVector.x << " dv " << distanceVector.y << std::endl;
-        std::cout << currectEdgeIntersection.x << " ce-dv-i " << currectEdgeIntersection.y << std::endl;
 
         // Lokális side paraméter
         auto sa_0 = currectEdgeIntersection - currEnds.start; // Actual distance that we care about
@@ -160,43 +155,103 @@ public:
             nextNextIdx = NextIndex(nextNextIdx);
         }
         if (!oppositeIntersection.has_value()) {
-            std::cout << "parameter outside of parameter space" << std::endl;
+            std::cout << "Parameter (" << u << "," << v << ") is probably outside of parameter space" << std::endl;
         }
 
-        float maxDistance = glm::length(oppositeIntersection.value() - currectEdgeIntersection);
+        float maxDistance = oppositeIntersection.has_value() ? glm::length(oppositeIntersection.value() - currectEdgeIntersection) : 1;
         d = d / maxDistance;
 
         // Végre vége
         return {s, d};
     }
 
-    glm::vec3 Evaluate(float u, float v) const override {
-        return glm::vec3(0, 0, 0);
+    glm::vec3 GetEdgeCrossDerivate(int edgeIdx, float s) const {
+        RMFFrame f0 = RMF::Sample(cachedRMFs[edgeIdx], 0.0f);
+        RMFFrame f1 = RMF::Sample(cachedRMFs[edgeIdx], 1.0f);
+        glm::vec3 nbourVel0 = -edges[PrevIndex(edgeIdx)]->EvaluateVelocity(1.0f);
+        glm::vec3 nbourVel1 =  edges[NextIndex(edgeIdx)]->EvaluateVelocity(0.0f);
+
+        float alphaB0 = glm::dot(nbourVel0, f0.t);
+        float betaB0  = glm::dot(nbourVel0, f0.s);
+        //float gammaB0 = glm::dot(nbourVel0, f0.r);
+
+        float alphaB1 = glm::dot(nbourVel1, f1.t);
+        float betaB1  = glm::dot(nbourVel1, f1.s);
+        //float gammaB1 = glm::dot(nbourVel1, f1.r);
+
+        float alphaB = (1.0f - s) * alphaB0 + s * alphaB1;
+        float betaB  = (1.0f - s) * betaB0  + s * betaB1;
+        //float gammaB = (1.0f - s) * gammaB0 + s * gammaB1
+
+        RMFFrame f = RMF::Sample(cachedRMFs[edgeIdx], s);
+        glm::vec3 binormal = alphaB * f.t + betaB * f.s /* + gammaB * f.r*/;
+        return binormal;
     }
 
+    glm::vec3 EveluateRibbonLocal(int edgeIdx, float s, float t) const {
+        glm::vec3 s_t = edges[edgeIdx]->EvaluatePosition(s);
+        glm::vec3 b_t = GetEdgeCrossDerivate(edgeIdx, s);
 
+        return s_t + t * b_t;
+    }
 
-private:
-    std::vector<glm::vec2> cachedDomainVertices;
+    float GetBlendDistance(int edgeIdx, float u, float v) const {
+        glm::vec2 point(u, v);
+        EdgeEnds ends = GetDomainEdgeVerticesInParameterSpace(edgeIdx);
 
-    void UpdateDomainVertices() {
-        constexpr float PI = std::numbers::pi_v<float>;
+        float distance = distancePointToLine2DPoints(point, ends.start, ends.end);
+        return distance;
+    }
+
+    std::vector<float> GetBlendWeights(float u, float v) const {
         int N = EdgeCount();
 
-        cachedDomainVertices.clear();
-        cachedDomainVertices.reserve(N);
+        std::vector<float> d(N, 0.0f);
         for (int i = 0; i < N; i++) {
-            float t = (2 * PI) * (static_cast<float>(i) / N);
-            float u = std::cos(t);
-            float v = std::sin(t);
-            auto from0to1 = glm::vec2((u + 1) / 2, (v + 1) / 2);
-            cachedDomainVertices.push_back(from0to1);
-            std::cout << from0to1.x << " psv " << from0to1.y << std::endl;
+            d[i] = GetBlendDistance(i, u, v);
         }
+
+        std::vector<float> weights(N, 0.0f);
+        const float EPSILON = 1e-6f;
+
+        // 1. Ellenőrzés: Közel vagyunk-e valamelyik élhez?
+        for (int i = 0; i < N; ++i) {
+            if (d[i] < EPSILON) {
+                // Ha rajta vagyunk az i-edik élen, a súlya 1, a többi 0
+                weights[i] = 1.0f;
+                return weights;
+            }
+        }
+
+        // 2. Inverz súlyok összegzése
+        float sumInverse = 0.0f;
+        for (int i = 0; i < N; ++i) {
+            float invD2 = 1.0f / (d[i] * d[i]);
+            weights[i] = invD2;
+            sumInverse += invD2;
+        }
+
+        // 3. Normalizálás
+        for (int i = 0; i < N; ++i) {
+            weights[i] /= sumInverse;
+        }
+
+        return weights;
     }
 
-    void OnHalfEdgeChanged() {
-        SurfaceChanged.Invoke();
+    glm::vec3 Evaluate(float u, float v) const override {
+        int N = EdgeCount();
+
+        glm::vec3 sum(0, 0, 0);
+
+        auto blendWeights = GetBlendWeights(u, v);
+
+        for (int i = 0; i < N; i++) {
+            LocalParameter local = GetLocalParameter(i, u, v);
+            sum += EveluateRibbonLocal(i, local.s, local.d) * blendWeights[i];
+        }
+
+        return sum;
     }
 
     // 2D kereszttermék (determináns): a.x * b.y - a.y * b.x
@@ -250,6 +305,63 @@ private:
         }
 
         return std::nullopt; // Az egyenes metszéspontja a szakasz vonalán kívülre esne
+    }
+
+    // Távolság egy pont és egy egyenes között, ahol az egyenes egy pont és egy irányvektorral van megadva
+    static float distancePointToLine2D(const glm::vec2& point, const glm::vec2& linePoint, const glm::vec2& lineDir) {
+        auto normDir = glm::normalize(lineDir);
+
+        glm::vec2 normal(-normDir.y, normDir.x);
+        return std::abs(glm::dot(point - linePoint, normal));
+    }
+
+    // Távolság egy pont és egy egyenes között, ahol az egyenes két pontjával van megadva
+    static float distancePointToLine2DPoints(const glm::vec2& point, const glm::vec2& lineA, const glm::vec2& lineB) {
+        glm::vec2 AB = lineB - lineA;
+        glm::vec2 normal(-AB.y, AB.x);
+
+        float len = glm::length(AB);
+        if (len == 0.0f) return glm::distance(point, lineA);
+
+        return (glm::dot(point - lineA, normal)) / len;
+    }
+
+private:
+    std::vector<glm::vec2> cachedDomainVertices;
+    std::vector<std::vector<RMFFrame>> cachedRMFs;
+
+
+    void UpdateDomainVertices() {
+        constexpr float PI = std::numbers::pi_v<float>;
+        int N = EdgeCount();
+
+        cachedDomainVertices.clear();
+        cachedDomainVertices.reserve(N);
+        for (int i = 0; i < N; i++) {
+            float t = (2 * PI) * (static_cast<float>(i) / N);
+            float u = std::cos(t);
+            float v = std::sin(t);
+            auto from0to1 = glm::vec2((u + 1) / 2, (v + 1) / 2);
+            cachedDomainVertices.push_back(from0to1);
+            std::cout << from0to1.x << " psv " << from0to1.y << std::endl;
+        }
+    }
+
+    void UpdateRMF(int edgeIdx) {
+        cachedRMFs[edgeIdx] = RMF::GenerateFrames(edges[edgeIdx], debugStartNormal, debugEndNormal, debugResolution);
+    }
+
+    void UpdateAllRMFs() {
+        cachedRMFs.clear();
+        cachedRMFs.resize(EdgeCount());
+
+        for (int i = 0; i < EdgeCount(); i++) {
+            UpdateRMF(i);
+        }
+    }
+
+    void OnHalfEdgeChanged() {
+        SurfaceChanged.Invoke();
     }
 };
 

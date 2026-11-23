@@ -67,13 +67,18 @@ glm::vec3 BicubicCoonsSurface::Sv_u1(float u) const { // Top
 
     float alphaB0 = glm::dot(nbourVel0, f0.t);
     float betaB0  = glm::dot(nbourVel0, f0.s);
+    //float gammaB0 = glm::dot(nbourVel0, f0.r);
+
     float alphaB1 = glm::dot(nbourVel1, f1.t);
     float betaB1  = glm::dot(nbourVel1, f1.s);
+    //float gammaB1 = glm::dot(nbourVel1, f1.r);
 
     float alphaB = (1.0f - u) * alphaB0 + u * alphaB1;
     float betaB  = (1.0f - u) * betaB0  + u * betaB1;
+    //float gammaB = (1.0f - s) * gammaB0 + s * gammaB1
+
     RMFFrame fB  = RMF::Sample(cachedRmfTop, 1 - u);
-    glm::vec3 Sv_u1 = alphaB * fB.t + betaB * fB.s;
+    glm::vec3 Sv_u1 = alphaB * fB.t + betaB * fB.s /* + gammaB * f.r*/;
     return Sv_u1;
 }
 glm::vec3 BicubicCoonsSurface::Su_0v(float v) const { // Left
