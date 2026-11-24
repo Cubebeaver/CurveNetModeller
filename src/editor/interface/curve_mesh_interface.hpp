@@ -11,6 +11,7 @@
 class CurveMeshInterface : public ObjectInterface {
 private:
     std::weak_ptr<CurveMeshController> controller;
+    int N = 6;
 
 public:
     CurveMeshInterface(std::shared_ptr<CurveMeshController> controller) : ObjectInterface(controller->GetModel()), controller(controller) { }
@@ -95,6 +96,13 @@ public:
                 c->AddNewBicubicCoonsSurface();
                 //TODO Command
             }
+
+            if (ImGui::Button("Add new N sided surface")) {
+                c->AddNewNSidedSurface(N);
+                //TODO Command
+            }
+            ImGui::SameLine();
+            ImGui::SliderInt("Sides", &N, 3, 12);
 
             if (ImGui::Button("Add new bezier surface")) {
                 c->AddNewBezierSurface();

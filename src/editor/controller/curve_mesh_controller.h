@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 
 #include "editor/view/bezier_node_view.h"
@@ -22,6 +23,7 @@
 #include "model/constraint/same_point_position_constraint.h"
 #include "model/element/bezier_surface.h"
 #include "model/element/bicubic_coons_surface.h"
+#include "model/element/n_sided_surface.hpp"
 
 class CurveMeshController {
 private:
@@ -233,6 +235,60 @@ public:
         curveMesh->AddHalfEdge(he_d2);
 
         //TODO Command
+    }
+
+    void AddNewNSidedSurface(int N = 6) {
+        constexpr float PI = std::numbers::pi_v<float>;
+
+        std::vector<std::shared_ptr<Point>> allPoints;
+
+        std::vector<std::shared_ptr<Point>> cornerPoints;
+        for (int i = 0; i < N; i++) {
+            float t = (2 * PI) * (static_cast<float>(i) / static_cast<float>(N));
+            auto newPoint = std::make_shared<Point>(std::cos(t), 0, std::sin(t));
+            cornerPoints.push_back(newPoint);
+            allPoints.push_back(newPoint);
+        }
+
+        std::vector<std::shared_ptr<BezierCurve>> edges;
+        for (int i = 0; i < N; i++) {
+            auto& start = cornerPoints[i];
+            auto& end = cornerPoints[(i + 1) % N];
+            glm::vec3 offset = end->GetPosition() - start->GetPosition();
+
+            auto newCurve = std::make_shared<BezierCurve>();
+            edges.push_back(newCurve);
+
+            auto newPointStartLeft  = std::make_shared<Point>(start->GetPosition() - offset / 4.0f);
+            auto newPointStartRight = std::make_shared<Point>(start->GetPosition() + offset / 4.0f);
+            auto newPointEndLeft    = std::make_shared<Point>(end->GetPosition() - offset / 4.0f);
+            auto newPointEndRight   = std::make_shared<Point>(end->GetPosition() + offset / 4.0f);
+            newCurve->AddNode(std::make_shared<BezierNode>(start, newPointStartLeft, newPointStartRight));
+            newCurve->AddNode(std::make_shared<BezierNode>(end, newPointEndLeft, newPointEndRight));
+
+            allPoints.push_back(newPointStartLeft);
+            allPoints.push_back(newPointStartRight);
+            allPoints.push_back(newPointEndLeft);
+            allPoints.push_back(newPointEndRight);
+        }
+        
+        std::vector<std::shared_ptr<HalfEdge>> halfEdges;
+        for (int i = 0; i < N; i++) {
+            halfEdges.push_back(std::make_shared<HalfEdge>(edges[i]));
+        }
+        
+        auto surface = std::make_shared<NSidedSurface>(halfEdges);
+
+        for (int i = 0; i < allPoints.size(); i++) {
+            curveMesh->AddPoint(allPoints[i]);
+        }
+        for (int i = 0; i < edges.size(); i++) {
+            curveMesh->AddEdge(edges[i]);
+        }
+        for (int i = 0; i < halfEdges.size(); i++) {
+            curveMesh->AddHalfEdge(halfEdges[i]);
+        }
+        curveMesh->AddSurface(surface);
     }
 
     void AddNewBezierSurface() {
