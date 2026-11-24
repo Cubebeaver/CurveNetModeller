@@ -26,12 +26,12 @@ struct EdgeEnds {
 };
 
 class NSidedSurface : public ISurface {
-    int debugResolution = 50;
     glm::vec3 debugStartNormal = glm::vec3(0, 1, 0);
     glm::vec3 debugEndNormal = glm::vec3(0, 1, 0);
 
 public:
     std::vector<std::shared_ptr<HalfEdge>> edges;
+    int rmfResolution = 50;
 
     NSidedSurface() { }
     NSidedSurface(std::vector<std::shared_ptr<HalfEdge>> edges)
@@ -326,6 +326,11 @@ public:
         return (glm::dot(point - lineA, normal)) / len;
     }
 
+    template<class Archive>
+    void serialize(Archive& archive) {
+        archive(CEREAL_NVP(edges), CEREAL_NVP(rmfResolution));
+    }
+
 private:
     std::vector<glm::vec2> cachedDomainVertices;
     std::vector<std::vector<RMFFrame>> cachedRMFs;
@@ -348,7 +353,7 @@ private:
     }
 
     void UpdateRMF(int edgeIdx) {
-        cachedRMFs[edgeIdx] = RMF::GenerateFrames(edges[edgeIdx], debugStartNormal, debugEndNormal, debugResolution);
+        cachedRMFs[edgeIdx] = RMF::GenerateFrames(edges[edgeIdx], debugStartNormal, debugEndNormal, rmfResolution);
     }
 
     void UpdateAllRMFs() {
