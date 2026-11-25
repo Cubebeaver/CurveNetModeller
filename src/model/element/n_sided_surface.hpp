@@ -154,9 +154,9 @@ public:
 
             nextNextIdx = NextIndex(nextNextIdx);
         }
-        if (!oppositeIntersection.has_value()) {
-            std::cout << "Parameter (" << u << "," << v << ") is probably outside of parameter space" << std::endl;
-        }
+        // if (!oppositeIntersection.has_value()) {
+        //     std::cout << "Parameter (" << u << "," << v << ") is probably outside of parameter space" << std::endl;
+        // }
 
         float maxDistance = oppositeIntersection.has_value() ? glm::length(oppositeIntersection.value() - currectEdgeIntersection) : 1;
         d = d / maxDistance;
@@ -326,6 +326,8 @@ public:
         return (glm::dot(point - lineA, normal)) / len;
     }
 
+    const std::vector<glm::vec2>& GetDomainVertices() const { return cachedDomainVertices; }
+
     template<class Archive>
     void serialize(Archive& archive) {
         archive(CEREAL_NVP(edges), CEREAL_NVP(rmfResolution));
@@ -369,8 +371,3 @@ private:
         SurfaceChanged.Invoke();
     }
 };
-
-
-
-
-

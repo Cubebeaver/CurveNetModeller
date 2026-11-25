@@ -24,6 +24,7 @@
 #include "model/element/bezier_surface.h"
 #include "model/element/bicubic_coons_surface.h"
 #include "model/element/n_sided_surface.hpp"
+#include "editor/view/n_sided_surface_view.h"
 
 class CurveMeshController {
 private:
@@ -40,6 +41,7 @@ private:
     std::vector<std::unique_ptr<SurfaceView>> surfaceViews;
     //TODO ezt ne így pls
     std::vector<std::unique_ptr<BezierSurfaceView>> beziersurfaceViews;
+    std::vector<std::unique_ptr<NSidedSurfaceView>> nsidedSurfaceViews;
 
     //DEBUG
     std::vector<std::unique_ptr<CurveCurvatureCombView>> curveCurvatureCombViews;
@@ -461,6 +463,12 @@ public:
             surfaceView->Draw();
         }
 
+        //TODO Hacky
+        // N sided surfaces
+        for (const auto& surfaceView : nsidedSurfaceViews) {
+            surfaceView->Draw();
+        }
+
         //DEBUG
         for (const auto& v : curveCurvatureCombViews) {
             v->Draw();
@@ -507,10 +515,20 @@ private:
         // Surface views
         if (surfaceViews.size() != curveMesh->GetSurfaces().size()) {
             surfaceViews.clear();
+            nsidedSurfaceViews.clear();
             for (const auto& surface : curveMesh->GetSurfaces()) {
-                auto surfaceView = std::make_unique<SurfaceView>();
-                surfaceView->Update(*surface, 20);
-                surfaceViews.push_back(std::move(surfaceView));
+                // N sided
+                if (auto nsided = std::dynamic_pointer_cast<NSidedSurface>(surface)) {
+                    auto surfaceView = std::make_unique<NSidedSurfaceView>();
+                    surfaceView->Update(*nsided);
+                    nsidedSurfaceViews.push_back(std::move(surfaceView));
+                }
+                // Normal
+                else {
+                    auto surfaceView = std::make_unique<SurfaceView>();
+                    surfaceView->Update(*surface, 20);
+                    surfaceViews.push_back(std::move(surfaceView));
+                }
             }
         }
 
@@ -552,18 +570,32 @@ private:
 
         // Surface views
         auto& surfaces = curveMesh->GetSurfaces();
-        for (int i = 0; i < surfaces.size(); i++) {
-            surfaceViews[i]->Update(*surfaces[i], 20);
+        for (int s = 0, v = 0; s < surfaces.size(); s++) {
+            //TODO MOST MÁR NAGYON NEM ÍGY KELLENE >:(
+            if (auto nss = std::dynamic_pointer_cast<NSidedSurface>(surfaces[s])) continue; // Skip N sided surcface
+
+            surfaceViews[v]->Update(*surfaces[s], 20);
+            v++;
         }
 
         //TODO Hacky
         // Bezier surfaces
         int n_bs = 0;
-        for (int i = 0; i < surfaces.size(); i++) {
-            const std::shared_ptr<BezierSurface> bs = std::dynamic_pointer_cast<BezierSurface>(surfaces[i]);
+        for (const auto& surface : surfaces) {
+            const std::shared_ptr<BezierSurface> bs = std::dynamic_pointer_cast<BezierSurface>(surface);
             if (bs) {
                 beziersurfaceViews[n_bs]->Update(*bs);
                 n_bs++;
+            }
+        }
+
+        // N sided surfaces
+        int n_nss = 0;
+        for (const auto& surface : surfaces) {
+            const std::shared_ptr<NSidedSurface> nss = std::dynamic_pointer_cast<NSidedSurface>(surface);
+            if (nss) {
+                nsidedSurfaceViews[n_nss]->Update(*nss);
+                n_nss++;
             }
         }
     }

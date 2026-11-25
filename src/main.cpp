@@ -214,6 +214,7 @@ int main(int argc, char** argv) {
     }
 
     SharedShaders::Register("solid_color", std::make_shared<Shader>("resources/shaders/trafo.vert", "resources/shaders/color.frag"));
+    SharedShaders::Register("zebra", std::make_shared<Shader>("resources/shaders/zebra.vert", "resources/shaders/zebra.frag"));
     SharedShaders::Register("shaded", std::make_shared<Shader>("resources/shaders/trafo_norm.vert", "resources/shaders/shaded.frag"));
     SharedShaders::Register("skybox", std::make_shared<Shader>("resources/shaders/skybox.vert", "resources/shaders/skybox.frag"));
 
