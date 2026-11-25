@@ -93,7 +93,8 @@ public:
 
     LocalParameter GetLocalParameter(int edgeIdx, float u, float v) const {
         // Ha négyzet alakú, akkor a páruzamos egyenesek miatt nem tudnánk metszetet találni
-        if (EdgeCount() == 4) return LocalParameter(u, v); //! Ez így nem jó!!! El kell forgatniii!!!
+        const int N = EdgeCount();
+        if (N == 4) return LocalParameter(u, v); //! Ez így nem jó!!! El kell forgatniii!!!
         glm::vec2 point(u, v);
 
         // A mostani, és a jobb/bal szomszédok végpontjai (igaz ezekből 2 felesleges, mert egybeesnek, but oh well...)
@@ -139,27 +140,27 @@ public:
         // A domén másik oldalán kell lennie, ami szögletes, ami meg furcsa,
         // de végülis ez a logikus, hogy a domén teljes területén 0 és 1 közé esnen a lokál paraméterek
 
-        std::optional<glm::vec2> oppositeIntersection;
+        glm::vec2 oppositeIntersection;
         int nextNextIdx = NextIndex(NextIndex(edgeIdx));
-        for (int i = 0; i < EdgeCount() - 3; i++) {
+        float minDistance = std::numeric_limits<float>::infinity();
+        for (int i = 0; i < N - 3; i++) {
             EdgeEnds ee = GetDomainEdgeVerticesInParameterSpace(nextNextIdx);
-            auto intersection = getSegmentLineIntersection(
-                ee.start, ee.end,                      // Segment
-                distanceAnchor, point - distanceAnchor // Line
+            auto intersection = getLineIntersectionPoints(
+                ee.start, ee.end,
+                distanceAnchor, point - distanceAnchor
             );
-            if (intersection.has_value()) {
-                oppositeIntersection = intersection.value();
-                break;
+            if (std::isnan(ee.start.x)) continue;
+
+            float currDst = glm::length(intersection - distanceAnchor);
+            if (currDst < minDistance) {
+                oppositeIntersection = intersection;
+                minDistance = currDst;
             }
 
             nextNextIdx = NextIndex(nextNextIdx);
         }
-        // if (!oppositeIntersection.has_value()) {
-        //     std::cout << "Parameter (" << u << "," << v << ") is probably outside of parameter space" << std::endl;
-        // }
 
-        float maxDistance = oppositeIntersection.has_value() ? glm::length(oppositeIntersection.value() - currectEdgeIntersection) : 1;
-        d = d / maxDistance;
+        d = d / minDistance;
 
         // Végre vége
         return {s, d};
@@ -204,7 +205,7 @@ public:
     }
 
     std::vector<float> GetBlendWeights(float u, float v) const {
-        int N = EdgeCount();
+        const int N = EdgeCount();
 
         std::vector<float> d(N, 0.0f);
         for (int i = 0; i < N; i++) {
@@ -240,7 +241,7 @@ public:
     }
 
     glm::vec3 Evaluate(float u, float v) const override {
-        int N = EdgeCount();
+        const int N = EdgeCount();
 
         glm::vec3 sum(0, 0, 0);
 
@@ -269,13 +270,20 @@ public:
         // Ha a determináns ~0, az egyenesek párhuzamosak (vagy egybeesnek)
         if (std::abs(denom) < 1e-6f) {
             std::cout << "Could not find intersection" << std::endl;
-            return glm::vec2(0, 0);
+            return glm::vec2(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
         }
 
         glm::vec2 p21 = p2 - p1;
         float t = cross2D(p21, v2) / denom;
 
         return p1 + t * v1;
+    }
+
+    inline static glm::vec2 getLineIntersectionPoints(
+        glm::vec2 a1, glm::vec2 b1, // 1. egyenes: pont és pont
+        glm::vec2 a2, glm::vec2 b2  // 2. egyenes: pont és pont
+    ) {
+        return getLineIntersection(a1, b1 - a1, a2, b2 - a2);
     }
 
     inline static std::optional<glm::vec2> getSegmentLineIntersection(
@@ -340,7 +348,7 @@ private:
 
     void UpdateDomainVertices() {
         constexpr float PI = std::numbers::pi_v<float>;
-        int N = EdgeCount();
+        const int N = EdgeCount();
 
         cachedDomainVertices.clear();
         cachedDomainVertices.reserve(N);
