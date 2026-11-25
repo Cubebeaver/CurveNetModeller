@@ -16,7 +16,7 @@ private:
 public:
     NSidedSurfaceView();
 
-    void Update(const NSidedSurface& surfaceModel, int resolution = 50);
+    void Update(const NSidedSurface& surfaceModel, int resolution = 20);
 
     void Draw();
 

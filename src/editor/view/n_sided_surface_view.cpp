@@ -12,7 +12,8 @@ NSidedSurfaceView::NSidedSurfaceView() {
          .FinishVertexAttribs();
 
     material = std::make_unique<Material>(SharedShaders::Get("zebra"));
-    material->SetVec4("color", glm::vec4(.1f, .2f, .3f, 1));
+    material->SetFloat("stripeFrequency", 20);
+    material->SetFloat("stripeSharpness", 0.01f);
 }
 
 void NSidedSurfaceView::Update(const NSidedSurface& surfaceModel, int resolution) {
@@ -85,6 +86,7 @@ void NSidedSurfaceView::Draw() {
     material->SetMat4("Model", glm::mat4(1.0f));
     material->SetMat4("View", Camera::activeCamera->matView);
     material->SetMat4("Projection", Camera::activeCamera->matProjection);
+    material->SetVec3("cameraPos", Camera::activeCamera->position);
     mesh->Draw(GL_TRIANGLES);
 }
 
